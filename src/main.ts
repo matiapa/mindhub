@@ -1,8 +1,30 @@
 import { NestFactory } from '@nestjs/core';
+import serverlessExpress from '@vendia/serverless-express';
+import {
+  APIGatewayEvent,
+  APIGatewayProxyResult,
+  Callback,
+  Context,
+  Handler,
+} from 'aws-lambda';
 import { AppModule } from './app.module';
+import { RequestListener } from 'http';
+import { ValidationPipe } from '@nestjs/common';
 
-async function bootstrap() {
+let server: Handler;
+
+async function bootstrap(): Promise<RequestListener> {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+  app.useGlobalPipes(new ValidationPipe());
+  await app.init();
+  return app.getHttpAdapter().getInstance();
 }
-bootstrap();
+
+export const handler: Handler = async (
+  event: APIGatewayEvent,
+  context: Context,
+  callback: Callback,
+): Promise<APIGatewayProxyResult> => {
+  server = server ?? serverlessExpress({ app: await bootstrap() });
+  return server(event, context, callback);
+};
