@@ -1,20 +1,19 @@
 import { Controller, Get, Body, Param, Put, Query } from '@nestjs/common';
-import { UsersService } from './users.service';
-import {
-  UpdateProfileDto,
-  UpdateProfileResDto,
-} from './dto/update-profile.dto';
-import {
-  UpdateLastConnectionDto,
-  UpdateLastConnectionResDto,
-} from './dto/update-last-connection.dto';
-import { GetPictureUploadUrlDto } from './dto/get-picture-upload-url.dto';
-import { GetUserResDto } from './dto/get-user.dto';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
+import {
+  UpdateProfileDto,
+  UpdateProfileResDto,
+  UpdateLastConnectionDto,
+  UpdateLastConnectionResDto,
+  GetPictureUploadUrlDto,
+  UserInfo,
+  UserInfoConfig,
+} from './dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -45,8 +44,11 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get public information of a user' })
-  @ApiOkResponse({ description: 'OK', type: GetUserResDto })
-  getById(@Param('id') id: string): Promise<GetUserResDto> {
-    return this.usersService.getUser(id);
+  @ApiOkResponse({ description: 'OK', type: UserInfo })
+  getById(
+    @Param('id') id: string,
+    @Query() config: UserInfoConfig,
+  ): Promise<UserInfo> {
+    return this.usersService.getUserInfo(id, config);
   }
 }

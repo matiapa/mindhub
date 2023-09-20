@@ -10,7 +10,10 @@ export enum Gender {
 export class User extends Item {
   _id: string;
 
+  email: string;
+
   profile: {
+    name: string;
     gender: Gender;
     birthday: string;
     biography?: string;
@@ -23,13 +26,17 @@ export class User extends Item {
   };
 }
 
-export const UserModel = dynamoose.model<User>(
-  'User',
+const UserSchema = new dynamoose.Schema(
   {
-    _id: String,
+    _id: {
+      type: String,
+      hashKey: true,
+    },
+    email: String,
     profile: {
       type: Object,
       schema: {
+        name: String,
         gender: String,
         birthday: String,
         biography: String,
@@ -45,6 +52,12 @@ export const UserModel = dynamoose.model<User>(
     },
   },
   {
-    tableName: process.env.DYNAMO_USERS_TABLE,
+    timestamps: true,
   },
 );
+
+export const UserModel = dynamoose.model<User>('User', UserSchema, {
+  tableName: process.env.DYNAMO_USERS_TABLE,
+  create: false,
+  waitForActive: false,
+});

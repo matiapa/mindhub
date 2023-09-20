@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserModel } from './entities/user.entity';
+import { User, UserModel } from './entities';
 
 @Injectable()
 export class UsersRepository {
@@ -18,6 +18,11 @@ export class UsersRepository {
 
   getById(id: string): Promise<User> {
     return UserModel.get(id);
+  }
+
+  async getManyByIds(ids: string[]): Promise<User[]> {
+    const res = await UserModel.batchGet(ids);
+    return [...res.values()];
   }
 
   remove(id: string): Promise<void> {
