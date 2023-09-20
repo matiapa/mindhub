@@ -7,12 +7,16 @@ custom:
 
   dynamo:
     usersTable: 'users-table'
+    friendshipsTable: 'friendships-table'
   
   s3:
     picturesBucket: 'mindhub-pictures-bucket'
     pictureUploadUrlTTL: 60
     pictureDownloadUrlTTL: 60
     allowedOrigins: 'https://mindhub.ar'
+
+  ses:
+    friendshipRequestsMailSender: 'notifications@mindhub.ar'
   
   esbuild: 
     bundle: true
@@ -56,26 +60,33 @@ provider:
             - Fn::GetAtt: [ PicturesBucket, Arn ]
           
   environment:
+    USERS_POOL_ID: us-east-1_ACYhVKPRs
+
     DYNAMO_USERS_TABLE: ${self:custom.dynamo.usersTable}
+    DYNAMO_FRIENDSHIPS_TABLE: ${self:custom.dynamo.friendshipsTable}
+
     S3_PICTURES_BUCKET: ${self:custom.s3.picturesBucket}
     S3_PICTURE_UPLOAD_URL_TTL: ${self:custom.s3.pictureUploadUrlTTL}
     S3_PICTURE_DOWNLOAD_URL_TTL: ${self:custom.s3.pictureDownloadUrlTTL}
+
+    FRIENDSHIP_REQUESTS_SENDER_EMAIL: ${self:custo.ses.friendshipRequestsMailSender}
+
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     NODE_OPTIONS: --enable-source-maps --stack-trace-limit=1000
 
-functions:
-  app: 
-    handler: dist/main.handler
-    events:
-      - http:
-          method: any
-          path: /{any+}
-          cors: true
-          integration: lambda-proxy
-          authorizer:
-            name: PrivateAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: ${self:custom.cognito.userPoolArn}
+# functions:
+#   app: 
+#     handler: dist/main.handler
+#     events:
+#       - http:
+#           method: any
+#           path: /{any+}
+#           cors: true
+#           integration: lambda-proxy
+#           authorizer:
+#             name: PrivateAuthorizer
+#             type: COGNITO_USER_POOLS
+#             arn: ${self:custom.cognito.userPoolArn}
 
 resources:
   Resources:
@@ -90,6 +101,32 @@ resources:
           - AttributeName: _id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+    
+    FriendshipsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo.friendshipsTable}
+        AttributeDefinitions:
+          - AttributeName: proposer
+            AttributeType: S 
+          - AttributeName: target
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: proposer
+            KeyType: HASH
+          - AttributeName: target
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: InvertedIndex
+            KeySchema:
+              - AttributeName: target
+                KeyType: HASH
+              - AttributeName: proposer
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
     PicturesBucket:
       Type: AWS::S3::Bucket
       Properties:

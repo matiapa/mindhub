@@ -3,7 +3,7 @@ import AWS from 'aws-sdk';
 
 @Injectable()
 export class StorageService {
-  s3 = new AWS.S3();
+  private s3 = new AWS.S3();
 
   async getUploadUrl(
     bucket: string,
@@ -25,7 +25,7 @@ export class StorageService {
     bucket: string,
     key: string,
     ttl: number,
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     try {
       await this.s3
         .headObject({
