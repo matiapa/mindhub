@@ -1,8 +1,77 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/api-app/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/api-app/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/api-app",
+  "projects": {
+    "api-app": {
+      "type": "application",
+      "root": "apps/api-app",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-app/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-app/tsconfig.app.json"
+      }
+    },
+    "consumers-app": {
+      "type": "application",
+      "root": "apps/consumers-app",
+      "entryFile": "main",
+      "sourceRoot": "apps/consumers-app/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/consumers-app/tsconfig.app.json"
+      }
+    },
+    "providers": {
+      "type": "library",
+      "root": "libs/features/providers",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/providers/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/providers/tsconfig.lib.json"
+      }
+    },
+    "interests": {
+      "type": "library",
+      "root": "libs/features/interests",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/interests/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/interests/tsconfig.lib.json"
+      }
+    },
+    "resources": {
+      "type": "library",
+      "root": "libs/features/resources",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/resources/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/resources/tsconfig.lib.json"
+      }
+    },
+    "spotify-sdk": {
+      "type": "library",
+      "root": "libs/providers/spotify-sdk",
+      "entryFile": "index",
+      "sourceRoot": "libs/providers/spotify-sdk/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/providers/spotify-sdk/tsconfig.lib.json"
+      }
+    },
+    "queue": {
+      "type": "library",
+      "root": "libs/providers/queue",
+      "entryFile": "index",
+      "sourceRoot": "libs/providers/queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/providers/queue/tsconfig.lib.json"
+      }
+    }
   }
 }
