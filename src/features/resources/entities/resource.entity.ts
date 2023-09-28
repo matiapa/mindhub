@@ -1,17 +1,14 @@
-import {
-  ResourceTypeEnum,
-  ResourceProviderEnum,
-} from 'apps/resources/src/features/resources/enums';
+import { ResourceTypeEnum, ProviderEnum } from '../enums';
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
-import { TrackSchema } from './track.entity';
-import { ArtistSchema } from './artist.entity';
+import { Artist } from './artist.entity';
+import { Track } from './track.entity';
 
 export class Resource extends Item {
   resourceId: string;
-  provider: ResourceProviderEnum;
+  provider: ProviderEnum;
   type: ResourceTypeEnum;
-  data: object;
+  data: Track | Artist;
 }
 
 const ResourceSchema = new dynamoose.Schema(
@@ -26,11 +23,11 @@ const ResourceSchema = new dynamoose.Schema(
     },
     data: {
       type: Object,
-      schema: [TrackSchema, ArtistSchema],
     },
   },
   {
     timestamps: true,
+    saveUnknown: ['data.*'],
   },
 );
 
@@ -39,7 +36,7 @@ export const ResourceModel = dynamoose.model<Resource>(
   ResourceSchema,
   {
     tableName: process.env.DYNAMO_RESOURCES_TABLE,
-    create: true,
-    waitForActive: true,
+    create: false,
+    waitForActive: false,
   },
 );

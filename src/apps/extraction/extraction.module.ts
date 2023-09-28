@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SpotifyEtlController } from './spotify.controller';
+import { SynchronizationService } from '../../features/providers/services/synchronization.service';
 import { SpotifyModule } from '../../providers/spotify';
 
 @Module({
   imports: [SpotifyModule],
-  controllers: [SpotifyEtlController],
+  controllers: [SynchronizationService],
 })
 export class ExtractionModule {}

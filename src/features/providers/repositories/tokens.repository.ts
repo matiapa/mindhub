@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Token, TokenModel } from './tokens.entity';
-import { ResourceProviderEnum } from '../resources/enums';
+import { Token, TokenModel } from '../entities/tokens.entity';
+import { ProviderEnum } from '../../resources/enums';
 
 @Injectable()
 export class TokensRepository {
@@ -10,17 +10,17 @@ export class TokensRepository {
 
   update(
     userId: string,
-    service: ResourceProviderEnum,
+    service: ProviderEnum,
     token: Partial<Token>,
   ): Promise<Token> {
     return TokenModel.update({ userId, service }, token);
   }
 
-  getOne(userId: string, service: ResourceProviderEnum): Promise<Token> {
+  getOne(userId: string, service: ProviderEnum): Promise<Token> {
     return TokenModel.get({ userId, service });
   }
 
-  remove(userId: string, service: ResourceProviderEnum): Promise<void> {
+  remove(userId: string, service: ProviderEnum): Promise<void> {
     return TokenModel.delete({ userId, service });
   }
 }
