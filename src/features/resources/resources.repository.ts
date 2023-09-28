@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Resource, ResourceModel } from './entities/resource.entity';
 
+const MAX_ITEMS = 25;
+
 @Injectable()
 export class ResourcesRepository {
   async createMany(resources: Partial<Resource>[]): Promise<void> {
-    await ResourceModel.batchPut(resources);
+    for (let i = 0; i < resources.length; i += MAX_ITEMS) {
+      const len = Math.min(i + MAX_ITEMS, resources.length);
+      const slice = resources.slice(i, len);
+      await ResourceModel.batchPut(slice);
+    }
   }
 
   async getById(resourceId: string): Promise<Resource> {

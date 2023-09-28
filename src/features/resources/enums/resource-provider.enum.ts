@@ -1,3 +1,3 @@
-export enum ResourceProviderEnum {
+export enum ProviderEnum {
   SPOTIFY = 'spotify',
 }

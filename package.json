@@ -33,12 +33,14 @@
     "axios": "^1.5.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "dotenv": "^16.3.1",
     "dynamoose": "^3.2.1",
     "express": "^4.18.2",
     "moment": "^2.29.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "query-string": "^8.1.0"
+    "query-string": "^8.1.0",
+    "sqs-consumer": "^7.3.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

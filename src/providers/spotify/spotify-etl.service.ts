@@ -1,15 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import {
-  ResourceProviderEnum,
-  ResourceTypeEnum,
-} from '../../features/resources/enums';
-import queryString from 'query-string';
-import { TokensRepository } from '../../features/tokens';
-import { ResourcesService } from '../../features/resources/resources.service';
-import { InterestsService } from '../../features/interests/interests.service';
+import { ProviderEnum, ResourceTypeEnum } from '../../features/resources/enums';
 import { Resource } from '../../features/resources/entities/resource.entity';
-import { Interest } from '../../features/interests/interest.entity';
 
 @Injectable()
 export class SpotifyEtlService {
@@ -17,12 +9,6 @@ export class SpotifyEtlService {
   private scopes: string[];
 
   private readonly logger = new Logger(SpotifyEtlService.name);
-
-  constructor(
-    private readonly tokensRepo: TokensRepository,
-    private readonly resourcesService: ResourcesService,
-    private readonly interestsService: InterestsService,
-  ) {}
 
   private _request(url: string) {
     return axios.get(url, {
@@ -32,12 +18,7 @@ export class SpotifyEtlService {
     });
   }
 
-  private async _initialize(userId: string) {
-    const token = await this.tokensRepo.getOne(
-      userId,
-      ResourceProviderEnum.SPOTIFY,
-    );
-
+  private async _initialize(refreshToken: string) {
     const clientAuthToken = Buffer.from(
       process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET,
     ).toString('base64');
@@ -45,10 +26,10 @@ export class SpotifyEtlService {
     const res = await axios({
       method: 'post',
       url: 'https://accounts.spotify.com/api/token',
-      data: queryString.stringify({
-        refresh_token: token.refreshToken,
+      data: new URLSearchParams({
+        refresh_token: refreshToken,
         grant_type: 'refresh_token',
-      }),
+      }).toString(),
       headers: {
         Authorization: 'Basic ' + clientAuthToken,
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -65,18 +46,18 @@ export class SpotifyEtlService {
     }
 
     let nextPageUrl = 'https://api.spotify.com/v1/me/top/tracks';
-    const maxTracks = 50;
+    const maxTracks = 20;
 
     const tracks: Partial<Resource>[] = [];
 
     while (nextPageUrl && tracks.length < maxTracks) {
       const res = await this._request(nextPageUrl);
 
-      for (const track of res['items']) {
+      for (const track of res.data['items']) {
         try {
           tracks.push({
             resourceId: track['id'],
-            provider: ResourceProviderEnum.SPOTIFY,
+            provider: ProviderEnum.SPOTIFY,
             type: ResourceTypeEnum.TRACK,
             data: {
               artistId: track['artists'][0]['id'],
@@ -92,7 +73,7 @@ export class SpotifyEtlService {
         }
       }
 
-      nextPageUrl = res['next'];
+      nextPageUrl = res.data['next'];
     }
 
     return tracks;
@@ -104,21 +85,21 @@ export class SpotifyEtlService {
     }
 
     let nextPageUrl = 'https://api.spotify.com/v1/me/top/artists';
-    const maxArtists = 50;
+    const maxArtists = 20;
 
     const artists: Partial<Resource>[] = [];
 
     while (nextPageUrl && artists.length < maxArtists) {
       const res = await this._request(nextPageUrl);
 
-      for (const artist of res['items']) {
+      for (const artist of res.data['items']) {
         try {
           artists.push({
             resourceId: artist['id'],
-            provider: ResourceProviderEnum.SPOTIFY,
+            provider: ProviderEnum.SPOTIFY,
             type: ResourceTypeEnum.ARTIST,
             data: {
-              name: artist['name'],
+              title: artist['name'],
               imageUrl: artist['images'].length
                 ? artist['images'][0]['url']
                 : undefined,
@@ -130,26 +111,18 @@ export class SpotifyEtlService {
         }
       }
 
-      nextPageUrl = res['next'];
+      nextPageUrl = res.data['next'];
     }
 
     return artists;
   }
 
-  async synchronize(userId: string): Promise<void> {
-    await this._initialize(userId);
+  async getResources(userRefreshToken: string): Promise<Partial<Resource>[]> {
+    await this._initialize(userRefreshToken);
 
     const tracks = await this._getTopTracks();
     const artists = await this._getTopArtists();
-    const resources = [...tracks, ...artists];
 
-    await this.resourcesService.createMany(resources);
-
-    const interests: Partial<Interest>[] = resources.map((r) => ({
-      userId,
-      resourceId: r.resourceId,
-    }));
-
-    await this.interestsService.createMany(interests);
+    return [...tracks, ...artists];
   }
 }
