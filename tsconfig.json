@@ -12,12 +12,44 @@
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,    
+    "incremental": true,
     "strictNullChecks": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@Feature/providers": [
+        "libs/features/providers/src"
+      ],
+      "@Feature/providers/*": [
+        "libs/features/providers/src/*"
+      ],
+      "@Feature/interests": [
+        "libs/features/interests/src"
+      ],
+      "@Feature/interests/*": [
+        "libs/features/interests/src/*"
+      ],
+      "@Feature/resources": [
+        "libs/features/resources/src"
+      ],
+      "@Feature/resources/*": [
+        "libs/features/resources/src/*"
+      ],
+      "@Provider/spotify-sdk": [
+        "libs/providers/spotify-sdk/src"
+      ],
+      "@Provider/spotify-sdk/*": [
+        "libs/providers/spotify-sdk/src/*"
+      ],
+      "@Provider/queue": [
+        "libs/providers/queue/src"
+      ],
+      "@Provider/queue/*": [
+        "libs/providers/queue/src/*"
+      ]
+    }
   }
 }
