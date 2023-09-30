@@ -49,6 +49,12 @@
       ],
       "@Provider/queue/*": [
         "libs/providers/queue/src/*"
+      ],
+      "@Feature/recommendations": [
+        "libs/features/recommendations/src"
+      ],
+      "@Feature/recommendations/*": [
+        "libs/features/recommendations/src/*"
       ]
     }
   }

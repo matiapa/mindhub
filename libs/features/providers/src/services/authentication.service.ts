@@ -1,19 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProviderEnum } from '../enums/providers.enum';
 import { TokensRepository } from '../repositories/tokens.repository';
-import { QueueService } from '@Provider/queue';
 import { SpotifyAuthService } from '@Provider/spotify-sdk';
 import { SyncRequest } from '../entities/sync-request.entity';
+import { SynchronizationService } from './synchronization.service';
+import { ProvidersConfig } from '../providers.config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthenticationService {
+  private readonly logger = new Logger(AuthenticationService.name);
+
+  private config: ProvidersConfig;
+
   constructor(
     private readonly tokensRepo: TokensRepository,
     private readonly spotifyAuthService: SpotifyAuthService,
-    private readonly queueService: QueueService,
-  ) {}
-
-  private readonly logger = new Logger(AuthenticationService.name);
+    private readonly synchronizationService: SynchronizationService,
+    private readonly configService: ConfigService,
+  ) {
+    this.config = configService.get<ProvidersConfig>('providers')!;
+  }
 
   public getLoginUrl(provider: ProviderEnum): string {
     let url;
@@ -35,7 +42,7 @@ export class AuthenticationService {
   ) {
     if (!code && error) {
       return {
-        url: process.env.AUTH_CODE_REDEEM_REDIRECT_URI,
+        url: this.config.codeRedeemRedirectUrl,
         status: 'failed',
         reason: error,
       };
@@ -65,17 +72,14 @@ export class AuthenticationService {
       requester: 'authentication service',
     };
 
-    const messageId = await this.queueService.sendMessage(
-      process.env.PROVIDER_SYNC_QUEUE_URL!,
-      message,
-    );
+    const messageId = await this.synchronizationService.postRequest(message);
 
     this.logger.log(`Synchronization requested: MessageID=${messageId}`);
 
     // Return the result with redirect uri
 
     return {
-      url: process.env.AUTH_CODE_REDEEM_REDIRECT_URI!,
+      url: this.config.codeRedeemRedirectUrl,
       status: 'success',
     };
   }

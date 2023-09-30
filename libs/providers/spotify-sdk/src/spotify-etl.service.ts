@@ -3,6 +3,8 @@ import axios from 'axios';
 import { ProviderEnum } from '@Feature/providers';
 import { Resource } from '@Feature/resources';
 import { ResourceTypeEnum } from '@Feature/resources/enums';
+import { ConfigService } from '@nestjs/config';
+import { SpotifySdkConfig } from './spotify-sdk.config';
 
 @Injectable()
 export class SpotifyEtlService {
@@ -10,6 +12,12 @@ export class SpotifyEtlService {
   private scopes: string[];
 
   private readonly logger = new Logger(SpotifyEtlService.name);
+
+  private config: SpotifySdkConfig;
+
+  constructor(configService: ConfigService) {
+    this.config = configService.get<SpotifySdkConfig>('spotify')!;
+  }
 
   private _request(url: string) {
     return axios.get(url, {
@@ -21,7 +29,7 @@ export class SpotifyEtlService {
 
   private async _initialize(refreshToken: string) {
     const clientAuthToken = Buffer.from(
-      process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET,
+      this.config.clientId + ':' + this.config.clientSecret,
     ).toString('base64');
 
     const res = await axios({
@@ -41,7 +49,7 @@ export class SpotifyEtlService {
     this.scopes = res.data['scope'].split(' ');
   }
 
-  private async _getTopTracks(): Promise<Partial<Resource>[]> {
+  private async _getTopTracks(): Promise<Resource[]> {
     if (!this.scopes.includes('user-top-read')) {
       return [];
     }
@@ -49,7 +57,7 @@ export class SpotifyEtlService {
     let nextPageUrl = 'https://api.spotify.com/v1/me/top/tracks';
     const maxTracks = 20;
 
-    const tracks: Partial<Resource>[] = [];
+    const tracks: Resource[] = [];
 
     while (nextPageUrl && tracks.length < maxTracks) {
       const res = await this._request(nextPageUrl);
@@ -80,7 +88,7 @@ export class SpotifyEtlService {
     return tracks;
   }
 
-  private async _getTopArtists(): Promise<Partial<Resource>[]> {
+  private async _getTopArtists(): Promise<Resource[]> {
     if (!this.scopes.includes('user-top-read')) {
       return [];
     }
@@ -88,7 +96,7 @@ export class SpotifyEtlService {
     let nextPageUrl = 'https://api.spotify.com/v1/me/top/artists';
     const maxArtists = 20;
 
-    const artists: Partial<Resource>[] = [];
+    const artists: Resource[] = [];
 
     while (nextPageUrl && artists.length < maxArtists) {
       const res = await this._request(nextPageUrl);
@@ -118,7 +126,7 @@ export class SpotifyEtlService {
     return artists;
   }
 
-  async getResources(userRefreshToken: string): Promise<Partial<Resource>[]> {
+  async getResources(userRefreshToken: string): Promise<Resource[]> {
     await this._initialize(userRefreshToken);
 
     const tracks = await this._getTopTracks();

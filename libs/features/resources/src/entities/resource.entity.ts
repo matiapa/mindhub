@@ -5,7 +5,14 @@ import { Artist } from './artist.entity';
 import { Track } from './track.entity';
 import { ProviderEnum } from '@Feature/providers';
 
-export class Resource extends Item {
+export interface Resource {
+  resourceId: string;
+  provider: ProviderEnum;
+  type: ResourceTypeEnum;
+  data: Track | Artist;
+}
+
+export class ResourceItem extends Item implements Resource {
   resourceId: string;
   provider: ProviderEnum;
   type: ResourceTypeEnum;
@@ -18,13 +25,8 @@ const ResourceSchema = new dynamoose.Schema(
       type: String,
       hashKey: true,
     },
-    provider: {
-      type: String,
-      rangeKey: true,
-    },
-    data: {
-      type: Object,
-    },
+    provider: String,
+    data: Object,
   },
   {
     timestamps: true,
@@ -32,12 +34,9 @@ const ResourceSchema = new dynamoose.Schema(
   },
 );
 
-export const ResourceModel = dynamoose.model<Resource>(
-  'Resource',
-  ResourceSchema,
-  {
-    tableName: process.env.DYNAMO_RESOURCES_TABLE,
+export const resourceModelFactory = (tableName) =>
+  dynamoose.model<ResourceItem>('Resource', ResourceSchema, {
+    tableName,
     create: false,
     waitForActive: false,
-  },
-);
+  });

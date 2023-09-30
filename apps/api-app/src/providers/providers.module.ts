@@ -6,4 +6,4 @@ import { ProvidersModule } from '@Feature/providers';
   imports: [ProvidersModule],
   controllers: [SpotifyAuthController],
 })
-export class AuthenticationModule {}
+export class ApiProvidersModule {}

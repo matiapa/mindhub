@@ -27,8 +27,10 @@ const TokenSchema = new dynamoose.Schema(
   },
 );
 
-export const TokenModel = dynamoose.model<Token>('Token', TokenSchema, {
-  tableName: process.env.DYNAMO_PROVIDER_TOKENS_TABLE,
-  create: false,
-  waitForActive: false,
-});
+export const tokenModelFactory = (tableName: string) => {
+  return dynamoose.model<Token>('Token', TokenSchema, {
+    tableName,
+    create: false,
+    waitForActive: false,
+  });
+};
