@@ -8,6 +8,11 @@ custom:
   dynamo:
     usersTable: 'users-table'
     friendshipsTable: 'friendships-table'
+
+    # TODO: Move to other app
+    providerTokens: 'provider-tokens-table'
+    resourcesTable: 'resources-table'
+    interestsTable: 'interests-table'
   
   s3:
     picturesBucket: 'mindhub-pictures-bucket'
@@ -17,6 +22,13 @@ custom:
 
   ses:
     friendshipRequestsMailSender: 'notifications@mindhub.ar'
+
+  sqs:
+    providerSyncQueue:
+      name: 'provider-sync-queue'
+      dltName: 'provider-sync-dlt-queue'
+      maxRetries: 5
+      visibilityTimeoutSecs: 30
   
   esbuild: 
     bundle: true
@@ -65,11 +77,16 @@ provider:
     DYNAMO_USERS_TABLE: ${self:custom.dynamo.usersTable}
     DYNAMO_FRIENDSHIPS_TABLE: ${self:custom.dynamo.friendshipsTable}
 
+    # TODO: Move to other app
+    DYNAMO_PROVIDER_TOKENS_TABLE: ${self:custom.dynamo.providerTokens}
+    DYNAMO_RESOURCES_TABLE: ${self:custom.dynamo.resourcesTable}
+    DYNAMO_INTERESTS_TABLE: ${self:custom.dynamo.interestsTable}
+
     S3_PICTURES_BUCKET: ${self:custom.s3.picturesBucket}
     S3_PICTURE_UPLOAD_URL_TTL: ${self:custom.s3.pictureUploadUrlTTL}
     S3_PICTURE_DOWNLOAD_URL_TTL: ${self:custom.s3.pictureDownloadUrlTTL}
 
-    FRIENDSHIP_REQUESTS_SENDER_EMAIL: ${self:custo.ses.friendshipRequestsMailSender}
+    FRIENDSHIP_REQUESTS_SENDER_EMAIL: ${self:custom.ses.friendshipRequestsMailSender}
 
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     NODE_OPTIONS: --enable-source-maps --stack-trace-limit=1000
@@ -140,6 +157,74 @@ resources:
               - PUT
             AllowedOrigins:
               - ${self:custom.s3.allowedOrigins}
+
+    ProviderTokensTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo.providerTokens}
+        AttributeDefinitions: 
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: service
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: service
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+    # TODO: Move to other app
+    
+    ResourcesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo.resourcesTable}
+        AttributeDefinitions:
+          - AttributeName: resourceId
+            AttributeType: S 
+        KeySchema: 
+          - AttributeName: resourceId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    
+    InterestsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo.interestsTable}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S 
+          - AttributeName: resourceId
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: resourceId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+    ProviderSyncQueue:
+      Type: AWS::SQS::Queue
+      Properties: 
+        QueueName: ${self:custom.sqs.providerSyncQueue.name}
+        ReceiveMessageWaitTimeSeconds: 20 # Long polling
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt: [ ProviderSyncDLTQueue, Arn ]
+          maxReceiveCount: ${self:custom.sqs.providerSyncQueue.maxRetries}
+        VisibilityTimeout: ${self:custom.sqs.providerSyncQueue.visibilityTimeoutSecs}
+
+    ProviderSyncDLTQueue:
+      Type: AWS::SQS::Queue
+      Properties: 
+        QueueName: ${self:custom.sqs.providerSyncQueue.dltName}
+        ReceiveMessageWaitTimeSeconds: 20 # Long polling
+        # TODO: Circular dependency, by the moment allow all
+        # RedriveAllowPolicy:
+        #   redrivePermission: byQueue
+        #   sourceQueueArns:
+        #     - Fn::GetAtt: [ ProviderSyncQueue, Arn ]
     
 plugins:
   - serverless-offline
