@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ProviderEnum } from '../enums/providers.enum';
 import { TokensRepository } from '../repositories/tokens.repository';
 import { SpotifyAuthService } from '@Provider/spotify-sdk';
@@ -6,6 +11,7 @@ import { SyncRequest } from '../entities/sync-request.entity';
 import { SynchronizationService } from './synchronization.service';
 import { ProvidersConfig } from '../providers.config';
 import { ConfigService } from '@nestjs/config';
+import { RedeemCodeRes } from '@Provider/spotify-sdk/spotify-auth.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -22,11 +28,11 @@ export class AuthenticationService {
     this.config = configService.get<ProvidersConfig>('providers')!;
   }
 
-  public getLoginUrl(provider: ProviderEnum): string {
+  public getLoginUrl(forUserId: string, provider: ProviderEnum): string {
     let url;
 
     if (provider === ProviderEnum.SPOTIFY) {
-      url = this.spotifyAuthService.getLoginUrl();
+      url = this.spotifyAuthService.getLoginUrl(forUserId);
     } else {
       throw Error('Unkown provider');
     }
@@ -36,7 +42,8 @@ export class AuthenticationService {
 
   public async redeemCode(
     provider: ProviderEnum,
-    userId: string,
+    ofUserId: string,
+    state: string,
     code?: string,
     error?: string,
   ) {
@@ -48,26 +55,32 @@ export class AuthenticationService {
       };
     }
 
+    // If user id does not match state reject the request
+
+    if (state != ofUserId) {
+      throw new UnauthorizedException('Bad state');
+    }
+
     // Redeem the code using provider specific strategy
 
-    let res;
+    let res: RedeemCodeRes;
     if (provider === ProviderEnum.SPOTIFY) {
-      res = this.spotifyAuthService.redeemAuthCode(userId, code!);
+      res = await this.spotifyAuthService.redeemAuthCode(code!);
     } else {
-      throw Error('Unkown provider');
+      throw new BadRequestException('Unkown provider');
     }
 
     // Store the refresh token and scopes
 
-    await this.tokensRepo.update(userId, provider, {
-      refreshToken: res.data['refresh_token'],
-      scopes: res.data['scope'],
+    await this.tokensRepo.update(ofUserId, provider, {
+      refreshToken: res.refreshToken,
+      scopes: res.scopes,
     });
 
     // Queue a synchronization request
 
     const message: SyncRequest = {
-      userId,
+      userId: ofUserId,
       provider,
       requester: 'authentication service',
     };

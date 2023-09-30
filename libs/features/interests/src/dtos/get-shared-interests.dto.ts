@@ -11,11 +11,7 @@ import {
 export class GetSharedInterestsDto {
   @IsString()
   @IsNotEmpty()
-  userA: string;
-
-  @IsString()
-  @IsNotEmpty()
-  userB: string;
+  userId: string;
 
   @IsBoolean()
   @Transform(({ value }) => value === 'true')

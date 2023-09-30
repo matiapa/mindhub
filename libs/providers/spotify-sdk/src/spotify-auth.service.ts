@@ -3,6 +3,11 @@ import axios from 'axios';
 import { SpotifySdkConfig } from './spotify-sdk.config';
 import { ConfigService } from '@nestjs/config';
 
+export interface RedeemCodeRes {
+  refreshToken: string;
+  scopes: string;
+}
+
 @Injectable()
 export class SpotifyAuthService {
   private config: SpotifySdkConfig;
@@ -11,7 +16,7 @@ export class SpotifyAuthService {
     this.config = configService.get<SpotifySdkConfig>('spotify')!;
   }
 
-  getLoginUrl(): string {
+  getLoginUrl(forUserId: string): string {
     const scope = this.config.requestedScopes;
 
     return (
@@ -19,13 +24,14 @@ export class SpotifyAuthService {
       new URLSearchParams({
         response_type: 'code',
         client_id: this.config.clientId,
-        scope: scope,
         redirect_uri: this.config.authCodeRedeemUrl,
+        state: forUserId,
+        scope: scope,
       }).toString()
     );
   }
 
-  async redeemAuthCode(userId: string, code: string) {
+  async redeemAuthCode(code: string): Promise<RedeemCodeRes> {
     const clientAuthToken = Buffer.from(
       this.config.clientId + ':' + this.config.clientSecret,
     ).toString('base64');

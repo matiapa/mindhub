@@ -20,6 +20,18 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "paths": {
+      "@Feature/users": [
+        "libs/features/users/src"
+      ],
+      "@Feature/users/*": [
+        "libs/features/users/src/*"
+      ],
+      "@Feature/friendships": [
+        "libs/features/friendships/src"
+      ],
+      "@Feature/friendships/*": [
+        "libs/features/friendships/src/*"
+      ],
       "@Feature/providers": [
         "libs/features/providers/src"
       ],
@@ -38,6 +50,12 @@
       "@Feature/resources/*": [
         "libs/features/resources/src/*"
       ],
+      "@Feature/recommendations": [
+        "libs/features/recommendations/src"
+      ],
+      "@Feature/recommendations/*": [
+        "libs/features/recommendations/src/*"
+      ],
       "@Provider/spotify-sdk": [
         "libs/providers/spotify-sdk/src"
       ],
@@ -50,11 +68,23 @@
       "@Provider/queue/*": [
         "libs/providers/queue/src/*"
       ],
-      "@Feature/recommendations": [
-        "libs/features/recommendations/src"
+      "@Provider/mailing": [
+        "libs/providers/mailing/src"
       ],
-      "@Feature/recommendations/*": [
-        "libs/features/recommendations/src/*"
+      "@Provider/mailing/*": [
+        "libs/providers/mailing/src/*"
+      ],
+      "@Provider/storage": [
+        "libs/providers/storage/src"
+      ],
+      "@Provider/storage/*": [
+        "libs/providers/storage/src/*"
+      ],
+      "@Provider/authentication": [
+        "libs/providers/authentication/src"
+      ],
+      "@Provider/authentication/*": [
+        "libs/providers/authentication/src/*"
       ]
     }
   }

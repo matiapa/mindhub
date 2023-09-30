@@ -28,6 +28,24 @@
         "tsConfigPath": "apps/consumers-app/tsconfig.app.json"
       }
     },
+    "users": {
+      "type": "library",
+      "root": "libs/features/users",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/users/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/users/tsconfig.lib.json"
+      }
+    },
+    "friendships": {
+      "type": "library",
+      "root": "libs/features/friendships",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/friendships/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/friendships/tsconfig.lib.json"
+      }
+    },
     "providers": {
       "type": "library",
       "root": "libs/features/providers",
@@ -55,6 +73,15 @@
         "tsConfigPath": "libs/features/resources/tsconfig.lib.json"
       }
     },
+    "recommendations": {
+      "type": "library",
+      "root": "libs/features/recommendations",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/recommendations/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/recommendations/tsconfig.lib.json"
+      }
+    },
     "spotify-sdk": {
       "type": "library",
       "root": "libs/providers/spotify-sdk",
@@ -73,13 +100,31 @@
         "tsConfigPath": "libs/providers/queue/tsconfig.lib.json"
       }
     },
-    "recommendations": {
+    "mailing": {
       "type": "library",
-      "root": "libs/features/recommendations",
+      "root": "libs/providers/mailing",
       "entryFile": "index",
-      "sourceRoot": "libs/features/recommendations/src",
+      "sourceRoot": "libs/providers/mailing/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/features/recommendations/tsconfig.lib.json"
+        "tsConfigPath": "libs/providers/mailing/tsconfig.lib.json"
+      }
+    },
+    "storage": {
+      "type": "library",
+      "root": "libs/providers/storage",
+      "entryFile": "index",
+      "sourceRoot": "libs/providers/storage/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/providers/storage/tsconfig.lib.json"
+      }
+    },
+    "authentication": {
+      "type": "library",
+      "root": "libs/authentication",
+      "entryFile": "index",
+      "sourceRoot": "libs/providers/authentication/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/providers/authentication/tsconfig.lib.json"
       }
     }
   }

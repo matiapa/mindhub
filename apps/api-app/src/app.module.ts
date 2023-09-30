@@ -3,6 +3,8 @@ import { ApiProvidersModule } from './providers/providers.module';
 import { ApiInterestsModule } from './interests/interests.module';
 import { ConfigModule } from '@nestjs/config';
 import { validate } from './app.config';
+import { ApiUsersModule } from './users/users.module';
+import { ApiFriendshipsModule } from './friendships/friendships.module';
 
 @Module({
   imports: [
@@ -10,6 +12,8 @@ import { validate } from './app.config';
       validate,
       isGlobal: true,
     }),
+    ApiUsersModule,
+    ApiFriendshipsModule,
     ApiProvidersModule,
     ApiInterestsModule,
   ],
