@@ -1,11 +1,21 @@
+import { FriendshipsConfig } from '@Feature/friendships/friendships.config';
 import { InterestsConfig } from '@Feature/interests';
 import { ProvidersConfig } from '@Feature/providers';
 import { ResourcesConfig } from '@Feature/resources';
+import { UsersConfig } from '@Feature/users/users.config';
 import { SpotifySdkConfig } from '@Provider/spotify-sdk';
 import { Type, plainToInstance } from 'class-transformer';
 import { ValidateNested, validateSync } from 'class-validator';
 
 class AppConfig {
+  @Type(() => UsersConfig)
+  @ValidateNested()
+  users = new UsersConfig();
+
+  @Type(() => FriendshipsConfig)
+  @ValidateNested()
+  friendships = new FriendshipsConfig();
+
   @Type(() => InterestsConfig)
   @ValidateNested()
   interests = new InterestsConfig();

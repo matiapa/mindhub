@@ -20,54 +20,58 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { AuthenticationService } from '@Provider/authentication';
 
 @Controller('/interests')
 export class InterestsController {
-  constructor(private readonly interestsService: InterestsService) {}
+  constructor(
+    private readonly interestsService: InterestsService,
+    private readonly authService: AuthenticationService,
+  ) {}
 
   @Post('/')
   @ApiOperation({ summary: 'Create an interest relationship' })
   @ApiCreatedResponse({ description: 'OK' })
   async create(@Body() dto: CreateInterestDto): Promise<void> {
     return this.interestsService.create({
-      userId: dto.userId,
+      userId: this.authService.getAuthenticadedUserId(),
       resourceId: dto.resourceId,
     });
   }
 
   @Get('/shared')
-  @ApiOperation({ summary: 'Get resources on which two users share interest' })
+  @ApiOperation({
+    summary:
+      'Get interests of a user that are shared with the ones of the authenticated user',
+  })
   @ApiOkResponse({ description: 'OK', type: GetSharedInterestsResDto })
   getShared(
     @Query() dto: GetSharedInterestsDto,
   ): Promise<GetSharedInterestsResDto> {
     return this.interestsService.getSharedInterests(
-      dto.userA,
-      dto.userB,
+      this.authService.getAuthenticadedUserId(),
+      dto.userId,
       dto.includeResourceData,
     );
   }
 
-  @Get('/:userId')
-  @ApiOperation({ summary: 'Get the interests of a user' })
+  @Get('/me')
+  @ApiOperation({ summary: 'Get the interests of the authenticated user' })
   @ApiOkResponse({ description: 'OK', type: GetUserInterestsResDto })
-  getOwn(
-    @Param('userId') userId: string,
-    @Query() dto: GetUserInterestsDto,
-  ): Promise<GetUserInterestsResDto> {
+  getOwn(@Query() dto: GetUserInterestsDto): Promise<GetUserInterestsResDto> {
     return this.interestsService.getUserInterests(
-      userId,
+      this.authService.getAuthenticadedUserId(),
       dto.includeResourceData,
     );
   }
 
-  @Delete('/:userId/:resourceId')
+  @Delete('/resourceId')
   @ApiOperation({ summary: 'Delete an interest relationship' })
   @ApiCreatedResponse({ description: 'OK' })
-  async delete(
-    @Param('userId') userId: string,
-    @Param('resourceId') resourceId: string,
-  ): Promise<void> {
-    return this.interestsService.remove(userId, resourceId);
+  async delete(@Param('resourceId') resourceId: string): Promise<void> {
+    return this.interestsService.remove(
+      this.authService.getAuthenticadedUserId(),
+      resourceId,
+    );
   }
 }
