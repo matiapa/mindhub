@@ -1,17 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Interest } from './interest.entity';
 import { InterestsRepository } from './interests.repository';
+import { ResourcesService } from '@Feature/resources';
+import { GetUserInterestsResDto } from './dtos/get-user-interests.dto';
+import { GetSharedInterestsResDto } from './dtos/get-shared-interests.dto';
 
 @Injectable()
 export class InterestsService {
-  constructor(private readonly interestsRepo: InterestsRepository) {}
+  constructor(
+    private readonly interestsRepo: InterestsRepository,
+    private readonly resourcesService: ResourcesService,
+  ) {}
 
-  async createMany(interests: Partial<Interest>[]): Promise<void> {
+  async create(interest: Interest): Promise<void> {
+    const resource = await this.resourcesService.getById(interest.resourceId!);
+    if (!resource) {
+      throw new BadRequestException('The given resource id does not exist');
+    }
+    return this.interestsRepo.create(interest);
+  }
+
+  async createMany(interests: Interest[]): Promise<void> {
     return this.interestsRepo.createMany(interests);
   }
 
-  async getByUser(userId: string): Promise<Interest[]> {
-    return this.interestsRepo.getByUser(userId);
+  async getUserInterests(
+    userId: string,
+    includeResourceData: boolean,
+  ): Promise<GetUserInterestsResDto> {
+    const interests = await this.interestsRepo.getByUser(userId);
+
+    let resources;
+    if (includeResourceData) {
+      resources = await this.resourcesService.getByIds(
+        interests.map((i) => i.resourceId),
+      );
+    }
+
+    return {
+      interests,
+      resources,
+    };
+  }
+
+  async getSharedInterests(
+    userA: string,
+    userB: string,
+    includeResourceData: boolean,
+  ): Promise<GetSharedInterestsResDto> {
+    const interestsUserA = await this.interestsRepo.getByUser(userA);
+    const interestsUserB = await this.interestsRepo.getByUser(userB);
+
+    const resourceIdsUserA = interestsUserA.map((i) => i.resourceId);
+    const resourceIdsUserB = interestsUserB.map((i) => i.resourceId);
+
+    const sharedResourceIds: string[] = [];
+    for (const ownResourceId of resourceIdsUserA) {
+      if (resourceIdsUserB.includes(ownResourceId)) {
+        sharedResourceIds.push(ownResourceId);
+      }
+    }
+
+    if (!includeResourceData) {
+      return {
+        resourceIds: sharedResourceIds,
+      };
+    }
+
+    const resources = await this.resourcesService.getByIds(sharedResourceIds);
+    return {
+      resources,
+    };
   }
 
   async remove(userId: string, resourceId: string): Promise<void> {

@@ -1,11 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Token, TokenModel } from '../entities/tokens.entity';
+import { Token, tokenModelFactory } from '../entities/tokens.entity';
 import { ProviderEnum } from '../enums/providers.enum';
+import { ModelType } from 'dynamoose/dist/General';
+import { ConfigService } from '@nestjs/config';
+import { ProvidersConfig } from '../providers.config';
 
 @Injectable()
 export class TokensRepository {
+  private model: ModelType<Token>;
+
+  constructor(configService: ConfigService) {
+    const config = configService.get<ProvidersConfig>('providers')!;
+    this.model = tokenModelFactory(config.tokensTableName);
+  }
+
   create(token: Partial<Token>): Promise<Token> {
-    return TokenModel.create(token);
+    return this.model.create(token);
   }
 
   update(
@@ -13,14 +23,14 @@ export class TokensRepository {
     service: ProviderEnum,
     token: Partial<Token>,
   ): Promise<Token> {
-    return TokenModel.update({ userId, service }, token);
+    return this.model.update({ userId, service }, token);
   }
 
   getOne(userId: string, service: ProviderEnum): Promise<Token> {
-    return TokenModel.get({ userId, service });
+    return this.model.get({ userId, service });
   }
 
   remove(userId: string, service: ProviderEnum): Promise<void> {
-    return TokenModel.delete({ userId, service });
+    return this.model.delete({ userId, service });
   }
 }

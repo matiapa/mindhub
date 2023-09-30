@@ -6,7 +6,7 @@ import { ResourcesRepository } from './resources.repository';
 export class ResourcesService {
   constructor(private readonly resourcesRepo: ResourcesRepository) {}
 
-  async createMany(resources: Partial<Resource>[]): Promise<void> {
+  async createMany(resources: Resource[]): Promise<void> {
     return this.resourcesRepo.createMany(resources);
   }
 

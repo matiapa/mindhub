@@ -1,9 +1,16 @@
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 
-export class Interest extends Item {
+export interface Interest {
   userId: string;
   resourceId: string;
+  relevance?: number;
+}
+
+export class InterestItem extends Item implements Interest {
+  userId: string;
+  resourceId: string;
+  relevance?: number;
 }
 
 const InterestSchema = new dynamoose.Schema(
@@ -16,18 +23,16 @@ const InterestSchema = new dynamoose.Schema(
       type: String,
       rangeKey: true,
     },
+    relevance: Number,
   },
   {
     timestamps: true,
   },
 );
 
-export const InterestModel = dynamoose.model<Interest>(
-  'Interest',
-  InterestSchema,
-  {
-    tableName: process.env.DYNAMO_INTERESTS_TABLE,
+export const interestModelFactory = (tableName) =>
+  dynamoose.model<InterestItem>('Interest', InterestSchema, {
+    tableName,
     create: false,
     waitForActive: false,
-  },
-);
+  });

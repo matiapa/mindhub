@@ -72,6 +72,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/providers/queue/tsconfig.lib.json"
       }
+    },
+    "recommendations": {
+      "type": "library",
+      "root": "libs/features/recommendations",
+      "entryFile": "index",
+      "sourceRoot": "libs/features/recommendations/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/features/recommendations/tsconfig.lib.json"
+      }
     }
   }
 }

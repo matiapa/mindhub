@@ -1,25 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { SpotifySdkConfig } from './spotify-sdk.config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SpotifyAuthService {
+  private config: SpotifySdkConfig;
+
+  constructor(configService: ConfigService) {
+    this.config = configService.get<SpotifySdkConfig>('spotify')!;
+  }
+
   getLoginUrl(): string {
-    const scope = process.env.SPOTIFY_REQUESTED_SCOPES!;
+    const scope = this.config.requestedScopes;
 
     return (
       'https://accounts.spotify.com/authorize?' +
       new URLSearchParams({
         response_type: 'code',
-        client_id: process.env.SPOTIFY_CLIENT_ID!,
+        client_id: this.config.clientId,
         scope: scope,
-        redirect_uri: process.env.SPOTIFY_AUTH_CODE_REDEEM_URI!,
+        redirect_uri: this.config.authCodeRedeemUrl,
       }).toString()
     );
   }
 
   async redeemAuthCode(userId: string, code: string) {
     const clientAuthToken = Buffer.from(
-      process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET,
+      this.config.clientId + ':' + this.config.clientSecret,
     ).toString('base64');
 
     const res = await axios({
@@ -27,7 +35,7 @@ export class SpotifyAuthService {
       url: 'https://accounts.spotify.com/api/token',
       data: new URLSearchParams({
         code: code!,
-        redirect_uri: process.env.SPOTIFY_AUTH_CODE_REDEEM_URI!,
+        redirect_uri: this.config.authCodeRedeemUrl,
         grant_type: 'authorization_code',
       }).toString(),
       headers: {

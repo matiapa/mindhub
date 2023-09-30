@@ -27,7 +27,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.0.0",
-    "@nestjs/swagger": "^7.1.11",
+    "@nestjs/swagger": "^7.1.12",
     "@vendia/serverless-express": "^4.10.4",
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1459.0",
@@ -94,7 +94,8 @@
       "^@Feature/interests(|/.*)$": "<rootDir>/libs/features/interests/src/$1",
       "^@Feature/resources(|/.*)$": "<rootDir>/libs/features/resources/src/$1",
       "^@Provider/spotify-sdk(|/.*)$": "<rootDir>/libs/providers/spotify-sdk/src/$1",
-      "^@Provider/queue(|/.*)$": "<rootDir>/libs/providers/queue/src/$1"
+      "^@Provider/queue(|/.*)$": "<rootDir>/libs/providers/queue/src/$1",
+      "^@Feature/recommendations(|/.*)$": "<rootDir>/libs/features/recommendations/src/$1"
     }
   }
 }
