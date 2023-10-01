@@ -8,6 +8,7 @@ import { SyncRequest } from '../entities/sync-request.entity';
 import { QueueService } from '@Provider/queue';
 import { ConfigService } from '@nestjs/config';
 import { ProvidersConfig } from '../providers.config';
+import { InterestRelevance } from '@Feature/interests/interest.entity';
 
 @Injectable()
 export class SynchronizationService {
@@ -60,9 +61,12 @@ export class SynchronizationService {
 
     // Create interest relations between the user and the resources
 
+    // TODO: Providers should return interest relevance
+
     const interests: Interest[] = resources.map((r) => ({
       userId: request.userId,
       resourceId: r.resourceId,
+      relevance: InterestRelevance.NORMAL,
     }));
 
     await this.interestsService.createMany(interests);

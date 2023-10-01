@@ -37,7 +37,7 @@ export class FriendshipsController {
   })
   @ApiOkResponse({ description: 'OK', type: Array<SharedUserInfo> })
   getFriendships(@Query() dto: GetFriendshipsDto): Promise<SharedUserInfo[]> {
-    return this.friendshipsService.getFriendships(
+    return this.friendshipsService.getFriendshipsWithUserInfo(
       this.authService.getAuthenticadedUserId(),
       dto.type,
       {

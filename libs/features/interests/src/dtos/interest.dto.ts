@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
-import { Interest } from '../interest.entity';
+import { Interest, InterestRelevance } from '../interest.entity';
 
 export class InterestDto implements Interest {
   @IsString()
@@ -11,5 +11,5 @@ export class InterestDto implements Interest {
   resourceId: string;
 
   @IsNumber()
-  relevance?: number;
+  relevance: InterestRelevance;
 }

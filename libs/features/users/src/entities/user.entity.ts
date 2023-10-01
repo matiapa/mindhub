@@ -1,3 +1,5 @@
+import { ResourceType } from '@Feature/resources/enums';
+import { ResourceTypeRelevance } from '@Feature/resources/enums/resource-type-relevance.enum';
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 
@@ -5,6 +7,13 @@ export enum Gender {
   MAN = 'man',
   WOMAN = 'woman',
   OTHER = 'other',
+}
+
+export interface UserFilters {
+  minBirthday: number;
+  maxBirthday: number;
+  minLastConnectionDate: number;
+  gender: Gender;
 }
 
 export interface User {
@@ -24,6 +33,11 @@ export interface User {
     long?: number;
     date: string;
   };
+
+  preferences?: {
+    filters?: UserFilters;
+    typeRelevances?: Map<ResourceType, ResourceTypeRelevance>;
+  };
 }
 
 export class UserItem extends Item implements User {
@@ -42,6 +56,11 @@ export class UserItem extends Item implements User {
     lat?: number;
     long?: number;
     date: string;
+  };
+
+  preferences?: {
+    filters?: UserFilters;
+    typeRelevances?: Map<ResourceType, ResourceTypeRelevance>;
   };
 }
 
@@ -67,6 +86,13 @@ const UserSchema = new dynamoose.Schema(
         lat: Number,
         long: Number,
         date: String,
+      },
+    },
+    preferences: {
+      type: Object,
+      schema: {
+        filters: Object,
+        typeRelevances: Object,
       },
     },
   },

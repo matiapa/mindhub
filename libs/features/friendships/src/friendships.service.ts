@@ -93,8 +93,7 @@ export class FriendshipsService {
   async getFriendships(
     ofUserId: string,
     type: FriendshipType,
-    userInfoConfig: SharedUserInfoConfig,
-  ): Promise<SharedUserInfo[]> {
+  ): Promise<string[]> {
     let counterpartiesIds: string[];
 
     if (type === FriendshipType.PROPOSED) {
@@ -132,6 +131,16 @@ export class FriendshipsService {
     }
 
     // Map the list of IDs to actual UserInfo objects
+
+    return counterpartiesIds;
+  }
+
+  async getFriendshipsWithUserInfo(
+    ofUserId: string,
+    type: FriendshipType,
+    userInfoConfig: SharedUserInfoConfig,
+  ): Promise<SharedUserInfo[]> {
+    const counterpartiesIds = await this.getFriendships(ofUserId, type);
 
     return this.usersService.getManySharedUserInfo(
       counterpartiesIds,

@@ -1,6 +1,6 @@
 import { ProviderEnum } from '@Feature/providers';
 import { Artist, Resource, Track } from '../entities';
-import { ResourceTypeEnum } from '../enums';
+import { ResourceType } from '../enums';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class ResourceDto implements Resource {
@@ -12,9 +12,9 @@ export class ResourceDto implements Resource {
   @IsNotEmpty()
   provider: ProviderEnum;
 
-  @IsEnum(ResourceTypeEnum)
+  @IsEnum(ResourceType)
   @IsNotEmpty()
-  type: ResourceTypeEnum;
+  type: ResourceType;
 
   @IsNotEmpty()
   data: Track | Artist;
