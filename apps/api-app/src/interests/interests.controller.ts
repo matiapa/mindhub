@@ -36,6 +36,7 @@ export class InterestsController {
     return this.interestsService.create({
       userId: this.authService.getAuthenticadedUserId(),
       resourceId: dto.resourceId,
+      relevance: dto.relevance,
     });
   }
 
@@ -51,7 +52,6 @@ export class InterestsController {
     return this.interestsService.getSharedInterests(
       this.authService.getAuthenticadedUserId(),
       dto.userId,
-      dto.includeResourceData,
     );
   }
 

@@ -3,7 +3,10 @@ import { Interest } from './interest.entity';
 import { InterestsRepository } from './interests.repository';
 import { ResourcesService } from '@Feature/resources';
 import { GetUserInterestsResDto } from './dtos/get-user-interests.dto';
-import { GetSharedInterestsResDto } from './dtos/get-shared-interests.dto';
+import {
+  GetSharedInterestsResDto,
+  SharedInterestDto,
+} from './dtos/get-shared-interests.dto';
 
 @Injectable()
 export class InterestsService {
@@ -46,7 +49,6 @@ export class InterestsService {
   async getSharedInterests(
     userA: string,
     userB: string,
-    includeResourceData: boolean,
   ): Promise<GetSharedInterestsResDto> {
     const interestsUserA = await this.interestsRepo.getByUser(userA);
     const interestsUserB = await this.interestsRepo.getByUser(userB);
@@ -61,16 +63,22 @@ export class InterestsService {
       }
     }
 
-    if (!includeResourceData) {
-      return {
-        resourceIds: sharedResourceIds,
-      };
+    const resources = await this.resourcesService.getByIds(sharedResourceIds);
+
+    const sharedInterests: SharedInterestDto[] = [];
+    for (const sharedResourceId of sharedResourceIds) {
+      sharedInterests.push({
+        relevanceForUserA: interestsUserA.find(
+          (i) => i.resourceId == sharedResourceId,
+        )!.relevance,
+        relevanceForUserB: interestsUserB.find(
+          (i) => i.resourceId == sharedResourceId,
+        )!.relevance,
+        resource: resources.find((r) => r.resourceId == sharedResourceId)!,
+      });
     }
 
-    const resources = await this.resourcesService.getByIds(sharedResourceIds);
-    return {
-      resources,
-    };
+    return { sharedInterests };
   }
 
   async remove(userId: string, resourceId: string): Promise<void> {

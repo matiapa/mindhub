@@ -1,16 +1,21 @@
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 
+export enum InterestRelevance {
+  NORMAL = 'normal',
+  FAVORITE = 'favorite',
+}
+
 export interface Interest {
   userId: string;
   resourceId: string;
-  relevance?: number;
+  relevance: InterestRelevance;
 }
 
 export class InterestItem extends Item implements Interest {
   userId: string;
   resourceId: string;
-  relevance?: number;
+  relevance: InterestRelevance;
 }
 
 const InterestSchema = new dynamoose.Schema(
@@ -23,7 +28,7 @@ const InterestSchema = new dynamoose.Schema(
       type: String,
       rangeKey: true,
     },
-    relevance: Number,
+    relevance: String,
   },
   {
     timestamps: true,

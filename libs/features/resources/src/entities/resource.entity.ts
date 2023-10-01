@@ -1,4 +1,4 @@
-import { ResourceTypeEnum } from '../enums';
+import { ResourceType } from '../enums';
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 import { Artist } from './artist.entity';
@@ -8,14 +8,14 @@ import { ProviderEnum } from '@Feature/providers';
 export interface Resource {
   resourceId: string;
   provider: ProviderEnum;
-  type: ResourceTypeEnum;
+  type: ResourceType;
   data: Track | Artist;
 }
 
 export class ResourceItem extends Item implements Resource {
   resourceId: string;
   provider: ProviderEnum;
-  type: ResourceTypeEnum;
+  type: ResourceType;
   data: Track | Artist;
 }
 
@@ -26,6 +26,7 @@ const ResourceSchema = new dynamoose.Schema(
       hashKey: true,
     },
     provider: String,
+    type: String,
     data: Object,
   },
   {

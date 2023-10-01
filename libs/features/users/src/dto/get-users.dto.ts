@@ -9,8 +9,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Gender } from '../entities/user.entity';
-import { ResourceDto } from '@Feature/resources';
 import { Type } from 'class-transformer';
+import { SharedInterestDto } from '@Feature/interests';
 
 export enum OptUserInfoFields {
   DISTANCE = 'distance',
@@ -60,9 +60,9 @@ export class SharedUserInfo {
   pictureUrl?: string;
 
   @IsArray()
-  @Type(() => ResourceDto)
+  @Type(() => SharedInterestDto)
   @ValidateNested({ each: true })
-  sharedInterests?: ResourceDto[];
+  sharedInterests?: SharedInterestDto[];
 }
 
 export class GetUserResDto extends SharedUserInfo {}

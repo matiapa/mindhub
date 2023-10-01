@@ -1,4 +1,4 @@
-export enum ResourceTypeEnum {
+export enum ResourceType {
   TRACK = 'track',
   ARTIST = 'artist',
 }

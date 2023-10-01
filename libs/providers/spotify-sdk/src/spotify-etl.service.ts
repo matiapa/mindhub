@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ProviderEnum } from '@Feature/providers';
 import { Resource } from '@Feature/resources';
-import { ResourceTypeEnum } from '@Feature/resources/enums';
+import { ResourceType } from '@Feature/resources/enums';
 import { ConfigService } from '@nestjs/config';
 import { SpotifySdkConfig } from './spotify-sdk.config';
 
@@ -67,7 +67,7 @@ export class SpotifyEtlService {
           tracks.push({
             resourceId: track['id'],
             provider: ProviderEnum.SPOTIFY,
-            type: ResourceTypeEnum.TRACK,
+            type: ResourceType.TRACK,
             data: {
               artistId: track['artists'][0]['id'],
               title: track['name'],
@@ -106,7 +106,7 @@ export class SpotifyEtlService {
           artists.push({
             resourceId: artist['id'],
             provider: ProviderEnum.SPOTIFY,
-            type: ResourceTypeEnum.ARTIST,
+            type: ResourceType.ARTIST,
             data: {
               title: artist['name'],
               imageUrl: artist['images'].length

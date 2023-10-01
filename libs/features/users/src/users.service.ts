@@ -11,14 +11,13 @@ import {
   SharedUserInfoConfig,
   OptUserInfoFields,
 } from './dto';
-import { User } from './entities';
+import { User, UserFilters } from './entities';
 import { UsersRepository } from './users.repository';
 import { UsersConfig } from './users.config';
 import { getDistanceInKm } from 'libs/utils';
 import { StorageService } from '@Provider/storage';
 import { AuthenticationService } from '@Provider/authentication';
-import { ResourceDto } from '@Feature/resources';
-import { InterestsService } from '@Feature/interests';
+import { InterestsService, SharedInterestDto } from '@Feature/interests';
 
 @Injectable()
 export class UsersService {
@@ -85,6 +84,12 @@ export class UsersService {
       this.config.pictureUploadUrlTtl,
       dto.fileMime,
     );
+  }
+
+  public async getAllUserIds(filter?: UserFilters): Promise<string[]> {
+    // TODO: This method is temporal because its needed for the recommendation service
+    // until the Big Five model is ready, once it is implemented this has to be removed
+    return this.usersRepo.getAllIds(filter);
   }
 
   public async getUserEntity(id: string): Promise<User | undefined> {
@@ -156,14 +161,13 @@ export class UsersService {
       );
     }
 
-    let sharedInterests: ResourceDto[] | undefined;
+    let sharedInterests: SharedInterestDto[] | undefined;
     if (config.optionalFields.includes(OptUserInfoFields.SHARED_INTERESTS)) {
       const res = await this.interestsService.getSharedInterests(
         user._id,
         withUserId,
-        true,
       );
-      sharedInterests = res.resources!;
+      sharedInterests = res.sharedInterests;
     }
 
     return {
