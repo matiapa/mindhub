@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ProviderEnum } from '@Feature/providers';
-import { Resource } from '@Feature/resources';
-import { ResourceType } from '@Feature/resources/enums';
 import { ConfigService } from '@nestjs/config';
 import { SpotifySdkConfig } from './spotify-sdk.config';
+import { Interest } from '@Feature/interests';
+import { InterestRelevance } from '@Feature/interests/entities/interest.entity';
+import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
 
 @Injectable()
 export class SpotifyEtlService {
@@ -49,7 +50,7 @@ export class SpotifyEtlService {
     this.scopes = res.data['scope'].split(' ');
   }
 
-  private async _getTopTracks(): Promise<Resource[]> {
+  private async _getTopTracks(userId: string): Promise<Interest[]> {
     if (!this.scopes.includes('user-top-read')) {
       return [];
     }
@@ -57,7 +58,7 @@ export class SpotifyEtlService {
     let nextPageUrl = 'https://api.spotify.com/v1/me/top/tracks';
     const maxTracks = 20;
 
-    const tracks: Resource[] = [];
+    const tracks: Interest[] = [];
 
     while (nextPageUrl && tracks.length < maxTracks) {
       const res = await this._request(nextPageUrl);
@@ -65,15 +66,13 @@ export class SpotifyEtlService {
       for (const track of res.data['items']) {
         try {
           tracks.push({
-            resourceId: track['id'],
+            userId,
             provider: ProviderEnum.SPOTIFY,
-            type: ResourceType.TRACK,
-            data: {
-              artistId: track['artists'][0]['id'],
-              title: track['name'],
-              imageUrl: track['album']['images'].length
-                ? track['album']['images'][0]['url']
-                : undefined,
+            relevance: InterestRelevance.NORMAL,
+            resourceId: track['id'],
+            resource: {
+              name: track['name'],
+              type: ResourceType.TRACK,
             },
           });
         } catch (error) {
@@ -88,7 +87,7 @@ export class SpotifyEtlService {
     return tracks;
   }
 
-  private async _getTopArtists(): Promise<Resource[]> {
+  private async _getTopArtists(userId: string): Promise<Interest[]> {
     if (!this.scopes.includes('user-top-read')) {
       return [];
     }
@@ -96,7 +95,7 @@ export class SpotifyEtlService {
     let nextPageUrl = 'https://api.spotify.com/v1/me/top/artists';
     const maxArtists = 20;
 
-    const artists: Resource[] = [];
+    const artists: Interest[] = [];
 
     while (nextPageUrl && artists.length < maxArtists) {
       const res = await this._request(nextPageUrl);
@@ -104,14 +103,13 @@ export class SpotifyEtlService {
       for (const artist of res.data['items']) {
         try {
           artists.push({
-            resourceId: artist['id'],
+            userId,
             provider: ProviderEnum.SPOTIFY,
-            type: ResourceType.ARTIST,
-            data: {
-              title: artist['name'],
-              imageUrl: artist['images'].length
-                ? artist['images'][0]['url']
-                : undefined,
+            relevance: InterestRelevance.NORMAL,
+            resourceId: artist['id'],
+            resource: {
+              name: artist['name'],
+              type: ResourceType.TRACK,
             },
           });
         } catch (error) {
@@ -126,11 +124,14 @@ export class SpotifyEtlService {
     return artists;
   }
 
-  async getResources(userRefreshToken: string): Promise<Resource[]> {
+  async getInterests(
+    userId: string,
+    userRefreshToken: string,
+  ): Promise<Interest[]> {
     await this._initialize(userRefreshToken);
 
-    const tracks = await this._getTopTracks();
-    const artists = await this._getTopArtists();
+    const tracks = await this._getTopTracks(userId);
+    const artists = await this._getTopArtists(userId);
 
     return [...tracks, ...artists];
   }

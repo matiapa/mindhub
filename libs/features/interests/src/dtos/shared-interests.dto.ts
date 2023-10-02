@@ -1,4 +1,3 @@
-import { ResourceDto } from '@Feature/resources';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -8,7 +7,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { InterestRelevance } from '../interest.entity';
+import { InterestRelevance } from '../entities/interest.entity';
+import { ResourceDto } from './interest.dto';
 
 export class GetSharedInterestsDto {
   @IsString()

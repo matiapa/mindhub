@@ -1,9 +1,9 @@
 import { FriendshipType } from '@Feature/friendships/dtos';
 import { FriendshipsService } from '@Feature/friendships/friendships.service';
 import { InterestsService } from '@Feature/interests';
-import { InterestRelevance } from '@Feature/interests/interest.entity';
-import { ResourceType } from '@Feature/resources/enums';
-import { ResourceTypeRelevance } from '@Feature/resources/enums/resource-type-relevance.enum';
+import { InterestRelevance } from '@Feature/interests/entities/interest.entity';
+import { ResourceTypeRelevance } from '@Feature/interests/enums/resource-type-relevance.enum';
+import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
 import { UsersService } from '@Feature/users';
 import { Injectable } from '@nestjs/common';
 
