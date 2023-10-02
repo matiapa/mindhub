@@ -3,7 +3,7 @@ import {
   Interest,
   InterestItem,
   interestModelFactory,
-} from './interest.entity';
+} from './entities/interest.entity';
 import { ModelType } from 'dynamoose/dist/General';
 import { InterestsConfig } from './interests.config';
 import { ConfigService } from '@nestjs/config';

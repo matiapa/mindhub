@@ -1,12 +1,4 @@
 import {
-  InterestsService,
-  CreateInterestDto,
-  GetSharedInterestsDto,
-  GetUserInterestsDto,
-  GetSharedInterestsResDto,
-  GetUserInterestsResDto,
-} from '@Feature/interests';
-import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -21,6 +13,15 @@ import {
   Query,
 } from '@nestjs/common';
 import { AuthenticationService } from '@Provider/authentication';
+import {
+  InterestsService,
+  GetSharedInterestsResDto,
+  GetSharedInterestsDto,
+} from '@Feature/interests';
+import {
+  CreateInterestDto,
+  GetInterestsResDto,
+} from '@Feature/interests/dtos/interest.dto';
 
 @Controller('/interests')
 export class InterestsController {
@@ -37,6 +38,8 @@ export class InterestsController {
       userId: this.authService.getAuthenticadedUserId(),
       resourceId: dto.resourceId,
       relevance: dto.relevance,
+      provider: dto.provider,
+      resource: dto.resource,
     });
   }
 
@@ -57,11 +60,10 @@ export class InterestsController {
 
   @Get('/me')
   @ApiOperation({ summary: 'Get the interests of the authenticated user' })
-  @ApiOkResponse({ description: 'OK', type: GetUserInterestsResDto })
-  getOwn(@Query() dto: GetUserInterestsDto): Promise<GetUserInterestsResDto> {
+  @ApiOkResponse({ description: 'OK', type: GetInterestsResDto })
+  getOwn(): Promise<GetInterestsResDto> {
     return this.interestsService.getUserInterests(
       this.authService.getAuthenticadedUserId(),
-      dto.includeResourceData,
     );
   }
 

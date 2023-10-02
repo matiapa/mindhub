@@ -1,5 +1,5 @@
-import { ResourceType } from '@Feature/resources/enums';
-import { ResourceTypeRelevance } from '@Feature/resources/enums/resource-type-relevance.enum';
+import { ResourceTypeRelevance } from '@Feature/interests/enums/resource-type-relevance.enum';
+import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 
