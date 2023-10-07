@@ -2,9 +2,10 @@ import { FriendshipsConfig } from '@Feature/friendships/friendships.config';
 import { InterestsConfig } from '@Feature/interests';
 import { ProvidersConfig } from '@Feature/providers';
 import { UsersConfig } from '@Feature/users/users.config';
-import { SpotifySdkConfig } from '@Provider/spotify-sdk';
+import { SpotifyConfig } from 'libs/providers/spotify/src';
 import { Type, plainToInstance } from 'class-transformer';
 import { ValidateNested, validateSync } from 'class-validator';
+import { TextsConfig } from '@Feature/texts';
 
 class AppConfig {
   @Type(() => UsersConfig)
@@ -19,13 +20,17 @@ class AppConfig {
   @ValidateNested()
   interests = new InterestsConfig();
 
+  @Type(() => TextsConfig)
+  @ValidateNested()
+  texts = new TextsConfig();
+
   @Type(() => ProvidersConfig)
   @ValidateNested()
   providers = new ProvidersConfig();
 
-  @Type(() => SpotifySdkConfig)
+  @Type(() => SpotifyConfig)
   @ValidateNested()
-  spotify = new SpotifySdkConfig();
+  spotify = new SpotifyConfig();
 }
 
 export const validate = (config: typeof process.env) => {

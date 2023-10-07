@@ -11,7 +11,7 @@ export class RecommendationsController {
 
   @Get('/')
   getRecommendations() {
-    return this.recommendationsService.getReccomendations(
+    return this.recommendationsService.generateRecommendations(
       this.authService.getAuthenticadedUserId(),
     );
   }

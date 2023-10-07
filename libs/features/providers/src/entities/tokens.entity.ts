@@ -2,7 +2,14 @@ import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 import { ProviderEnum } from '../enums/providers.enum';
 
-export class Token extends Item {
+export interface Token {
+  userId: string;
+  service: ProviderEnum;
+  refreshToken: string;
+  scopes: string;
+}
+
+export class TokenItem extends Item implements Token {
   userId: string;
   service: ProviderEnum;
   refreshToken: string;
@@ -28,7 +35,7 @@ const TokenSchema = new dynamoose.Schema(
 );
 
 export const tokenModelFactory = (tableName: string) => {
-  return dynamoose.model<Token>('Token', TokenSchema, {
+  return dynamoose.model<TokenItem>('Token', TokenSchema, {
     tableName,
     create: false,
     waitForActive: false,

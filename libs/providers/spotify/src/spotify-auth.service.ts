@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { SpotifySdkConfig } from './spotify-sdk.config';
+import { SpotifyConfig } from './spotify.config';
 import { ConfigService } from '@nestjs/config';
-
-export interface RedeemCodeRes {
-  refreshToken: string;
-  scopes: string;
-}
+import { ProviderAuthService } from '@Feature/providers/types/provider.interface';
+import { Token } from '@Feature/providers/entities/tokens.entity';
+import { ProviderEnum } from '@Feature/providers';
 
 @Injectable()
-export class SpotifyAuthService {
-  private config: SpotifySdkConfig;
+export class SpotifyAuthService implements ProviderAuthService {
+  public providerName: ProviderEnum = ProviderEnum.SPOTIFY;
+
+  private config: SpotifyConfig;
 
   constructor(configService: ConfigService) {
-    this.config = configService.get<SpotifySdkConfig>('spotify')!;
+    this.config = configService.get<SpotifyConfig>('spotify')!;
   }
 
   getLoginUrl(forUserId: string): string {
@@ -31,7 +31,7 @@ export class SpotifyAuthService {
     );
   }
 
-  async redeemAuthCode(code: string): Promise<RedeemCodeRes> {
+  async redeemAuthCode(ofUserId: string, code: string): Promise<Token> {
     const clientAuthToken = Buffer.from(
       this.config.clientId + ':' + this.config.clientSecret,
     ).toString('base64');
@@ -51,6 +51,8 @@ export class SpotifyAuthService {
     });
 
     return {
+      userId: ofUserId,
+      service: ProviderEnum.SPOTIFY,
       refreshToken: res.data['refresh_token'],
       scopes: res.data['scope'],
     };

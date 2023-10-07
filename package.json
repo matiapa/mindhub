@@ -19,7 +19,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/users/test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/users/test/jest-e2e.json",
+    "check-types": "tsc --noEmit -p ./tsconfig.json"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -34,9 +35,11 @@
     "dotenv": "^16.3.1",
     "dynamoose": "^3.2.1",
     "express": "^4.18.2",
+    "moment": "^2.29.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "sqs-consumer": "^7.3.0"
+    "sqs-consumer": "^7.3.0",
+    "yauzl": "^2.10.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -46,6 +49,7 @@
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@types/supertest": "^2.0.12",
+    "@types/yauzl": "^2.10.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.42.0",
@@ -86,9 +90,10 @@
       "^@Feature/friendships(|/.*)$": "<rootDir>/libs/features/friendships/src/$1",
       "^@Feature/providers(|/.*)$": "<rootDir>/libs/features/providers/src/$1",
       "^@Feature/interests(|/.*)$": "<rootDir>/libs/features/interests/src/$1",
-      "^@Feature/resources(|/.*)$": "<rootDir>/libs/features/resources/src/$1",
+      "^@Feature/texts(|/.*)$": "<rootDir>/libs/features/texts/src/$1",
       "^@Feature/recommendations(|/.*)$": "<rootDir>/libs/features/recommendations/src/$1",
-      "^@Provider/spotify-sdk(|/.*)$": "<rootDir>/libs/providers/spotify-sdk/src/$1",
+      "^@Provider/spotify(|/.*)$": "<rootDir>/libs/providers/spotify/src/$1",
+      "^@Provider/twitter(|/.*)$": "<rootDir>/libs/providers/twitter/src/$1",
       "^@Provider/queue(|/.*)$": "<rootDir>/libs/providers/queue/src/$1",
       "^@Provider/mailing(|/.*)$": "<rootDir>/libs/providers/mailing/src/$1",
       "^@Provider/storage(|/.*)$": "<rootDir>/libs/providers/storage/src/$1",

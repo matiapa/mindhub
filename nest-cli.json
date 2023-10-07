@@ -64,15 +64,6 @@
         "tsConfigPath": "libs/features/interests/tsconfig.lib.json"
       }
     },
-    "resources": {
-      "type": "library",
-      "root": "libs/features/resources",
-      "entryFile": "index",
-      "sourceRoot": "libs/features/resources/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/features/resources/tsconfig.lib.json"
-      }
-    },
     "recommendations": {
       "type": "library",
       "root": "libs/features/recommendations",
@@ -82,13 +73,13 @@
         "tsConfigPath": "libs/features/recommendations/tsconfig.lib.json"
       }
     },
-    "spotify-sdk": {
+    "spotify": {
       "type": "library",
-      "root": "libs/providers/spotify-sdk",
+      "root": "libs/providers/spotify",
       "entryFile": "index",
-      "sourceRoot": "libs/providers/spotify-sdk/src",
+      "sourceRoot": "libs/providers/spotify/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/providers/spotify-sdk/tsconfig.lib.json"
+        "tsConfigPath": "libs/providers/spotify/tsconfig.lib.json"
       }
     },
     "queue": {

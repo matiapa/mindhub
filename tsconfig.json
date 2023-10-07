@@ -13,12 +13,21 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "strictNullChecks": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+
+    // Type checking
+    // "allowUnreachableCode": false,
+    // "allowUnusedLabels": false,
+    // "alwaysStrict": true,
+    // "strict": true,
+    // "exactOptionalPropertyTypes": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noImplicitThis": false,
+    // "noImplicitOverride": true,
+    // "noUncheckedIndexedAccess": true,
+    // "useUnknownInCatchVariables": true,
+
     "paths": {
       "@Feature/users": [
         "libs/features/users/src"
@@ -44,11 +53,11 @@
       "@Feature/interests/*": [
         "libs/features/interests/src/*"
       ],
-      "@Feature/resources": [
-        "libs/features/resources/src"
+      "@Feature/texts": [
+        "libs/features/texts/src"
       ],
-      "@Feature/resources/*": [
-        "libs/features/resources/src/*"
+      "@Feature/texts/*": [
+        "libs/features/texts/src/*"
       ],
       "@Feature/recommendations": [
         "libs/features/recommendations/src"
@@ -56,11 +65,17 @@
       "@Feature/recommendations/*": [
         "libs/features/recommendations/src/*"
       ],
-      "@Provider/spotify-sdk": [
-        "libs/providers/spotify-sdk/src"
+      "@Provider/spotify": [
+        "libs/providers/spotify/src"
       ],
-      "@Provider/spotify-sdk/*": [
-        "libs/providers/spotify-sdk/src/*"
+      "@Provider/spotify/*": [
+        "libs/providers/spotify/src/*"
+      ],
+      "@Provider/twitter": [
+        "libs/providers/twitter/src"
+      ],
+      "@Provider/twitter/*": [
+        "libs/providers/twitter/src/*"
       ],
       "@Provider/queue": [
         "libs/providers/queue/src"
