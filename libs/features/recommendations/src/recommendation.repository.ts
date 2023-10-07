@@ -32,7 +32,11 @@ export class RecommendationRepository {
     return [...res.values()];
   }
 
-  remove(targetUserId: string, recommendedUserId: string): Promise<void> {
-    return this.model.delete({ targetUserId, recommendedUserId });
+  async update(
+    targetUserId: string,
+    recommendedUserId: string,
+    update: Partial<Recommendation>,
+  ): Promise<void> {
+    await this.model.update({ targetUserId, recommendedUserId }, update);
   }
 }
