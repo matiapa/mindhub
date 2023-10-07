@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
-export class SpotifySdkConfig {
+export class SpotifyConfig {
   @IsString()
   @IsNotEmpty()
   clientId: string = process.env.SPOTIFY_CLIENT_ID!;

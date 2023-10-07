@@ -2,22 +2,26 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ProviderEnum } from '@Feature/providers';
 import { ConfigService } from '@nestjs/config';
-import { SpotifySdkConfig } from './spotify-sdk.config';
+import { SpotifyConfig } from './spotify.config';
 import { Interest } from '@Feature/interests';
 import { InterestRelevance } from '@Feature/interests/entities/interest.entity';
 import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
+import { SyncResult } from '@Feature/providers/entities/sync-result.entity';
+import { ProviderSyncService } from '@Feature/providers/types/provider.interface';
 
 @Injectable()
-export class SpotifyEtlService {
+export class SpotifySyncService implements ProviderSyncService {
+  public providerName: ProviderEnum = ProviderEnum.SPOTIFY;
+
   private accessToken: string;
   private scopes: string[];
 
-  private readonly logger = new Logger(SpotifyEtlService.name);
+  private readonly logger = new Logger(SpotifySyncService.name);
 
-  private config: SpotifySdkConfig;
+  private config: SpotifyConfig;
 
   constructor(configService: ConfigService) {
-    this.config = configService.get<SpotifySdkConfig>('spotify')!;
+    this.config = configService.get<SpotifyConfig>('spotify')!;
   }
 
   private _request(url: string) {
@@ -124,15 +128,19 @@ export class SpotifyEtlService {
     return artists;
   }
 
-  async getInterests(
-    userId: string,
-    userRefreshToken: string,
-  ): Promise<Interest[]> {
-    await this._initialize(userRefreshToken);
+  async syncFromApi(userId: string, refreshToken: string): Promise<SyncResult> {
+    await this._initialize(refreshToken);
 
     const tracks = await this._getTopTracks(userId);
     const artists = await this._getTopArtists(userId);
 
-    return [...tracks, ...artists];
+    return {
+      interests: [...tracks, ...artists],
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  syncFromFile(userId: string, file: Buffer): Promise<SyncResult> {
+    throw new Error('Method not implemented.');
   }
 }

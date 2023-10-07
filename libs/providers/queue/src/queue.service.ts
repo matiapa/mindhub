@@ -38,7 +38,7 @@ export class QueueService {
 
         await handler(data);
 
-        this.logger.debug('Message processed', { queue: queueUrl });
+        this.logger.debug('Message processed');
       },
     });
 

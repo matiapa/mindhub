@@ -8,28 +8,28 @@ custom:
   dynamo:
     usersTable: 'users-table'
     friendshipsTable: 'friendships-table'
-
-    # TODO: Move to other app
     providerTokens: 'provider-tokens-table'
     resourcesTable: 'resources-table'
     interestsTable: 'interests-table'
+    textsTable: 'texts-table'
   
   s3:
-    picturesBucket: 'mindhub-pictures-bucket'
-    pictureUploadUrlTTL: 60
-    pictureDownloadUrlTTL: 60
-    allowedOrigins: 'https://mindhub.ar'
-
-  ses:
-    friendshipRequestsMailSender: 'notifications@mindhub.ar'
+    picturesBucket:
+      name: 'mindhub-pictures-bucket'
+      allowedOrigins: 'https://mindhub.ar'
+    providerFilesBucket:
+      name: 'provider-files-bucket'
 
   sqs:
-    providerSyncQueue:
-      name: 'provider-sync-queue'
-      dltName: 'provider-sync-dlt-queue'
+    providerSyncRequestsQueue:
+      name: 'provider-sync-requests-queue'
+      dltName: 'provider-sync-requests-dlt-queue'
       maxRetries: 5
       visibilityTimeoutSecs: 30
-  
+    providerFileUploadedQueue:
+      name: 'provider-file-uploaded-queue'
+      visibilityTimeoutSecs: 30
+
   esbuild: 
     bundle: true
     minify: false
@@ -72,22 +72,6 @@ provider:
             - Fn::GetAtt: [ PicturesBucket, Arn ]
           
   environment:
-    USERS_POOL_ID: us-east-1_ACYhVKPRs
-
-    DYNAMO_USERS_TABLE: ${self:custom.dynamo.usersTable}
-    DYNAMO_FRIENDSHIPS_TABLE: ${self:custom.dynamo.friendshipsTable}
-
-    # TODO: Move to other app
-    DYNAMO_PROVIDER_TOKENS_TABLE: ${self:custom.dynamo.providerTokens}
-    DYNAMO_RESOURCES_TABLE: ${self:custom.dynamo.resourcesTable}
-    DYNAMO_INTERESTS_TABLE: ${self:custom.dynamo.interestsTable}
-
-    S3_PICTURES_BUCKET: ${self:custom.s3.picturesBucket}
-    S3_PICTURE_UPLOAD_URL_TTL: ${self:custom.s3.pictureUploadUrlTTL}
-    S3_PICTURE_DOWNLOAD_URL_TTL: ${self:custom.s3.pictureDownloadUrlTTL}
-
-    FRIENDSHIP_REQUESTS_SENDER_EMAIL: ${self:custom.ses.friendshipRequestsMailSender}
-
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     NODE_OPTIONS: --enable-source-maps --stack-trace-limit=1000
 
@@ -107,6 +91,8 @@ provider:
 
 resources:
   Resources:
+    # --------------------------- TABLES ---------------------------
+    
     UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -144,20 +130,6 @@ resources:
             Projection:
               ProjectionType: ALL
 
-    PicturesBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: mindhub-pictures-bucket
-        CorsConfiguration:
-          CorsRules:
-          - AllowedHeaders:
-              - "*"
-            AllowedMethods:
-              - GET
-              - PUT
-            AllowedOrigins:
-              - ${self:custom.s3.allowedOrigins}
-
     ProviderTokensTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -173,8 +145,6 @@ resources:
           - AttributeName: service
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
-
-    # TODO: Move to other app
     
     ResourcesTable:
       Type: AWS::DynamoDB::Table
@@ -204,35 +174,107 @@ resources:
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
 
-    ProviderSyncQueue:
+    TextsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo.textsTable}
+        AttributeDefinitions:
+          - AttributeName: ownerId
+            AttributeType: S 
+          - AttributeName: date
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: ownerId
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+    # --------------------------- BUCKETS ---------------------------
+
+    PicturesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3.picturesBucket.name}
+        CorsConfiguration:
+          CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - ${self:custom.s3.picturesBucket.allowedOrigins}
+
+    ProviderFilesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3.providerFilesBucket.name}
+        NotificationConfiguration:
+          QueueConfigurations:
+            - Event: s3:ObjectCreated:*
+              Queue:
+                Fn::GetAtt: [ ProviderFileUploadedQueue, Arn ]
+  
+    # --------------------------- QUEUES ---------------------------
+
+    ProviderSyncRequestQueue:
       Type: AWS::SQS::Queue
       Properties: 
-        QueueName: ${self:custom.sqs.providerSyncQueue.name}
+        QueueName: ${self:custom.sqs.providerSyncRequestsQueue.name}
         ReceiveMessageWaitTimeSeconds: 20 # Long polling
         RedrivePolicy:
           deadLetterTargetArn:
-            Fn::GetAtt: [ ProviderSyncDLTQueue, Arn ]
-          maxReceiveCount: ${self:custom.sqs.providerSyncQueue.maxRetries}
-        VisibilityTimeout: ${self:custom.sqs.providerSyncQueue.visibilityTimeoutSecs}
+            Fn::GetAtt: [ ProviderSyncRequestsDltQueue, Arn ]
+          maxReceiveCount: ${self:custom.sqs.providerSyncRequestsQueue.maxRetries}
+        VisibilityTimeout: ${self:custom.sqs.providerSyncRequestsQueue.visibilityTimeoutSecs}
 
-    ProviderSyncDLTQueue:
+    ProviderSyncRequestsDltQueue:
       Type: AWS::SQS::Queue
       Properties: 
-        QueueName: ${self:custom.sqs.providerSyncQueue.dltName}
+        QueueName: ${self:custom.sqs.providerSyncRequestsQueue.dltName}
         ReceiveMessageWaitTimeSeconds: 20 # Long polling
         # TODO: Circular dependency, by the moment allow all
         # RedriveAllowPolicy:
         #   redrivePermission: byQueue
         #   sourceQueueArns:
-        #     - Fn::GetAtt: [ ProviderSyncQueue, Arn ]
+        #     - Fn::GetAtt: [ ProviderSyncRequestQueue, Arn ]
+
+    ProviderFileUploadedQueue:
+      Type: AWS::SQS::Queue
+      Properties: 
+        QueueName: ${self:custom.sqs.providerFileUploadedQueue.name}
+        ReceiveMessageWaitTimeSeconds: 20 # Long polling
+        VisibilityTimeout: ${self:custom.sqs.providerFileUploadedQueue.visibilityTimeoutSecs}
+
+    ProviderFileUploadedQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      DependsOn:
+        - ProviderFileUploadedQueue
+      Properties:
+        Queues:
+          - !Ref ProviderFileUploadedQueue
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: s3.amazonaws.com
+              Action:
+                - SQS:SendMessage
+              Resource:
+                Fn::GetAtt: [ ProviderFileUploadedQueue, Arn ]
+              Condition:
+                ArnLike:
+                  aws:SourceArn:
+                    Fn::GetAtt: [ ProviderFilesBucket, Arn ]
     
-plugins:
-  - serverless-offline
-  - serverless-dynamodb
+# plugins:
+#   - serverless-offline
+#   - serverless-dynamodb
 
 package:
   patterns:
     - "!*"
     - "!*/**"
-    - "node_modules/**"
-    - "dist/**"
+    # - "node_modules/**"
+    # - "dist/**"

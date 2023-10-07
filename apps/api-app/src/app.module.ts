@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { validate } from './app.config';
 import { ApiUsersModule } from './users/users.module';
 import { ApiFriendshipsModule } from './friendships/friendships.module';
-import { ApiRecommendationsModule } from './recommendations/recommendations.module';
+// import { ApiRecommendationsModule } from './recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { ApiRecommendationsModule } from './recommendations/recommendations.modu
     ApiFriendshipsModule,
     ApiProvidersModule,
     ApiInterestsModule,
-    ApiRecommendationsModule,
+    // ApiRecommendationsModule,
   ],
 })
 export class AppModule {}

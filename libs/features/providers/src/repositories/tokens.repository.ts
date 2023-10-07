@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Token, tokenModelFactory } from '../entities/tokens.entity';
+import { Token, TokenItem, tokenModelFactory } from '../entities/tokens.entity';
 import { ProviderEnum } from '../enums/providers.enum';
 import { ModelType } from 'dynamoose/dist/General';
 import { ConfigService } from '@nestjs/config';
@@ -7,11 +7,11 @@ import { ProvidersConfig } from '../providers.config';
 
 @Injectable()
 export class TokensRepository {
-  private model: ModelType<Token>;
+  private model: ModelType<TokenItem>;
 
   constructor(configService: ConfigService) {
     const config = configService.get<ProvidersConfig>('providers')!;
-    this.model = tokenModelFactory(config.tokensTableName);
+    this.model = tokenModelFactory(config.api.tokensTableName);
   }
 
   create(token: Partial<Token>): Promise<Token> {

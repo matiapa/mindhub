@@ -1,15 +1,12 @@
-import {
-  AuthenticationService as ProviderAuthenticationService,
-  ProviderEnum,
-} from '@Feature/providers';
+import { ProvidersAuthService, ProviderEnum } from '@Feature/providers';
 import { AuthenticationService } from '@Provider/authentication';
 import { Controller, Get, Query, Response } from '@nestjs/common';
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('/spotify')
-export class SpotifyAuthController {
+export class SpotifyController {
   constructor(
-    private readonly providerAuthService: ProviderAuthenticationService,
+    private readonly providersAuthService: ProvidersAuthService,
     private readonly authService: AuthenticationService,
   ) {}
 
@@ -19,7 +16,7 @@ export class SpotifyAuthController {
   })
   @ApiOkResponse({ description: 'OK' })
   login(@Response() res: any) {
-    const loginUrl = this.providerAuthService.getLoginUrl(
+    const loginUrl = this.providersAuthService.getLoginUrl(
       this.authService.getAuthenticadedUserId(),
       ProviderEnum.SPOTIFY,
     );
@@ -37,7 +34,7 @@ export class SpotifyAuthController {
     @Query('error') error: string,
     @Response() res: any,
   ): Promise<void> {
-    const data = await this.providerAuthService.redeemCode(
+    const data = await this.providersAuthService.redeemCode(
       ProviderEnum.SPOTIFY,
       this.authService.getAuthenticadedUserId(),
       state,
