@@ -19,13 +19,13 @@
         "tsConfigPath": "apps/api-app/tsconfig.app.json"
       }
     },
-    "consumers-app": {
+    "providers-sync-app": {
       "type": "application",
-      "root": "apps/consumers-app",
+      "root": "apps/providers-sync-app",
       "entryFile": "main",
-      "sourceRoot": "apps/consumers-app/src",
+      "sourceRoot": "apps/providers-sync-app/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/consumers-app/tsconfig.app.json"
+        "tsConfigPath": "apps/providers-sync-app/tsconfig.app.json"
       }
     },
     "users": {

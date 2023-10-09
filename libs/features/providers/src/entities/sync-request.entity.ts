@@ -5,7 +5,7 @@ export enum SyncSource {
   FILE = 'file',
 }
 
-export interface SyncRequest {
+export class SyncRequest {
   userId: string;
   provider: ProviderEnum;
   requester: string;

@@ -35,18 +35,9 @@ export class ProvidersFileService {
     );
   }
 
-  handleFileUploaded = async (eventMessage: any) => {
-    // We use lambda syntax for keeping the context
-
-    const event = this.storageService.parseStorageEvent(eventMessage);
-    if (!event) {
-      this.logger.warn('Received an invalid message', eventMessage);
-      return;
-    }
-
+  async handleFileUploaded(key: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, provider, userId] =
-      event.key.match(/^([^/]+)\/([^/]+)\.zip$/) || [];
+    const [_, provider, userId] = key.match(/^([^/]+)\/([^/]+)\.zip$/) || [];
 
     await this.syncRequestService.postRequest({
       userId,

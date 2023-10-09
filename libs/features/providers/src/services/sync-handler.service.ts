@@ -27,7 +27,7 @@ export class ProvidersSyncHandlerService {
     this.config = this.configService.get<ProvidersConfig>('providers')!;
   }
 
-  handleRequest = async (request: SyncRequest): Promise<void> => {
+  public async handleRequest(request: SyncRequest): Promise<void> {
     // We use lambda syntax for keeping the context
 
     this.logger.log(`Synchronization started`, request);
@@ -58,7 +58,7 @@ export class ProvidersSyncHandlerService {
     this.logger.log(
       `Synchronization finished: ${result.interests?.length} interests loaded`,
     );
-  };
+  }
 
   private async syncFromFile(
     userId: string,
