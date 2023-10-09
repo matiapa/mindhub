@@ -12,7 +12,7 @@ import { ProvidersSyncController } from './controllers/sync-handler.consumer';
     ConfigModule.forRoot({
       validate,
       isGlobal: true,
-      envFilePath: ['.env', 'envs/.env'],
+      envFilePath: ['.env', 'envs/.env.default'],
     }),
   ],
   controllers: [ProvidersSyncController],

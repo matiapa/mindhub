@@ -12,6 +12,7 @@ import { ApiFriendshipsModule } from './friendships/friendships.module';
     ConfigModule.forRoot({
       validate,
       isGlobal: true,
+      envFilePath: ['.env', 'envs/.env.default'],
     }),
     ApiUsersModule,
     ApiFriendshipsModule,
