@@ -55,9 +55,10 @@ export class ProvidersSyncHandlerService {
 
     await this.textsService.createMany(result.texts);
 
-    this.logger.log(
-      `Synchronization finished: ${result.interests?.length} interests loaded`,
-    );
+    this.logger.log('Synchronization finished - Extracted resources', {
+      interests: result.interests?.length ?? 0,
+      texts: result.texts?.length ?? 0,
+    });
   }
 
   private async syncFromFile(
