@@ -1,24 +1,41 @@
 import { ProvidersAuthService, ProviderEnum } from '@Feature/providers';
-import { AuthenticationService } from '@Provider/authentication';
-import { Controller, Get, Query, Response } from '@nestjs/common';
+import {
+  AuthGuard,
+  AuthUser,
+} from '@Provider/authentication/authentication.guard';
+import { PrincipalData } from '@Provider/authentication/authentication.types';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Query,
+  Response,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
-@Controller('/spotify')
-export class SpotifyController {
-  constructor(
-    private readonly providersAuthService: ProvidersAuthService,
-    private readonly authService: AuthenticationService,
-  ) {}
+@Controller('/provider/:providerName')
+export class AuthController {
+  constructor(private readonly providersAuthService: ProvidersAuthService) {}
 
   @Get('/login')
   @ApiOperation({
     summary: 'Get the URL for starting the authentication flow',
   })
   @ApiOkResponse({ description: 'OK' })
-  login(@Response() res: any) {
+  @UseGuards(AuthGuard)
+  login(
+    @Param('providerName') providerName: string,
+    @AuthUser() user: PrincipalData,
+    @Response() res: any,
+  ) {
+    if (!(providerName in ProviderEnum))
+      throw new BadRequestException('Invalid provider');
+
     const loginUrl = this.providersAuthService.getLoginUrl(
-      this.authService.getAuthenticadedUserId(),
-      ProviderEnum.SPOTIFY,
+      user.id,
+      providerName as ProviderEnum,
     );
     res.redirect(loginUrl);
   }
@@ -28,15 +45,21 @@ export class SpotifyController {
     summary: 'Redeem the obtained code to finalize authentication flow',
   })
   @ApiOkResponse({ description: 'OK' })
+  @UseGuards(AuthGuard)
   async redeemCode(
+    @Param('providerName') providerName: string,
     @Query('state') state: string,
     @Query('code') code: string,
     @Query('error') error: string,
+    @AuthUser() user: PrincipalData,
     @Response() res: any,
   ): Promise<void> {
+    if (!(providerName in ProviderEnum))
+      throw new BadRequestException('Invalid provider');
+
     const data = await this.providersAuthService.redeemCode(
-      ProviderEnum.SPOTIFY,
-      this.authService.getAuthenticadedUserId(),
+      providerName as ProviderEnum,
+      user.id,
       state,
       code,
       error,
