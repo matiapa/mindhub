@@ -71,7 +71,7 @@ export class InterestsController {
     return this.interestsService.getUserInterests(user.id);
   }
 
-  @Delete('/resourceId')
+  @Delete('/:resourceId')
   @ApiOperation({ summary: 'Delete an interest relationship' })
   @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)

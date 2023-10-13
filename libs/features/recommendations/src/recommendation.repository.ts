@@ -5,7 +5,7 @@ import {
   Recommendation,
   RecommendationItem,
   recommendationModelFactory,
-} from './recommendation.entity';
+} from './entities/recommendation.entity';
 import { RecommendationsConfig } from './recommendations.config';
 
 const MAX_PUT_ITEMS = 25;

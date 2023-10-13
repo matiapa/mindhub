@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TextData } from './entities/text.entity';
 import { TextsRepository } from './texts.repository';
+import { GetTextsResDto } from './dtos/text-dto';
 
 @Injectable()
 export class TextsService {
@@ -14,11 +15,13 @@ export class TextsService {
     return this.textsRepo.createMany(texts);
   }
 
-  async getUserTexts(userId: string): Promise<TextData[]> {
-    return this.textsRepo.getByUser(userId);
+  async getUserTexts(userId: string): Promise<GetTextsResDto> {
+    return {
+      texts: await this.textsRepo.getByUser(userId),
+    };
   }
 
-  async remove(userId: string, resourceId: string): Promise<void> {
-    return this.textsRepo.remove(userId, resourceId);
+  async remove(userId: string, date: string): Promise<void> {
+    return this.textsRepo.remove(userId, date);
   }
 }
