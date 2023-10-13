@@ -1,8 +1,9 @@
 import { ProviderEnum } from '@Feature/providers';
+import { IsDateString, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import * as dynamoose from 'dynamoose';
 import { Item } from 'dynamoose/dist/Item';
 
-export interface TextData {
+export interface ITextData {
   ownerId: string;
   provider: ProviderEnum;
   rawText: string;
@@ -10,7 +11,28 @@ export interface TextData {
   date?: string;
 }
 
-export class TextItem extends Item implements TextData {
+export class TextData implements ITextData {
+  @IsString()
+  @IsNotEmpty()
+  ownerId: string;
+
+  @IsEnum(ProviderEnum)
+  @IsNotEmpty()
+  provider: ProviderEnum;
+
+  @IsString()
+  @IsNotEmpty()
+  rawText: string;
+
+  @IsString()
+  @IsNotEmpty()
+  language: string; // ISO 639-1 code
+
+  @IsDateString()
+  @IsNotEmpty()
+  date?: string;
+}
+export class TextItem extends Item implements ITextData {
   ownerId: string;
   provider: ProviderEnum;
   rawText: string;

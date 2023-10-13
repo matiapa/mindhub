@@ -15,7 +15,8 @@ export interface Recommendation {
     global: number;
     interests: InterestScores;
   };
-  discarded?: {
+  reviewed?: {
+    accepted: boolean;
     date: string;
   };
 }
@@ -31,7 +32,8 @@ export class RecommendationItem extends Item implements Recommendation {
       [ResourceType.TRACK]: number;
     };
   };
-  discarded?: {
+  reviewed?: {
+    accepted: boolean;
     date: string;
   };
 }
@@ -59,9 +61,10 @@ const RecommendationSchema = new dynamoose.Schema(
         },
       },
     },
-    discarded: {
+    reviewed: {
       type: Object,
       schema: {
+        accepted: Boolean,
         date: String,
       },
     },

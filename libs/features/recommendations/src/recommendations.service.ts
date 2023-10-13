@@ -1,41 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { RecommendationRepository } from './recommendation.repository';
-import { RecommendationAlgorithm } from './algorithm/algorithm.interface';
-import { Recommendation } from './recommendation.entity';
-import { DummyAlgorithm } from './algorithm/dummy-algorithm';
+import { Recommendation } from './entities/recommendation.entity';
+import { ReviewRecommendationDto } from './dtos/review-request.dto';
+import { FriendshipsService } from '@Feature/friendships/friendships.service';
 
 @Injectable()
 export class RecommendationsService {
-  private recommendationAlgorithm: RecommendationAlgorithm;
-
   constructor(
     private recommendationRepo: RecommendationRepository,
-    dummyAlgorithm: DummyAlgorithm,
-  ) {
-    this.recommendationAlgorithm = dummyAlgorithm;
-  }
-
-  public async generateRecommendations(targetUserId: string): Promise<void> {
-    const recommendations =
-      await this.recommendationAlgorithm.calculateRecommendations(targetUserId);
-
-    await this.recommendationRepo.createMany(recommendations);
-  }
+    private friendshipService: FriendshipsService,
+  ) {}
 
   public async getRecommendations(
-    targetUserId: string,
+    recomendeeId: string,
   ): Promise<Recommendation[]> {
-    return this.recommendationRepo.getByTargetUser(targetUserId);
+    return this.recommendationRepo.getByTargetUser(recomendeeId);
   }
 
-  public async discardRecommendation(
-    targetUserId: string,
-    recommendedUserId: string,
+  public async reviewRecommendation(
+    recomendeeId: string,
+    recommendedId: string,
+    dto: ReviewRecommendationDto,
   ): Promise<void> {
-    await this.recommendationRepo.update(targetUserId, recommendedUserId, {
-      discarded: {
+    await this.recommendationRepo.update(recomendeeId, recommendedId, {
+      reviewed: {
+        accepted: dto.accept,
         date: new Date().toISOString(),
       },
     });
+
+    if (dto.accept) {
+      await this.friendshipService.proposeFriendship(
+        recomendeeId,
+        recommendedId,
+      );
+    }
   }
 }
