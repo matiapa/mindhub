@@ -3,7 +3,16 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { Controller, Get, Post, Body, Query, Put, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Put,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 
 import { SharedUserInfo } from '@Feature/users';
 import {
@@ -12,23 +21,25 @@ import {
   ReviewRequestDto,
 } from '@Feature/friendships/dtos';
 import { FriendshipsService } from '@Feature/friendships/friendships.service';
-import { AuthenticationService } from '@Provider/authentication';
+import {
+  AuthGuard,
+  AuthUser,
+} from '@Provider/authentication/authentication.guard';
+import { PrincipalData } from '@Provider/authentication/authentication.types';
 
 @Controller('friendships')
 export class FriendshipsController {
-  constructor(
-    private readonly friendshipsService: FriendshipsService,
-    private readonly authService: AuthenticationService,
-  ) {}
+  constructor(private readonly friendshipsService: FriendshipsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Send a friendship request' })
   @ApiCreatedResponse({ description: 'OK' })
-  proposeFriendship(@Body() dto: ProposeFriendshipDto): Promise<void> {
-    return this.friendshipsService.proposeFriendship(
-      this.authService.getAuthenticadedUserId(),
-      dto.target,
-    );
+  @UseGuards(AuthGuard)
+  proposeFriendship(
+    @Body() dto: ProposeFriendshipDto,
+    @AuthUser() user: PrincipalData,
+  ): Promise<void> {
+    return this.friendshipsService.proposeFriendship(user.id, dto.target);
   }
 
   @Get()
@@ -36,9 +47,13 @@ export class FriendshipsController {
     summary: 'Get friendships, either accepted ones, or sent/received requests',
   })
   @ApiOkResponse({ description: 'OK', type: Array<SharedUserInfo> })
-  getFriendships(@Query() dto: GetFriendshipsDto): Promise<SharedUserInfo[]> {
+  @UseGuards(AuthGuard)
+  getFriendships(
+    @Query() dto: GetFriendshipsDto,
+    @AuthUser() user: PrincipalData,
+  ): Promise<SharedUserInfo[]> {
     return this.friendshipsService.getFriendshipsWithUserInfo(
-      this.authService.getAuthenticadedUserId(),
+      user.id,
       dto.type,
       {
         optionalFields: dto.optionalFields,
@@ -49,12 +64,14 @@ export class FriendshipsController {
   @Put('/request/:proposerId')
   @ApiOperation({ summary: 'Accept or reject a friendship request' })
   @ApiCreatedResponse({ description: 'OK' })
+  @UseGuards(AuthGuard)
   reviewRequest(
     @Param('proposerId') proposerId: string,
     @Body() dto: ReviewRequestDto,
+    @AuthUser() user: PrincipalData,
   ): Promise<void> {
     return this.friendshipsService.reviewRequest(
-      this.authService.getAuthenticadedUserId(),
+      user.id,
       proposerId,
       dto.accept,
     );
