@@ -1,15 +1,15 @@
 import { InterestsService } from '@Feature/interests';
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SyncRequest, SyncSource } from '../entities/sync-request.entity';
-import { SyncResult } from '../entities/sync-result.entity';
+import { SyncRequestDto } from '../dtos/sync-request.dto';
 import { ProvidersConfig } from '../providers.config';
-import { ProviderSyncService } from '../types/provider.interface';
+import { ProviderSyncService, SyncResult } from '../types/provider.interface';
 import { ProvidersFileService } from './files.service';
 import { ProvidersAuthService } from './auth.service';
 import { streamToBuffer } from 'libs/utils/streams';
 import { TextsService } from '@Feature/texts';
 import { ProviderServices } from '../types/provider.factory';
+import { SyncSource } from '../enums/sync-source.enum';
 
 @Injectable()
 export class ProvidersSyncHandlerService {
@@ -27,12 +27,16 @@ export class ProvidersSyncHandlerService {
     this.config = this.configService.get<ProvidersConfig>('providers')!;
   }
 
-  public async handleRequest(request: SyncRequest): Promise<void> {
+  public async handleRequest(request: SyncRequestDto): Promise<void> {
     // We use lambda syntax for keeping the context
 
     this.logger.log(`Synchronization started`, request);
 
     const provider = this.providersServices.getSyncService(request.provider);
+    if (!provider) {
+      this.logger.warn('Received an invalid provider', { request });
+      return;
+    }
 
     let result: SyncResult;
     switch (request.source) {
@@ -46,14 +50,21 @@ export class ProvidersSyncHandlerService {
       default:
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _exhaustiveCheck: never = request.source;
-        throw new BadRequestException('Invalid source');
+        this.logger.warn('Received an invalid source', { request });
+        return;
+    }
+
+    if (!result) {
+      return;
     }
 
     if (result.interests) {
-      await this.interestsService.createMany(result.interests);
+      await this.interestsService.upsertMany(result.interests);
     }
 
-    await this.textsService.createMany(result.texts);
+    if (result.texts) {
+      await this.textsService.upsertMany(result.texts);
+    }
 
     this.logger.log('Synchronization finished - Extracted resources', {
       interests: result.interests?.length ?? 0,
@@ -70,6 +81,14 @@ export class ProvidersSyncHandlerService {
       provider.providerName,
     );
 
+    if (!fileStream) {
+      this.logger.warn('File not found', {
+        userId,
+        provider: provider.providerName,
+      });
+      return;
+    }
+
     const buffer = await streamToBuffer(fileStream);
 
     return provider.syncFromFile(userId, buffer);
@@ -83,6 +102,14 @@ export class ProvidersSyncHandlerService {
       userId,
       provider.providerName,
     );
+
+    if (!refreshToken) {
+      this.logger.warn('Token not found', {
+        userId,
+        provider: provider.providerName,
+      });
+      return;
+    }
 
     return provider.syncFromApi(userId, refreshToken);
   }

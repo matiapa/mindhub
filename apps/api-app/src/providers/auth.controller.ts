@@ -5,19 +5,22 @@ import {
 } from '@Provider/authentication/authentication.guard';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
 import {
-  BadRequestException,
   Controller,
   Get,
   Param,
   Query,
+  Request,
   Response,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
-@Controller('/provider/:providerName')
+@Controller('/providers/:providerName')
 export class AuthController {
-  constructor(private readonly providersAuthService: ProvidersAuthService) {}
+  constructor(
+    private readonly providersAuthService: ProvidersAuthService,
+    private readonly authService: AuthGuard,
+  ) {}
 
   @Get('/login')
   @ApiOperation({
@@ -28,16 +31,19 @@ export class AuthController {
   login(
     @Param('providerName') providerName: string,
     @AuthUser() user: PrincipalData,
-    @Response() res: any,
+    @Request() req: any,
+    // @Response() res: any,
   ) {
-    if (!(providerName in ProviderEnum))
-      throw new BadRequestException('Invalid provider');
+    // if (!(providerName in ProviderEnum))
+    //   throw new BadRequestException('Invalid provider');
+
+    const token = this.authService.extractTokenFromHeader(req);
 
     const loginUrl = this.providersAuthService.getLoginUrl(
-      user.id,
+      token,
       providerName as ProviderEnum,
     );
-    res.redirect(loginUrl);
+    return loginUrl;
   }
 
   @Get('/redeemCode')
@@ -45,22 +51,22 @@ export class AuthController {
     summary: 'Redeem the obtained code to finalize authentication flow',
   })
   @ApiOkResponse({ description: 'OK' })
-  @UseGuards(AuthGuard)
   async redeemCode(
     @Param('providerName') providerName: string,
     @Query('state') state: string,
     @Query('code') code: string,
     @Query('error') error: string,
-    @AuthUser() user: PrincipalData,
     @Response() res: any,
   ): Promise<void> {
-    if (!(providerName in ProviderEnum))
-      throw new BadRequestException('Invalid provider');
+    // if (!(providerName in ProviderEnum))
+    //   throw new BadRequestException('Invalid provider');
+
+    const decodedToken = await this.authService.verifyToken(state);
+    const userId = decodedToken['sub'];
 
     const data = await this.providersAuthService.redeemCode(
       providerName as ProviderEnum,
-      user.id,
-      state,
+      userId,
       code,
       error,
     );

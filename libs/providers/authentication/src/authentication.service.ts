@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import AWS from 'aws-sdk';
+import { UsersConfig } from '@Feature/users/users.config';
+import { ConfigService } from '@nestjs/config';
 
 export interface UserAuthProviderData {
   email: string;
@@ -9,6 +11,12 @@ export interface UserAuthProviderData {
 @Injectable()
 export class AuthenticationService {
   private cognito = new AWS.CognitoIdentityServiceProvider();
+
+  private config: UsersConfig;
+
+  constructor(configService: ConfigService) {
+    this.config = configService.get<UsersConfig>('users');
+  }
 
   async getUserAuthProviderData(
     userId: string,

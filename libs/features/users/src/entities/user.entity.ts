@@ -1,7 +1,4 @@
-import { ResourceTypeRelevance } from '@Feature/interests/enums/resource-type-relevance.enum';
-import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
-import * as dynamoose from 'dynamoose';
-import { Item } from 'dynamoose/dist/Item';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
 export enum Gender {
   MAN = 'man',
@@ -9,101 +6,49 @@ export enum Gender {
   OTHER = 'other',
 }
 
-export interface UserFilters {
-  minBirthday: number;
-  maxBirthday: number;
-  minLastConnectionDate: number;
+class Location {
+  @Prop({ type: String, enum: ['Point'], required: true })
+  type: 'Point';
+
+  @Prop({ type: [Number], required: true })
+  coordinates: number[];
+}
+
+class LastConnection {
+  @Prop({ required: false, _id: false })
+  location?: Location;
+
+  @Prop({ required: true })
+  date: Date;
+}
+
+class Profile {
+  @Prop({ required: true })
+  name: string;
+
+  @Prop({ type: String, enum: Gender, required: true })
   gender: Gender;
+
+  @Prop({ required: true })
+  birthday: Date;
+
+  @Prop({ required: false })
+  biography?: string;
 }
 
-export interface User {
+@Schema({ timestamps: true })
+export class User {
+  @Prop({ required: true })
   _id: string;
 
+  @Prop({ required: true })
   email: string;
 
-  profile: {
-    name: string;
-    gender: Gender;
-    birthday: string;
-    biography?: string;
-  };
+  @Prop({ required: true, _id: false })
+  profile: Profile;
 
-  lastConnection?: {
-    lat?: number;
-    long?: number;
-    date: string;
-  };
-
-  preferences?: {
-    filters?: UserFilters;
-    typeRelevances?: Map<ResourceType, ResourceTypeRelevance>;
-  };
+  @Prop({ required: false, _id: false })
+  lastConnection?: LastConnection;
 }
 
-export class UserItem extends Item implements User {
-  _id: string;
-
-  email: string;
-
-  profile: {
-    name: string;
-    gender: Gender;
-    birthday: string;
-    biography?: string;
-  };
-
-  lastConnection?: {
-    lat?: number;
-    long?: number;
-    date: string;
-  };
-
-  preferences?: {
-    filters?: UserFilters;
-    typeRelevances?: Map<ResourceType, ResourceTypeRelevance>;
-  };
-}
-
-const UserSchema = new dynamoose.Schema(
-  {
-    _id: {
-      type: String,
-      hashKey: true,
-    },
-    email: String,
-    profile: {
-      type: Object,
-      schema: {
-        name: String,
-        gender: String,
-        birthday: String,
-        biography: String,
-      },
-    },
-    lastConnection: {
-      type: Object,
-      schema: {
-        lat: Number,
-        long: Number,
-        date: String,
-      },
-    },
-    preferences: {
-      type: Object,
-      schema: {
-        filters: Object,
-        typeRelevances: Object,
-      },
-    },
-  },
-  {
-    timestamps: true,
-  },
-);
-
-export const userModelFactory = (tableName) =>
-  dynamoose.model<UserItem>('User', UserSchema, {
-    tableName,
-    create: false,
-    waitForActive: false,
-  });
+export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,5 +1,4 @@
-import * as dynamoose from 'dynamoose';
-import { Item } from 'dynamoose/dist/Item';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
 export enum FriendshipStatus {
   PENDING = 'pending',
@@ -7,38 +6,20 @@ export enum FriendshipStatus {
   REJECTED = 'rejected',
 }
 
-export interface Friendship {
+@Schema({ timestamps: true })
+export class Friendship {
+  @Prop({ required: true })
   proposer: string;
+
+  @Prop({ required: true })
   target: string;
+
+  @Prop({ type: String, enum: FriendshipStatus, required: true })
   status: FriendshipStatus;
 }
 
-export class FriendshipItem extends Item implements Friendship {
-  proposer: string;
-  target: string;
-  status: FriendshipStatus;
-}
+export const FriendshipSchema = SchemaFactory.createForClass(Friendship);
 
-const FriendshipSchema = new dynamoose.Schema(
-  {
-    proposer: {
-      type: String,
-      hashKey: true,
-    },
-    target: {
-      type: String,
-      rangeKey: true,
-    },
-    status: String,
-  },
-  {
-    timestamps: true,
-  },
-);
+FriendshipSchema.index({ proposer: 1 });
 
-export const friendshipModelFactory = (tableName) =>
-  dynamoose.model<FriendshipItem>('Friendship', FriendshipSchema, {
-    tableName,
-    create: false,
-    waitForActive: false,
-  });
+FriendshipSchema.index({ target: 1 });

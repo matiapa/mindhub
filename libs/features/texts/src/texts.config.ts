@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class TextsConfig {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
-  textsTableName: string = process.env.TEXTS_TABLE_NAME!;
+  uuidNamespace: string = process.env.INTERESTS_UUID_NAMESPACE;
 }

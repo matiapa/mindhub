@@ -1,67 +1,45 @@
 import { Injectable } from '@nestjs/common';
+import { Friendship } from './entities';
+import { InjectModel } from '@nestjs/mongoose';
+import { UpdateQuery, FilterQuery, Model } from 'mongoose';
 import {
-  Friendship,
-  FriendshipItem,
-  FriendshipStatus,
-  friendshipModelFactory,
-} from './entities';
-import { FriendshipsConfig } from './friendships.config';
-import { ModelType } from 'dynamoose/dist/General';
-import { ConfigService } from '@nestjs/config';
+  BaseMongooseRepository,
+  DeleteResult,
+  UpdateResult,
+} from '@Provider/mongodb';
+import { NestedKeyOf } from 'libs/utils/types/nested.type';
 
 @Injectable()
-export class FriendshipsRepository {
-  private model: ModelType<FriendshipItem>;
-
-  constructor(configService: ConfigService) {
-    const config = configService.get<FriendshipsConfig>('friendships')!;
-    this.model = friendshipModelFactory(config.friendshipsTableName);
+export class FriendshipsRepository extends BaseMongooseRepository<Friendship> {
+  constructor(
+    @InjectModel(Friendship.name) protected model: Model<Friendship>,
+  ) {
+    super(model);
   }
 
-  create(friendship: Friendship): Promise<Friendship> {
-    return this.model.create(friendship);
+  public create(friendship: Friendship): Promise<void> {
+    return super.createOne(friendship);
   }
 
-  update(
-    proposerId: string,
-    targetId: string,
-    friendship: Partial<Friendship>,
-  ): Promise<Friendship> {
-    return this.model.update(
-      { proposer: proposerId, target: targetId },
-      friendship,
-    );
+  public updateOne(
+    filter: FilterQuery<Friendship>,
+    update: UpdateQuery<Friendship>,
+  ): Promise<UpdateResult> {
+    return super.updateOne(filter, update);
   }
 
-  getOne(proposerId: string, targetId: string): Promise<Friendship> {
-    return this.model.get({ proposer: proposerId, target: targetId });
+  public async getOne(filter: FilterQuery<Friendship>): Promise<Friendship> {
+    return super.getOne(filter);
   }
 
-  async getByProposer(
-    proposerId: string,
-    status?: FriendshipStatus,
+  public async getMany(
+    filter: FilterQuery<Friendship>,
+    populate?: NestedKeyOf<Friendship>[],
   ): Promise<Friendship[]> {
-    let query = this.model.query({ proposer: proposerId });
-    if (status) {
-      query = query.filter('status').eq(status);
-    }
-    const res = await query.exec();
-    return [...res.values()];
+    return super.getMany(filter, populate);
   }
 
-  async getByTarget(
-    targetId: string,
-    status?: FriendshipStatus,
-  ): Promise<Friendship[]> {
-    let query = this.model.query({ target: targetId }).using('InvertedIndex');
-    if (status) {
-      query = query.filter('status').eq(status);
-    }
-    const res = await query.exec();
-    return [...res.values()];
-  }
-
-  remove(proposerId: string, targetId: string): Promise<void> {
-    return this.model.delete({ proposer: proposerId, target: targetId });
+  public async remove(filter: FilterQuery<Friendship>): Promise<DeleteResult> {
+    return super.deleteMany(filter);
   }
 }

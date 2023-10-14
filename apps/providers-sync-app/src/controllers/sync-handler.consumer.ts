@@ -2,11 +2,11 @@ import {
   ProvidersConfig,
   ProvidersSyncHandlerService,
 } from '@Feature/providers';
+import { SyncRequestDto } from '@Feature/providers/dtos/sync-request.dto';
 import { QueueService } from '@Provider/queue';
 import { Controller, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { plainToInstance } from 'class-transformer';
-import { SyncRequest } from '@Feature/providers/entities/sync-request.entity';
 import { validate } from 'class-validator';
 
 @Controller()
@@ -31,7 +31,7 @@ export class ProvidersSyncController {
   }
 
   handleRequest = async (eventMessage: any) => {
-    const request = plainToInstance(SyncRequest, eventMessage);
+    const request = plainToInstance(SyncRequestDto, eventMessage);
 
     const err = await validate(request);
     if (err.length) {

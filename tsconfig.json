@@ -100,7 +100,13 @@
       ],
       "@Provider/authentication/*": [
         "libs/providers/authentication/src/*"
-      ]
+      ],
+      "@Provider/mongodb": [
+        "libs/providers/mongodb/src"
+      ],
+      "@Provider/mongodb/*": [
+        "libs/providers/mongodb/src/*"
+      ],
     }
   }
 }

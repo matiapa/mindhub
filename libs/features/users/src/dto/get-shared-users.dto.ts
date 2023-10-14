@@ -65,8 +65,8 @@ export class SharedUserInfo {
   sharedInterests?: SharedInterestDto[];
 }
 
-export class GetUserResDto extends SharedUserInfo {}
+export class GetSharedUserResDto extends SharedUserInfo {}
 
-export class GetUsersResDto {
+export class GetSharedUsersResDto {
   users: SharedUserInfo[];
 }

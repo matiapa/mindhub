@@ -6,9 +6,9 @@ import {
 import { FriendshipStatus } from './entities';
 import { FriendshipsRepository } from './friendships.repository';
 import {
-  UsersService,
   SharedUserInfo,
   SharedUserInfoConfig,
+  UsersService,
 } from '@Feature/users';
 import { MailingService } from '@Provider/mailing';
 import { FriendshipType } from './dtos';
@@ -42,7 +42,10 @@ export class FriendshipsService {
 
     // Check that the request was not already sent
 
-    const sentReq = await this.friendshipsRepo.getOne(proposerId, targetId);
+    const sentReq = await this.friendshipsRepo.getOne({
+      proposer: proposerId,
+      target: targetId,
+    });
     if (sentReq) {
       if (sentReq.status === FriendshipStatus.ACCEPTED) {
         throw new BadRequestException('The users are already friends');
@@ -55,7 +58,10 @@ export class FriendshipsService {
 
     // Check that there are no pending requests from the target
 
-    const receivedReq = await this.friendshipsRepo.getOne(targetId, proposerId);
+    const receivedReq = await this.friendshipsRepo.getOne({
+      proposer: proposerId,
+      target: targetId,
+    });
     if (receivedReq) {
       if (receivedReq.status === FriendshipStatus.ACCEPTED) {
         throw new BadRequestException('The users are already friends');
@@ -93,46 +99,43 @@ export class FriendshipsService {
   async getFriendships(
     ofUserId: string,
     type: FriendshipType,
+    populateUsers: boolean,
   ): Promise<string[]> {
-    let counterpartiesIds: string[];
-
     if (type === FriendshipType.PROPOSED) {
-      const proposed = await this.friendshipsRepo.getByProposer(
-        ofUserId,
-        FriendshipStatus.PENDING,
+      const proposed = await this.friendshipsRepo.getMany(
+        {
+          proposer: ofUserId,
+          status: FriendshipStatus.PENDING,
+        },
+        populateUsers ? ['proposer', 'target'] : undefined,
       );
 
-      counterpartiesIds = proposed.map((fs) => fs.target);
+      return proposed.map((fs) => fs.target);
     } else if (type === FriendshipType.RECEIVED) {
-      const received = await this.friendshipsRepo.getByTarget(
-        ofUserId,
-        FriendshipStatus.PENDING,
+      const received = await this.friendshipsRepo.getMany(
+        {
+          proposer: ofUserId,
+          status: FriendshipStatus.PENDING,
+        },
+        populateUsers ? ['proposer', 'target'] : undefined,
       );
 
-      counterpartiesIds = received.map((fs) => fs.proposer);
+      return received.map((fs) => fs.proposer);
     } else {
       // We must get accepted friendships independently of the side
 
-      const proposed = await this.friendshipsRepo.getByProposer(
-        ofUserId,
-        FriendshipStatus.ACCEPTED,
-      );
-      counterpartiesIds = proposed.map((fs) => fs.target);
-
-      const received = await this.friendshipsRepo.getByTarget(
-        ofUserId,
-        FriendshipStatus.ACCEPTED,
+      const proposals = await this.friendshipsRepo.getMany(
+        {
+          $or: [{ proposer: ofUserId }, { target: ofUserId }],
+          status: FriendshipStatus.ACCEPTED,
+        },
+        populateUsers ? ['proposer', 'target'] : undefined,
       );
 
-      counterpartiesIds = [
-        ...counterpartiesIds,
-        ...received.map((fs) => fs.proposer),
-      ];
+      return proposals.map((p) =>
+        p.proposer === ofUserId ? p.target : p.proposer,
+      );
     }
-
-    // Map the list of IDs to actual UserInfo objects
-
-    return counterpartiesIds;
   }
 
   async getFriendshipsWithUserInfo(
@@ -140,24 +143,24 @@ export class FriendshipsService {
     type: FriendshipType,
     userInfoConfig: SharedUserInfoConfig,
   ): Promise<SharedUserInfo[]> {
-    const counterpartiesIds = await this.getFriendships(ofUserId, type);
+    const counterpartiesIds = await this.getFriendships(ofUserId, type, false);
 
     return this.usersService.getManySharedUserInfo(
-      counterpartiesIds,
+      counterpartiesIds as string[],
       ofUserId,
       userInfoConfig,
     );
   }
 
   async reviewRequest(
-    targetUserId: string,
+    targetId: string,
     proposerId: string,
     accept: boolean,
   ): Promise<void> {
-    const friendship = await this.friendshipsRepo.getOne(
-      proposerId,
-      targetUserId,
-    );
+    const friendship = await this.friendshipsRepo.getOne({
+      proposer: proposerId,
+      target: targetId,
+    });
 
     if (!friendship)
       throw new NotFoundException(
@@ -169,8 +172,14 @@ export class FriendshipsService {
         `This request has already been accepted or rejected`,
       );
 
-    await this.friendshipsRepo.update(proposerId, targetUserId, {
-      status: accept ? FriendshipStatus.ACCEPTED : FriendshipStatus.REJECTED,
-    });
+    await this.friendshipsRepo.updateOne(
+      {
+        proposer: proposerId,
+        target: targetId,
+      },
+      {
+        status: accept ? FriendshipStatus.ACCEPTED : FriendshipStatus.REJECTED,
+      },
+    );
   }
 }

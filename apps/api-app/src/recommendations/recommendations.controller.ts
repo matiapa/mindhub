@@ -1,11 +1,23 @@
 import { RecommendationsService } from '@Feature/recommendations';
-import { ReviewRecommendationDto } from '@Feature/recommendations/dtos/review-request.dto';
+import {
+  GetRecommendationsReqDto,
+  GetRecommendationsResDto,
+} from '@Feature/recommendations/dtos/get-recommendations.dto';
+import { ReviewRecommendationReqDto } from '@Feature/recommendations/dtos/review-recommendation.dto';
 import {
   AuthGuard,
   AuthUser,
 } from '@Provider/authentication/authentication.guard';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiOkResponse,
@@ -22,8 +34,11 @@ export class RecommendationsController {
   @ApiOperation({ summary: 'Get friendship recommendations' })
   @ApiOkResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
-  getRecommendations(@AuthUser() user: PrincipalData) {
-    return this.recommendationsService.getRecommendations(user.id);
+  getRecommendations(
+    @Query() dto: GetRecommendationsReqDto,
+    @AuthUser() user: PrincipalData,
+  ): Promise<GetRecommendationsResDto> {
+    return this.recommendationsService.getRecommendations(dto, user.id);
   }
 
   @Put('/:recommendedUserId')
@@ -32,7 +47,7 @@ export class RecommendationsController {
   @UseGuards(AuthGuard)
   discardRecommendation(
     @Param('recommendedUserId') recommendedUserId: string,
-    @Body() dto: ReviewRecommendationDto,
+    @Body() dto: ReviewRecommendationReqDto,
     @AuthUser() user: PrincipalData,
   ) {
     return this.recommendationsService.reviewRecommendation(

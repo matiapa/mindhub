@@ -2,22 +2,21 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import moment from 'moment';
 import {
-  UpdateProfileDto,
-  UpdateProfileResDto,
-  UpdateLastConnectionDto,
-  UpdateLastConnectionResDto,
+  UpdateProfileReqDto,
+  UpdateLastConnectionReqDto,
   GetPictureUploadUrlDto,
   SharedUserInfo,
   SharedUserInfoConfig,
   OptUserInfoFields,
 } from './dto';
-import { User, UserFilters } from './entities';
+import { User } from './entities';
 import { UsersRepository } from './users.repository';
 import { UsersConfig } from './users.config';
 import { getDistanceInKm } from 'libs/utils';
 import { StorageService } from '@Provider/storage';
 import { AuthenticationService } from '@Provider/authentication';
 import { InterestsService, SharedInterestDto } from '@Feature/interests';
+import { GetOwnUserResDto } from './dto/get-own-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -33,45 +32,51 @@ export class UsersService {
     this.config = configService.get<UsersConfig>('users')!;
   }
 
+  // ----------------- UPDATE OPS -----------------
+
   public async updateProfile(
     userId: string,
-    dto: UpdateProfileDto,
-  ): Promise<UpdateProfileResDto> {
+    dto: UpdateProfileReqDto,
+  ): Promise<void> {
     const userData = await this.authService.getUserAuthProviderData(
       userId,
       this.config.cognitoPoolId,
     );
 
-    const updatedUser = await this.usersRepo.update({
-      _id: userId,
-      email: userData!.email,
-      profile: {
-        name: userData!.name,
-        gender: dto.gender,
-        birthday: dto.birthday,
-        biography: dto.biography,
+    await this.usersRepo.updateOne(
+      { _id: userId },
+      {
+        email: userData!.email,
+        profile: {
+          name: userData!.name,
+          gender: dto.gender,
+          birthday: new Date(dto.birthday),
+          biography: dto.biography,
+        },
       },
-    });
-
-    return updatedUser.profile;
+      { upsert: true },
+    );
   }
 
   public async updateLastConnection(
     userId: string,
-    dto: UpdateLastConnectionDto,
-  ): Promise<UpdateLastConnectionResDto> {
+    dto: UpdateLastConnectionReqDto,
+  ): Promise<void> {
     // TODO: Invalidate recomendations cache
 
-    const updatedUser = await this.usersRepo.update({
-      _id: userId,
-      lastConnection: {
-        date: new Date().toISOString(),
-        lat: dto.latitude,
-        long: dto.longitude,
+    await this.usersRepo.updateOne(
+      { _id: userId },
+      {
+        lastConnection: {
+          location: {
+            type: 'Point',
+            // Longitude goes firtst on GeoJSON format
+            coordinates: [dto.longitude, dto.latitude],
+          },
+          date: new Date(),
+        },
       },
-    });
-
-    return updatedUser.lastConnection!;
+    );
   }
 
   public getPictureUploadUrl(
@@ -86,14 +91,25 @@ export class UsersService {
     );
   }
 
-  public async getAllUserIds(filter?: UserFilters): Promise<string[]> {
-    // TODO: This method is temporal because its needed for the recommendation service
-    // until the Big Five model is ready, once it is implemented this has to be removed
-    return this.usersRepo.getAllIds(filter);
-  }
+  // ----------------- GET OPS -----------------
 
   public async getUserEntity(id: string): Promise<User | undefined> {
-    return this.usersRepo.getById(id);
+    return this.usersRepo.getOne({ _id: id });
+  }
+
+  public async getOwnUserInfo(id: string): Promise<GetOwnUserResDto> {
+    const user = await this.usersRepo.getOne({ _id: id });
+
+    const pictureUrl = await this.storageService.getDownloadUrl(
+      this.config.picturesBucket,
+      id,
+      this.config.pictureDownloadUrlTtl,
+    );
+
+    return {
+      profile: user.profile,
+      pictureUrl,
+    };
   }
 
   public async getSharedUserInfo(
@@ -101,7 +117,7 @@ export class UsersService {
     withUserId: string,
     config: SharedUserInfoConfig,
   ): Promise<SharedUserInfo> {
-    const user = await this.usersRepo.getById(ofUserId);
+    const user = await this.usersRepo.getOne({ _id: ofUserId });
     if (!user) throw new NotFoundException('User not found');
 
     return this.mapEntityToSharedInfo(user, withUserId, config);
@@ -114,7 +130,7 @@ export class UsersService {
   ): Promise<SharedUserInfo[]> {
     if (!ids.length) return [];
 
-    const users = await this.usersRepo.getManyByIds(ids);
+    const users = await this.usersRepo.getMany({ _id: { $in: ids } });
 
     return Promise.all(
       users.map((usr) => this.mapEntityToSharedInfo(usr, withUserId, config)),
@@ -136,15 +152,17 @@ export class UsersService {
 
     let distance: number | undefined;
     if (config.optionalFields.includes(OptUserInfoFields.DISTANCE)) {
-      if (user.lastConnection?.lat) {
-        const authenticatedUser = await this.usersRepo.getById(withUserId);
+      if (user.lastConnection?.location) {
+        const authenticatedUser = await this.usersRepo.getOne({
+          _id: withUserId,
+        });
 
-        if (authenticatedUser.lastConnection?.lat) {
+        if (authenticatedUser.lastConnection?.location) {
           distance = getDistanceInKm(
-            user.lastConnection.lat,
-            user.lastConnection.long,
-            authenticatedUser.lastConnection.lat,
-            authenticatedUser.lastConnection.long,
+            user.lastConnection.location.coordinates[1],
+            user.lastConnection.location.coordinates[0],
+            authenticatedUser.lastConnection.location.coordinates[1],
+            authenticatedUser.lastConnection.location.coordinates[0],
           );
         }
       }
@@ -163,10 +181,10 @@ export class UsersService {
 
     let sharedInterests: SharedInterestDto[] | undefined;
     if (config.optionalFields.includes(OptUserInfoFields.SHARED_INTERESTS)) {
-      const res = await this.interestsService.getSharedInterests(
+      const res = await this.interestsService.getSharedInterests([
         user._id,
         withUserId,
-      );
+      ]);
       sharedInterests = res.sharedInterests;
     }
 

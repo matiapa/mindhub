@@ -1,4 +1,3 @@
-import { UsersConfig } from '@Feature/users/users.config';
 import {
   CanActivate,
   ExecutionContext,
@@ -6,39 +5,46 @@ import {
   UnauthorizedException,
   createParamDecorator,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { Request } from 'express';
 import { PrincipalData, TokenPayload } from './authentication.types';
+import { ConfigService } from '@nestjs/config/dist/config.service';
+import { UsersConfig } from '@Feature/users/users.config';
+import { CognitoJwtVerifier } from 'aws-jwt-verify';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService) {}
+  config: UsersConfig;
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  constructor(configService: ConfigService) {
+    this.config = configService.get<UsersConfig>('users');
+  }
+
+  public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
     const token = this.extractTokenFromHeader(request);
-    if (!token) {
-      throw new UnauthorizedException();
-    }
-
-    const userPoolId =
-      this.configService.get<UsersConfig>('users').cognitoPoolId;
-
-    const verifier = CognitoJwtVerifier.create({
-      userPoolId,
-    });
+    if (!token) return false;
 
     try {
-      request['user'] = await verifier.verify(token);
-    } catch {
+      request['user'] = await this.verifyToken(token);
+    } catch (error) {
       throw new UnauthorizedException();
     }
+
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
+  public async verifyToken(token: string) {
+    const verifier = CognitoJwtVerifier.create({
+      userPoolId: this.config.cognitoPoolId,
+      clientId: this.config.cognitoClientId,
+      tokenUse: 'id',
+    });
+
+    return await verifier.verify(token, {});
+  }
+
+  public extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
@@ -51,7 +57,7 @@ export const AuthUser = createParamDecorator(
       .getRequest<Request & { user: TokenPayload }>();
     return {
       email: request.user.email,
-      id: request.user['cognito:username'],
+      id: request.user['sub'],
     };
   },
 );

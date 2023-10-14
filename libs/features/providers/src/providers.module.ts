@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { TokensRepository } from './repositories/tokens.repository';
 import { ProvidersAuthService } from './services/auth.service';
 import { InterestsModule } from '@Feature/interests';
 import { SpotifyModule } from 'libs/providers/spotify/src';
@@ -11,9 +10,19 @@ import { StorageModule } from '@Provider/storage';
 import { ProvidersSyncRequestService } from './services/sync-request.service';
 import { TextsModule } from '@Feature/texts';
 import { ProviderServices } from './types/provider.factory';
+import { ProvidersConnService } from './services/conn.service';
+import {
+  ProviderConnection,
+  ProviderConnectionSchema,
+} from './entities/connection.entity';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ProvidersConnRepository } from './repositories/connection.repository';
 
 @Module({
   imports: [
+    MongooseModule.forFeature([
+      { name: ProviderConnection.name, schema: ProviderConnectionSchema },
+    ]),
     InterestsModule,
     TextsModule,
     SpotifyModule,
@@ -22,14 +31,16 @@ import { ProviderServices } from './types/provider.factory';
     StorageModule,
   ],
   providers: [
+    ProvidersConnService,
+    ProvidersConnRepository,
     ProvidersAuthService,
     ProvidersFileService,
     ProvidersSyncRequestService,
     ProvidersSyncHandlerService,
     ProviderServices,
-    TokensRepository,
   ],
   exports: [
+    ProvidersConnService,
     ProvidersAuthService,
     ProvidersFileService,
     ProvidersSyncHandlerService,

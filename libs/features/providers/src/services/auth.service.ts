@@ -1,11 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ProviderEnum } from '../enums/providers.enum';
-import { TokensRepository } from '../repositories/tokens.repository';
-import { SyncRequest, SyncSource } from '../entities/sync-request.entity';
 import { ProvidersConfig } from '../providers.config';
 import { ConfigService } from '@nestjs/config';
 import { ProviderServices } from '../types/provider.factory';
 import { ProvidersSyncRequestService } from './sync-request.service';
+import { ProvidersConnRepository } from '../repositories/connection.repository';
+import { SyncSource } from '../enums/sync-source.enum';
 
 @Injectable()
 export class ProvidersAuthService {
@@ -14,7 +14,7 @@ export class ProvidersAuthService {
   private config: ProvidersConfig;
 
   constructor(
-    private readonly tokensRepo: TokensRepository,
+    private readonly connRepo: ProvidersConnRepository,
     private readonly providerServices: ProviderServices,
     private readonly syncRequestService: ProvidersSyncRequestService,
     configService: ConfigService,
@@ -22,20 +22,19 @@ export class ProvidersAuthService {
     this.config = configService.get<ProvidersConfig>('providers')!;
   }
 
-  public getLoginUrl(forUserId: string, providerName: ProviderEnum): string {
+  public getLoginUrl(state: string, providerName: ProviderEnum): string {
     const provider = this.providerServices.getAuthService(providerName);
 
-    return provider.getLoginUrl(forUserId);
+    return provider.getLoginUrl(state);
   }
 
   public async redeemCode(
     providerName: ProviderEnum,
-    ofUserId: string,
-    state: string,
+    userId: string,
     code?: string,
     error?: string,
   ) {
-    if (!code && error) {
+    if (!code) {
       return {
         url: this.config.api.codeRedeemRedirectUrl,
         status: 'failed',
@@ -43,35 +42,34 @@ export class ProvidersAuthService {
       };
     }
 
-    // If user id does not match state reject the request
-
-    if (state != ofUserId) {
-      throw new UnauthorizedException('Bad state');
-    }
-
     // Redeem the auth code for a token
 
     const provider = this.providerServices.getAuthService(providerName);
 
-    const res = await provider.redeemAuthCode(ofUserId, code!);
+    const res = await provider.redeemAuthCode(code);
 
     // Store the refresh token and scopes
 
-    await this.tokensRepo.update(ofUserId, providerName, {
-      refreshToken: res.refreshToken,
-      scopes: res.scopes,
-    });
+    await this.connRepo.updateOne(
+      { userId, provider: providerName },
+      {
+        oauth: {
+          refreshToken: res.refreshToken,
+          scopes: res.scopes,
+          date: new Date(),
+        },
+      },
+      { upsert: true },
+    );
 
     // Queue a synchronization request
 
-    const message: SyncRequest = {
-      userId: ofUserId,
+    const messageId = await this.syncRequestService.postRequest({
+      userId,
       provider: providerName,
       source: SyncSource.API,
       requester: 'authentication service',
-    };
-
-    const messageId = await this.syncRequestService.postRequest(message);
+    });
 
     this.logger.log(`Synchronization requested: MessageID=${messageId}`);
 
@@ -86,8 +84,11 @@ export class ProvidersAuthService {
   public async getRefreshToken(
     forUserId: string,
     provider: ProviderEnum,
-  ): Promise<string> {
-    const token = await this.tokensRepo.getOne(forUserId, provider);
-    return token.refreshToken;
+  ): Promise<string | null> {
+    const conn = await this.connRepo.getOne({ userId: forUserId, provider });
+    if (!conn || !conn.oauth) {
+      return null;
+    }
+    return conn.oauth.refreshToken;
   }
 }

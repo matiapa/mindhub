@@ -1,63 +1,44 @@
 import { ProviderEnum } from '@Feature/providers';
-import * as dynamoose from 'dynamoose';
-import { Item } from 'dynamoose/dist/Item';
 import { ResourceType } from '../enums/resource-type.enum';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
 export enum InterestRelevance {
   NORMAL = 'normal',
   FAVORITE = 'favorite',
 }
 
-export interface Interest {
-  userId: string;
-  relevance: InterestRelevance;
-  provider: ProviderEnum;
-  resourceId: string;
-  resource: {
-    name: string;
-    type: ResourceType;
-  };
+export class Resource {
+  @Prop({ required: true })
+  id: string;
+
+  @Prop({ required: true })
+  name: string;
+
+  @Prop({ type: String, enum: ResourceType, required: true })
+  type: ResourceType;
 }
 
-export class InterestItem extends Item implements Interest {
+@Schema({ timestamps: true })
+export class Interest {
+  @Prop({ required: true })
+  _id?: string;
+
+  @Prop({ required: true })
   userId: string;
-  relevance: InterestRelevance;
+
+  @Prop({ required: true, type: String, enum: ProviderEnum })
   provider: ProviderEnum;
-  resourceId: string;
-  resource: {
-    name: string;
-    type: ResourceType;
-  };
+
+  @Prop({ required: true, type: String, enum: InterestRelevance })
+  relevance: InterestRelevance;
+
+  @Prop({ required: true, _id: false })
+  resource: Resource;
+
+  @Prop({ required: false })
+  date?: Date;
 }
 
-const InterestSchema = new dynamoose.Schema(
-  {
-    userId: {
-      type: String,
-      hashKey: true,
-    },
-    relevance: String,
-    provider: String,
-    resourceId: {
-      type: String,
-      rangeKey: true,
-    },
-    resource: {
-      type: Object,
-      schema: {
-        name: String,
-        type: String,
-      },
-    },
-  },
-  {
-    timestamps: true,
-  },
-);
+export const InterestSchema = SchemaFactory.createForClass(Interest);
 
-export const interestModelFactory = (tableName) =>
-  dynamoose.model<InterestItem>('Interest', InterestSchema, {
-    tableName,
-    create: false,
-    waitForActive: false,
-  });
+InterestSchema.index({ userId: 1 });
