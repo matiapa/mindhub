@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProviderEnum } from '../enums/providers.enum';
 import { SpotifyAuthService, SpotifySyncService } from '@Provider/spotify';
 import { TwitterSyncService } from '@Provider/twitter';
@@ -12,29 +12,32 @@ export class ProviderServices {
     private readonly spotifySyncService: SpotifySyncService,
   ) {}
 
-  getAuthService(provider: ProviderEnum): ProviderAuthService {
+  getAuthService(provider: ProviderEnum): ProviderAuthService | null {
     switch (provider) {
       case ProviderEnum.SPOTIFY:
         return this.spotifyAuthService;
       case ProviderEnum.TWITTER:
-        throw new BadRequestException('Twitter does not have an auth service');
+      case ProviderEnum.USER:
+        return null;
       default:
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _exhaustiveCheck: never = provider;
-        throw new BadRequestException('Invalid provider');
+        return null;
     }
   }
 
-  getSyncService(provider: ProviderEnum): ProviderSyncService {
+  getSyncService(provider: ProviderEnum): ProviderSyncService | null {
     switch (provider) {
       case ProviderEnum.SPOTIFY:
         return this.spotifySyncService;
       case ProviderEnum.TWITTER:
         return this.twitterSyncService;
+      case ProviderEnum.USER:
+        return null;
       default:
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _exhaustiveCheck: never = provider;
-        throw new BadRequestException('Invalid provider');
+        return null;
     }
   }
 }

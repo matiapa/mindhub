@@ -1,7 +1,7 @@
 import { QueueService } from '@Provider/queue';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SyncRequest } from '../entities/sync-request.entity';
+import { SyncRequestDto } from '../dtos/sync-request.dto';
 import { ProvidersConfig } from '../providers.config';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class ProvidersSyncRequestService {
     this.config = this.configService.get<ProvidersConfig>('providers')!;
   }
 
-  public postRequest(request: SyncRequest): Promise<string> {
+  public postRequest(request: SyncRequestDto): Promise<string> {
     return this.queueService.sendMessage(
       this.config.sync.requestsQueueUrl,
       request,

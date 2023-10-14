@@ -3,11 +3,11 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class UsersConfig {
   @IsString()
   @IsNotEmpty()
-  tableName: string = process.env.USERS_TABLE_NAME!;
+  cognitoPoolId: string = process.env.USERS_COGNITO_POOL_ID!;
 
   @IsString()
   @IsNotEmpty()
-  cognitoPoolId: string = process.env.USERS_POOL_ID!;
+  cognitoClientId: string = process.env.USERS_COGNITO_CLIENT_ID!;
 
   @IsString()
   @IsNotEmpty()

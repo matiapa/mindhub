@@ -3,9 +3,10 @@ import { ProviderEnum } from '../enums/providers.enum';
 import { ProvidersConfig } from '../providers.config';
 import { ConfigService } from '@nestjs/config';
 import { StorageService } from '@Provider/storage';
-import { SyncSource } from '../entities/sync-request.entity';
 import { Readable } from 'stream';
 import { ProvidersSyncRequestService } from './sync-request.service';
+import { ProvidersConnRepository } from '../repositories/connection.repository';
+import { SyncSource } from '../enums/sync-source.enum';
 
 @Injectable()
 export class ProvidersFileService {
@@ -14,6 +15,7 @@ export class ProvidersFileService {
   private config: ProvidersConfig;
 
   constructor(
+    private connRepo: ProvidersConnRepository,
     private readonly storageService: StorageService,
     private readonly syncRequestService: ProvidersSyncRequestService,
     configService: ConfigService,
@@ -39,13 +41,28 @@ export class ProvidersFileService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, provider, userId] = key.match(/^([^/]+)\/([^/]+)\.zip$/) || [];
 
-    await this.syncRequestService.postRequest({
+    await this.connRepo.updateOne(
+      { userId, provider },
+      {
+        file: {
+          key,
+          date: new Date(),
+        },
+      },
+      { upsert: true },
+    );
+
+    // Queue a synchronization request
+
+    const messageId = await this.syncRequestService.postRequest({
       userId,
       provider: provider as ProviderEnum,
       requester: 'file upload service',
       source: SyncSource.FILE,
     });
-  };
+
+    this.logger.log(`Synchronization requested: MessageID=${messageId}`);
+  }
 
   public getDownloadStream(
     forUserId: string,

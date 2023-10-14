@@ -12,10 +12,6 @@ class ApiConfig {
   @IsNotEmpty()
   codeRedeemRedirectUrl: string =
     process.env.PROVIDERS_API_CODE_REDEEM_REDIRECT_URL!;
-
-  @IsString()
-  @IsNotEmpty()
-  tokensTableName: string = process.env.PROVIDERS_API_TOKENS_TABLE_NAME!;
 }
 
 class FileConfig {

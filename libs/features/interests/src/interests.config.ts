@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class InterestsConfig {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
-  interestsTableName: string = process.env.INTERESTS_TABLE_NAME!;
+  uuidNamespace: string = process.env.INTERESTS_UUID_NAMESPACE;
 }

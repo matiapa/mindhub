@@ -61,6 +61,19 @@ export class FriendshipsController {
     );
   }
 
+  @Get('/raw')
+  @ApiOperation({
+    summary: 'Get friendships, either accepted ones, or sent/received requests',
+  })
+  @ApiOkResponse({ description: 'OK', type: Array<SharedUserInfo> })
+  @UseGuards(AuthGuard)
+  getRawFriendships(
+    @Query() dto: GetFriendshipsDto,
+    @AuthUser() user: PrincipalData,
+  ) {
+    return this.friendshipsService.getFriendships(user.id, dto.type, true);
+  }
+
   @Put('/request/:proposerId')
   @ApiOperation({ summary: 'Accept or reject a friendship request' })
   @ApiCreatedResponse({ description: 'OK' })

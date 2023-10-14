@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { Gender } from '../entities/user.entity';
 
-export class UpdateProfileDto {
+export class UpdateProfileReqDto {
   @IsEnum(Gender)
   @IsNotEmpty()
   gender: Gender;
@@ -20,5 +20,3 @@ export class UpdateProfileDto {
   @IsOptional()
   biography?: string;
 }
-
-export class UpdateProfileResDto extends UpdateProfileDto {}

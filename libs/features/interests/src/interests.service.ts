@@ -1,55 +1,56 @@
 import { Injectable } from '@nestjs/common';
 import { Interest } from './entities/interest.entity';
 import { InterestsRepository } from './interests.repository';
+import { GetSharedInterestsResDto } from './dtos/get-shared-interests.dto';
 import {
-  GetSharedInterestsResDto,
-  SharedInterestDto,
-} from './dtos/shared-interests.dto';
-import { GetInterestsResDto } from './dtos/interest.dto';
+  GetUserInterestsReqDto,
+  GetUserInterestsResDto,
+} from './dtos/get-user-interests.dto';
 
 @Injectable()
 export class InterestsService {
   constructor(private readonly interestsRepo: InterestsRepository) {}
 
-  async create(interest: Interest): Promise<void> {
-    return this.interestsRepo.create(interest);
+  async upsertMany(interests: Interest[]): Promise<void> {
+    await this.interestsRepo.upsertMany(interests);
   }
 
-  async createMany(interests: Interest[]): Promise<void> {
-    return this.interestsRepo.createMany(interests);
-  }
+  async getUserInterests(
+    dto: GetUserInterestsReqDto,
+    userId: string,
+  ): Promise<GetUserInterestsResDto> {
+    const interests = await this.interestsRepo.getPaginated(
+      {
+        offset: dto.offset,
+        limit: dto.limit,
+        sortBy: 'date',
+        sortOrder: 'desc',
+      },
+      { userId },
+    );
 
-  async getUserInterests(userId: string): Promise<GetInterestsResDto> {
     return {
-      interests: await this.interestsRepo.getByUser(userId),
+      interests: interests.map((i) => ({
+        _id: i._id,
+        relevance: i.relevance,
+        provider: i.provider,
+        resource: i.resource,
+        date: i.date,
+      })),
+      count: interests.length,
+      total: await this.interestsRepo.count({ userId }),
     };
   }
 
   async getSharedInterests(
-    userA: string,
-    userB: string,
+    userIds: string[],
   ): Promise<GetSharedInterestsResDto> {
-    const interestsUserA = await this.interestsRepo.getByUser(userA);
-    const interestsUserB = await this.interestsRepo.getByUser(userB);
-
-    const sharedInterests: SharedInterestDto[] = [];
-    for (const interestOfA of interestsUserA) {
-      const interestOfB = interestsUserB.find(
-        (i) => i.resourceId === interestOfA.resourceId,
-      );
-      if (interestOfB) {
-        sharedInterests.push({
-          relevanceForUserA: interestOfA.relevance,
-          relevanceForUserB: interestOfB.relevance,
-          resource: interestOfA.resource,
-        });
-      }
-    }
-
-    return { sharedInterests };
+    return {
+      sharedInterests: await this.interestsRepo.getShared(userIds),
+    };
   }
 
-  async remove(userId: string, resourceId: string): Promise<void> {
-    return this.interestsRepo.remove(userId, resourceId);
+  async remove(_id: string, userId: string): Promise<void> {
+    await this.interestsRepo.remove({ _id, userId });
   }
 }

@@ -4,12 +4,11 @@ import {
   SharedUserInfoConfig,
 } from '@Feature/users';
 import {
-  UpdateProfileResDto,
-  UpdateProfileDto,
-  UpdateLastConnectionResDto,
-  UpdateLastConnectionDto,
+  UpdateProfileReqDto,
+  UpdateLastConnectionReqDto,
   GetPictureUploadUrlDto,
 } from '@Feature/users/dto';
+import { GetOwnUserResDto } from '@Feature/users/dto/get-own-user.dto';
 import {
   AuthGuard,
   AuthUser,
@@ -34,25 +33,33 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('/me/profile')
+  @ApiOperation({ summary: 'Get authenticated user profile' })
+  @ApiCreatedResponse({ description: 'OK' })
+  @UseGuards(AuthGuard)
+  getProfile(@AuthUser() user: PrincipalData): Promise<GetOwnUserResDto> {
+    return this.usersService.getOwnUserInfo(user.id);
+  }
+
   @Put('/me/profile')
   @ApiOperation({ summary: 'Update authenticated user profile' })
-  @ApiCreatedResponse({ description: 'OK', type: UpdateProfileResDto })
+  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   updateProfile(
-    @Body() dto: UpdateProfileDto,
+    @Body() dto: UpdateProfileReqDto,
     @AuthUser() user: PrincipalData,
-  ): Promise<UpdateProfileResDto> {
+  ): Promise<void> {
     return this.usersService.updateProfile(user.id, dto);
   }
 
   @Put('/me/connection')
   @ApiOperation({ summary: 'Update authenticated user last connection' })
-  @ApiCreatedResponse({ description: 'OK', type: UpdateLastConnectionResDto })
+  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   updateLastConnection(
-    @Body() dto: UpdateLastConnectionDto,
+    @Body() dto: UpdateLastConnectionReqDto,
     @AuthUser() user: PrincipalData,
-  ): Promise<UpdateLastConnectionResDto> {
+  ): Promise<void> {
     return this.usersService.updateLastConnection(user.id, dto);
   }
 

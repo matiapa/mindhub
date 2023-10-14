@@ -10,6 +10,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -18,8 +19,12 @@ import {
 } from '@Provider/authentication/authentication.guard';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
 import { TextsService } from '@Feature/texts';
-import { CreateTextDto, GetTextsResDto } from '@Feature/texts/dtos/text-dto';
+import {
+  GetUserTextsReqDto,
+  GetUserTextsResDto,
+} from '@Feature/texts/dtos/get-user-texts.dto';
 import { ProviderEnum } from '@Feature/providers';
+import { CreateTextDto } from '@Feature/texts/dtos/create-text.dto';
 
 @Controller('/texts')
 export class TextsController {
@@ -33,31 +38,36 @@ export class TextsController {
     @Body() dto: CreateTextDto,
     @AuthUser() user: PrincipalData,
   ): Promise<void> {
-    return this.textsService.create({
-      ownerId: user.id,
-      provider: ProviderEnum.USER,
-      rawText: dto.rawText,
-      language: dto.language,
-      date: new Date().toISOString(),
-    });
+    return this.textsService.upsertMany([
+      {
+        userId: user.id,
+        provider: ProviderEnum.USER,
+        rawText: dto.rawText,
+        language: dto.language,
+        date: new Date(),
+      },
+    ]);
   }
 
   @Get('/')
   @ApiOperation({ summary: 'Get the texts of the authenticated user' })
-  @ApiOkResponse({ description: 'OK', type: GetTextsResDto })
+  @ApiOkResponse({ description: 'OK', type: GetUserTextsResDto })
   @UseGuards(AuthGuard)
-  getOwn(@AuthUser() user: PrincipalData): Promise<GetTextsResDto> {
-    return this.textsService.getUserTexts(user.id);
+  getOwn(
+    @Query() dto: GetUserTextsReqDto,
+    @AuthUser() user: PrincipalData,
+  ): Promise<GetUserTextsResDto> {
+    return this.textsService.getUserTexts(dto, user.id);
   }
 
-  @Delete('/:date')
+  @Delete('/:id')
   @ApiOperation({ summary: 'Delete a text' })
   @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   async delete(
-    @Param('date') date: string,
+    @Param('id') id: string,
     @AuthUser() user: PrincipalData,
   ): Promise<void> {
-    return this.textsService.remove(user.id, date);
+    return this.textsService.remove(id, user.id);
   }
 }

@@ -6,8 +6,10 @@ import { SpotifyConfig } from './spotify.config';
 import { Interest } from '@Feature/interests';
 import { InterestRelevance } from '@Feature/interests/entities/interest.entity';
 import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
-import { SyncResult } from '@Feature/providers/entities/sync-result.entity';
-import { ProviderSyncService } from '@Feature/providers/types/provider.interface';
+import {
+  ProviderSyncService,
+  SyncResult,
+} from '@Feature/providers/types/provider.interface';
 
 @Injectable()
 export class SpotifySyncService implements ProviderSyncService {
@@ -73,8 +75,8 @@ export class SpotifySyncService implements ProviderSyncService {
             userId,
             provider: ProviderEnum.SPOTIFY,
             relevance: InterestRelevance.NORMAL,
-            resourceId: track['id'],
             resource: {
+              id: track['id'],
               name: track['name'],
               type: ResourceType.TRACK,
             },
@@ -110,10 +112,10 @@ export class SpotifySyncService implements ProviderSyncService {
             userId,
             provider: ProviderEnum.SPOTIFY,
             relevance: InterestRelevance.NORMAL,
-            resourceId: artist['id'],
             resource: {
+              id: artist['id'],
               name: artist['name'],
-              type: ResourceType.TRACK,
+              type: ResourceType.ARTIST,
             },
           });
         } catch (error) {

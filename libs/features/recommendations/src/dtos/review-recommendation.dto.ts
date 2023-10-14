@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty } from 'class-validator';
 
-export class ReviewRecommendationDto {
+export class ReviewRecommendationReqDto {
   @IsBoolean()
   @IsNotEmpty()
   accept: boolean;

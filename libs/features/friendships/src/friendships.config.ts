@@ -1,10 +1,6 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class FriendshipsConfig {
-  @IsString()
-  @IsNotEmpty()
-  friendshipsTableName: string = process.env.FRIENDSHIPS_TABLE_NAME!;
-
   @IsEmail()
   @IsNotEmpty()
   friendshipRequestsSenderEmail: string =

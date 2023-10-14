@@ -7,18 +7,11 @@ import {
 import { PrincipalData } from '@Provider/authentication/authentication.types';
 import { QueueService } from '@Provider/queue';
 import { StorageService } from '@Provider/storage';
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  Logger,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Logger, Param, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
-@Controller('/provider/:providerName')
+@Controller('/providers/:providerName')
 export class FileController {
   private readonly logger = new Logger(FileController.name);
   private config: ProvidersConfig;
@@ -60,8 +53,8 @@ export class FileController {
     @Param('providerName') providerName: string,
     @AuthUser() user: PrincipalData,
   ): Promise<string> {
-    if (!(providerName in ProviderEnum))
-      throw new BadRequestException('Invalid provider');
+    // if (!(providerName in ProviderEnum))
+    //   throw new BadRequestException('Invalid provider');
 
     return this.providersFileService.getUploadUrl(
       user.id,

@@ -1,6 +1,11 @@
-import { SyncResult } from '../entities/sync-result.entity';
-import { Token } from '../entities/tokens.entity';
+import { Interest } from '@Feature/interests/entities/interest.entity';
 import { ProviderEnum } from '../enums/providers.enum';
+import { Text } from '@Feature/texts';
+
+export interface SyncResult {
+  interests?: Interest[];
+  texts?: Text[];
+}
 
 export interface ProviderSyncService {
   providerName: ProviderEnum;
@@ -10,10 +15,15 @@ export interface ProviderSyncService {
   syncFromFile(userId: string, file: Buffer): Promise<SyncResult>;
 }
 
+export interface OAuthToken {
+  refreshToken: string;
+  scopes: string;
+}
+
 export interface ProviderAuthService {
   providerName: ProviderEnum;
 
-  getLoginUrl(forUserId: string): string;
+  getLoginUrl(state: string): string;
 
-  redeemAuthCode(ofUserId: string, code: string): Promise<Token>;
+  redeemAuthCode(code: string): Promise<OAuthToken>;
 }

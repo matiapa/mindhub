@@ -1,11 +1,12 @@
 import { FriendshipsConfig } from '@Feature/friendships/friendships.config';
-import { InterestsConfig } from '@Feature/interests';
 import { ProvidersConfig } from '@Feature/providers';
 import { UsersConfig } from '@Feature/users/users.config';
 import { SpotifyConfig } from 'libs/providers/spotify/src';
 import { Type, plainToInstance } from 'class-transformer';
 import { ValidateNested, validateSync } from 'class-validator';
 import { TextsConfig } from '@Feature/texts';
+import { MongoConfig } from '@Provider/mongodb';
+import { InterestsConfig } from '@Feature/interests/interests.config';
 
 class AppConfig {
   @Type(() => UsersConfig)
@@ -16,6 +17,10 @@ class AppConfig {
   @ValidateNested()
   friendships = new FriendshipsConfig();
 
+  @Type(() => ProvidersConfig)
+  @ValidateNested()
+  providers = new ProvidersConfig();
+
   @Type(() => InterestsConfig)
   @ValidateNested()
   interests = new InterestsConfig();
@@ -24,13 +29,13 @@ class AppConfig {
   @ValidateNested()
   texts = new TextsConfig();
 
-  @Type(() => ProvidersConfig)
-  @ValidateNested()
-  providers = new ProvidersConfig();
-
   @Type(() => SpotifyConfig)
   @ValidateNested()
   spotify = new SpotifyConfig();
+
+  @Type(() => MongoConfig)
+  @ValidateNested()
+  mongo = new MongoConfig();
 }
 
 export const validate = (config: typeof process.env) => {

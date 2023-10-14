@@ -1,42 +1,77 @@
 import { Injectable } from '@nestjs/common';
 import {
-  Interest,
-  InterestItem,
-  interestModelFactory,
-} from './entities/interest.entity';
-import { ModelType } from 'dynamoose/dist/General';
-import { InterestsConfig } from './interests.config';
+  BaseMongooseRepository,
+  DeleteResult,
+  IPaginatedParams,
+} from '@Provider/mongodb';
+import { Interest } from './entities/interest.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { FilterQuery, Model } from 'mongoose';
+import { SharedInterestDto } from './dtos';
+import _ from 'lodash';
+import { v5 as uuidv5 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-
-const MAX_PUT_ITEMS = 25;
+import { InterestsConfig } from './interests.config';
 
 @Injectable()
-export class InterestsRepository {
-  private model: ModelType<InterestItem>;
+export class InterestsRepository extends BaseMongooseRepository<Interest> {
+  private config: InterestsConfig;
 
-  constructor(configService: ConfigService) {
-    const config = configService.get<InterestsConfig>('interests')!;
-    this.model = interestModelFactory(config.interestsTableName);
+  constructor(
+    @InjectModel(Interest.name) protected model: Model<Interest>,
+    configService: ConfigService,
+  ) {
+    super(model);
+    this.config = configService.get<InterestsConfig>('interests');
   }
 
-  async create(interest: Interest): Promise<void> {
-    await this.model.update(interest);
+  public async upsertMany(interests: Interest[]): Promise<void> {
+    const interestsWithIds = interests.map((i) => {
+      const _id = uuidv5(
+        `${i.userId}|${i.resource.id}`,
+        this.config.uuidNamespace,
+      );
+      return _.assign(i, { _id });
+    });
+    await super.upsertMany(interestsWithIds);
   }
 
-  async createMany(interests: Interest[]): Promise<void> {
-    for (let i = 0; i < interests.length; i += MAX_PUT_ITEMS) {
-      const len = Math.min(i + MAX_PUT_ITEMS, interests.length);
-      const slice = interests.slice(i, len);
-      await this.model.batchPut(slice);
-    }
+  public count(filter?: FilterQuery<Interest>): Promise<number> {
+    return super.count(filter);
   }
 
-  async getByUser(userId: string): Promise<Interest[]> {
-    const res = await this.model.query({ userId }).exec();
-    return [...res.values()];
+  public getPaginated(
+    paginated: IPaginatedParams<Interest>,
+    filter?: FilterQuery<Interest>,
+  ): Promise<Interest[]> {
+    return super.getPaginated(paginated, filter);
   }
 
-  remove(userId: string, resourceId: string): Promise<void> {
-    return this.model.delete({ userId, resourceId });
+  public async getShared(userIds: string[]): Promise<SharedInterestDto[]> {
+    const res = await this.model.aggregate([
+      {
+        $match: { userId: { $in: userIds } },
+      },
+      {
+        $group: {
+          _id: '$resource.id',
+          resource: { $first: '$resource' },
+          relevances: { $push: { userId: '$userId', relevance: '$relevance' } },
+          count: { $count: {} },
+        },
+      },
+      {
+        $match: { count: { $gte: 2 } },
+      },
+    ]);
+
+    return res.map((e) => ({
+      resource: e.resource,
+      relevances: e.relevances,
+    }));
+  }
+
+  public async remove(filter: FilterQuery<Interest>): Promise<DeleteResult> {
+    return super.deleteMany(filter);
   }
 }

@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ApiProvidersModule } from './providers/providers.module';
 import { ApiInterestsModule } from './interests/interests.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validate } from './app.config';
 import { ApiUsersModule } from './users/users.module';
 import { ApiFriendshipsModule } from './friendships/friendships.module';
 import { ApiRecommendationsModule } from './recommendations/recommendations.module';
 import { ApiTextsModule } from './texts/texts.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { createMongooseOptions } from '@Provider/mongodb/mongoose-config';
 
 @Module({
   imports: [
@@ -14,6 +16,12 @@ import { ApiTextsModule } from './texts/texts.module';
       validate,
       isGlobal: true,
       envFilePath: ['.env', 'envs/.env.default'],
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) =>
+        createMongooseOptions(configService.get('mongo')),
+      inject: [ConfigService],
     }),
     ApiUsersModule,
     ApiFriendshipsModule,

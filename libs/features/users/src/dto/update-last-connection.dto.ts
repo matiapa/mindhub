@@ -1,11 +1,6 @@
-import {
-  IsDateString,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-} from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 
-export class UpdateLastConnectionDto {
+export class UpdateLastConnectionReqDto {
   @IsNumber()
   @IsOptional()
   latitude?: number;
@@ -13,10 +8,4 @@ export class UpdateLastConnectionDto {
   @IsNumber()
   @IsOptional()
   longitude?: number;
-}
-
-export class UpdateLastConnectionResDto extends UpdateLastConnectionDto {
-  @IsDateString()
-  @IsNotEmpty()
-  date: string;
 }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TextsController } from './texts.controller';
-import { InterestsModule as TextsModule } from '@Feature/interests';
+import { TextsModule } from '@Feature/texts';
 
 @Module({
   imports: [TextsModule],

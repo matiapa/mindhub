@@ -10,7 +10,9 @@ export interface StorageEvent {
 
 @Injectable()
 export class StorageService {
-  private s3 = new AWS.S3();
+  private s3 = new AWS.S3({
+    signatureVersion: 'v4',
+  });
 
   async getUploadUrl(
     bucket: string,

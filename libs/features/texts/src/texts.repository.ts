@@ -1,38 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { TextData, TextItem, textModelFactory } from './entities/text.entity';
-import { ModelType } from 'dynamoose/dist/General';
+import { Text } from './entities/text.entity';
+import {
+  BaseMongooseRepository,
+  DeleteResult,
+  IPaginatedParams,
+} from '@Provider/mongodb';
+import { FilterQuery, Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import _ from 'lodash';
+import { v5 as uuidv5 } from 'uuid';
 import { TextsConfig } from './texts.config';
 import { ConfigService } from '@nestjs/config';
 
-const MAX_PUT_ITEMS = 25;
-
 @Injectable()
-export class TextsRepository {
-  private model: ModelType<TextItem>;
+export class TextsRepository extends BaseMongooseRepository<Text> {
+  private config: TextsConfig;
 
-  constructor(configService: ConfigService) {
-    const config = configService.get<TextsConfig>('texts')!;
-    this.model = textModelFactory(config.textsTableName);
+  constructor(
+    @InjectModel(Text.name) protected model: Model<Text>,
+    configService: ConfigService,
+  ) {
+    super(model);
+    this.config = configService.get<TextsConfig>('texts');
   }
 
-  async create(text: TextData): Promise<void> {
-    await this.model.create(text);
+  public async upsertMany(texts: Text[]): Promise<void> {
+    const textsWithIds = texts.map((t) => {
+      const _id = uuidv5(`${t.userId}|${t.rawText}`, this.config.uuidNamespace);
+      return _.assign(t, { _id });
+    });
+    await super.upsertMany(textsWithIds);
   }
 
-  async createMany(texts: TextData[]): Promise<void> {
-    for (let i = 0; i < texts.length; i += MAX_PUT_ITEMS) {
-      const len = Math.min(i + MAX_PUT_ITEMS, texts.length);
-      const slice = texts.slice(i, len);
-      await this.model.batchPut(slice);
-    }
+  public count(filter?: FilterQuery<Text>): Promise<number> {
+    return super.count(filter);
   }
 
-  async getByUser(userId: string): Promise<TextData[]> {
-    const res = await this.model.query({ userId }).exec();
-    return [...res.values()];
+  public getPaginated(
+    paginated: IPaginatedParams<Text>,
+    filter?: FilterQuery<Text>,
+  ): Promise<Text[]> {
+    return super.getPaginated(paginated, filter);
   }
 
-  remove(userId: string, date: string): Promise<void> {
-    return this.model.delete({ userId, date });
+  public async remove(filter: FilterQuery<Text>): Promise<DeleteResult> {
+    return super.deleteMany(filter);
   }
 }

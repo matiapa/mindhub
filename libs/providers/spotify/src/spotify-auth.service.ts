@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { SpotifyConfig } from './spotify.config';
 import { ConfigService } from '@nestjs/config';
-import { ProviderAuthService } from '@Feature/providers/types/provider.interface';
-import { Token } from '@Feature/providers/entities/tokens.entity';
+import {
+  OAuthToken,
+  ProviderAuthService,
+} from '@Feature/providers/types/provider.interface';
 import { ProviderEnum } from '@Feature/providers';
 
 @Injectable()
@@ -31,7 +33,7 @@ export class SpotifyAuthService implements ProviderAuthService {
     );
   }
 
-  async redeemAuthCode(ofUserId: string, code: string): Promise<Token> {
+  async redeemAuthCode(code: string): Promise<OAuthToken> {
     const clientAuthToken = Buffer.from(
       this.config.clientId + ':' + this.config.clientSecret,
     ).toString('base64');
@@ -51,8 +53,6 @@ export class SpotifyAuthService implements ProviderAuthService {
     });
 
     return {
-      userId: ofUserId,
-      service: ProviderEnum.SPOTIFY,
       refreshToken: res.data['refresh_token'],
       scopes: res.data['scope'],
     };
