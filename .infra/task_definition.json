@@ -1,0 +1,93 @@
+{
+    "family": "mindhub-api",
+    "containerDefinitions": [
+        {
+            "name": "nginx",
+            "image": "public.ecr.aws/n9t4t7x6/nginx",
+            "cpu": 256,
+            "memory": 512,
+            "essential": true,
+            "portMappings": [
+              {
+                "containerPort": 80,
+                "hostPort": 80,
+                "protocol": "tcp"
+              }
+            ]
+        },
+        {
+            "name": "api",
+            "image": "public.ecr.aws/n9t4t7x6/mindhub-api",
+            "cpu": 256,
+            "memory": 512,
+            "essential": true,
+            "environment": [
+                {
+                    "name": "PORT",
+                    "value": "3000"
+                },
+                {
+                    "name": "SPOTIFY_CLIENT_ID",
+                    "value": "5750decafb774a1d81ddb26fdb70623b"
+                },
+                {
+                    "name": "SPOTIFY_AUTH_CODE_REDEEM_URL",
+                    "value": "http://127.0.0.1:3000/providers/spotify/redeemCode"
+                },
+                {
+                    "name": "SPOTIFY_CLIENT_SECRET",
+                    "value": "cdd0708661b64a10b12bd09b14aa540d"
+                },
+                {
+                    "name": "MONGO_ATLAS_URI",
+                    "value": "mongodb+srv://mindhub-api:VHg9ZboGbIXWxB8D@maincluster.vsueoh3.mongodb.net/"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/mindhub-api",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        },
+        {
+            "name": "aws-otel-collector",
+            "image": "public.ecr.aws/aws-observability/aws-otel-collector:v0.33.0",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "command": [
+                "--config=/etc/ecs/ecs-cloudwatch-xray.yaml"
+            ],
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/ecs-aws-otel-sidecar-collector",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        }
+    ],
+    "taskRoleArn": "arn:aws:iam::598854603683:role/ecs-general-role",
+    "executionRoleArn": "arn:aws:iam::598854603683:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "1024",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
