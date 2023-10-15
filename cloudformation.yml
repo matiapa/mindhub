@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  CognitoUserPoolArn:
+    Type: String
+    Default: arn:aws:cognito-idp:us-east-1:598854603683:userpool/us-east-1_ACYhVKPRs
+
+  PicturesBucketAllowedOrigins:
+    Type: String
+    Default: https://mindhub.ar
+
+Resources:
+  # --------------------------- BUCKETS ---------------------------
+
+  PicturesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: mindhub-pictures-bucket
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+            - "*"
+          AllowedMethods:
+            - GET
+            - PUT
+          AllowedOrigins:
+            - !Ref PicturesBucketAllowedOrigins
+
+  ProviderFilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: provider-files-bucket
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue:
+              Fn::GetAtt: [ ProviderFileUploadedQueue, Arn ]
+
+  # --------------------------- QUEUES ---------------------------
+
+  ProviderSyncRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-sync-requests-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: [ ProviderSyncRequestsDltQueue, Arn ]
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  ProviderSyncRequestsDltQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-sync-requests-dlt-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      # TODO: Circular dependency, by the moment allow all
+      # RedriveAllowPolicy:
+      #   redrivePermission: byQueue
+      #   sourceQueueArns:
+      #     - Fn::GetAtt: [ ProviderSyncRequestQueue, Arn ]
+
+  ProviderFileUploadedQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-file-uploaded-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      VisibilityTimeout: 30
+
+  ProviderFileUploadedQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    DependsOn:
+      - ProviderFileUploadedQueue
+    Properties:
+      Queues:
+        - !Ref ProviderFileUploadedQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - SQS:SendMessage
+            Resource:
+              Fn::GetAtt: [ ProviderFileUploadedQueue, Arn ]
+            Condition:
+              ArnLike:
+                aws:SourceArn:
+                  Fn::GetAtt: [ ProviderFilesBucket, Arn ]
+
+  # --------------------------- NETWORK ---------------------------
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Ipv4IpamPoolId: CidrBlock
+
+  # --------------------------- BEANSTALK ---------------------------
+
+  # BeanstalkApp:
+  #   Type: AWS::ElasticBeanstalk::Application
+
+  # BeanstalkEnv:
+  #   Type: AWS::ElasticBeanstalk::Environment
+  #   Properties: 
+  #     ApplicationName:
+  #       Fn::GetAtt: [ ProviderFileUploadedQueuePolicy, Name ]
+  #     EnvironmentName: mindhub-api-env
+  #     OptionSettings: 
+  #       - OptionSetting
+  #     PlatformArn: String
+  #     SolutionStackName: String
+  #     Tags: 
+  #       - Tag
+  #     TemplateName: String
+  #     Tier: 
+  #       Tier
+  #     VersionLabel: String
+        
