@@ -15,5 +15,6 @@ export class SpotifyConfig {
 
   @IsUrl()
   @IsNotEmpty()
-  authCodeRedeemUrl: string = process.env.SPOTIFY_AUTH_CODE_REDEEM_URL!;
+  // TODO: This url building should be done on service
+  authCodeRedeemUrl: string = `${process.env.DEPLOYMENT_BASE_URL}/providers/spotify/redeemCode`;
 }

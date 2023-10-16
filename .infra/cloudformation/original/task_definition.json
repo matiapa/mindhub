@@ -1,0 +1,105 @@
+{
+    "family": "mindhub-api",
+    "containerDefinitions": [
+        {
+            "name": "nginx",
+            "image": "public.ecr.aws/n9t4t7x6/nginx",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "nginx-80-tcp",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/mindhub-api",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        },
+        {
+            "name": "api",
+            "image": "public.ecr.aws/n9t4t7x6/mindhub-api",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "PORT",
+                    "value": "3000"
+                },
+                {
+                    "name": "SPOTIFY_CLIENT_SECRET",
+                    "value": "cdd0708661b64a10b12bd09b14aa540d"
+                },
+                {
+                    "name": "USERS_PICTURES_BUCKET",
+                    "value": "mindhub-pictures-bucket"
+                },
+                {
+                    "name": "DEPLOYMENT_BASE_URL",
+                    "value": "http://127.0.0.1:3000"
+                },
+                {
+                    "name": "MONGO_ATLAS_URI",
+                    "value": "mongodb+srv://mindhub-api:VHg9ZboGbIXWxB8D@maincluster.vsueoh3.mongodb.net/"
+                },
+                {
+                    "name": "PROVIDERS_FILES_BUCKET",
+                    "value": "provider-files-bucket"
+                },
+                {
+                    "name": "USERS_COGNITO_POOL_ID",
+                    "value": "us-east-1_ACYhVKPRs"
+                },
+                {
+                    "name": "PROVIDERS_FILE_UPLOADED_QUEUE_URL",
+                    "value": "https://sqs.us-east-1.amazonaws.com/598854603683/provider-file-uploaded-queue"
+                },
+                {
+                    "name": "USERS_COGNITO_CLIENT_ID",
+                    "value": "62bbaabpoj8js7g19utrdnpnto"
+                },
+                {
+                    "name": "PROVIDERS_SYNC_REQUESTS_QUEUE_URL",
+                    "value": "https://sqs.us-east-1.amazonaws.com/598854603683/provider-sync-requests-queue"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/mindhub-api",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        }
+    ],
+    "taskRoleArn": "arn:aws:iam::598854603683:role/ecs-general-role",
+    "executionRoleArn": "arn:aws:iam::598854603683:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
