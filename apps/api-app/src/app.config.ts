@@ -7,8 +7,18 @@ import { ValidateNested, validateSync } from 'class-validator';
 import { TextsConfig } from '@Feature/texts';
 import { MongoConfig } from '@Provider/mongodb';
 import { InterestsConfig } from '@Feature/interests/interests.config';
+import { CorsConfig } from './config/cors.config';
+import { EnvConfig } from './config/env.config';
 
 class AppConfig {
+  @Type()
+  @ValidateNested()
+  env: EnvConfig = new EnvConfig();
+
+  @Type()
+  @ValidateNested()
+  cors: CorsConfig = new CorsConfig();
+
   @Type(() => UsersConfig)
   @ValidateNested()
   users = new UsersConfig();

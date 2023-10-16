@@ -65,6 +65,12 @@
       "@Feature/recommendations/*": [
         "libs/features/recommendations/src/*"
       ],
+      "@Feature/healthcheck": [
+        "libs/features/healthcheck/src"
+      ],
+      "@Feature/healthcheck/*": [
+        "libs/features/healthcheck/src/*"
+      ],
       "@Provider/spotify": [
         "libs/providers/spotify/src"
       ],

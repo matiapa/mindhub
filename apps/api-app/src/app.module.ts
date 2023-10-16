@@ -9,6 +9,7 @@ import { ApiRecommendationsModule } from './recommendations/recommendations.modu
 import { ApiTextsModule } from './texts/texts.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { createMongooseOptions } from '@Provider/mongodb/mongoose-config';
+import { HealthModule } from 'libs/features/healthcheck/health.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { createMongooseOptions } from '@Provider/mongodb/mongoose-config';
     ApiInterestsModule,
     ApiTextsModule,
     ApiProvidersModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
