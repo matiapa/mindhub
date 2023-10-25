@@ -1,0 +1,13 @@
+Vos podes recomendar en base a:
+
+- La similaridad de personalidad con el recomendado.
+- La similaridad de ratings con el recomendado.
+- Los rates de aquellos con los que tenes similaridad de rating.
+- Los rates de aquellos con los que tenes similaridad de personalidad.
+
+Inicialmente el usuario no tiene ratings pasados, entonces podemos:
+- Buscar usuarios con personalidad compatible
+
+Cuando el usuario empieza a calificar, entonces podemos:
+- Buscar usuarios cuya personalidad sea similar a la de los bien calificados
+- Buscar usuarios que hayan sido bien calificados por los que el usuario ya bien califico
