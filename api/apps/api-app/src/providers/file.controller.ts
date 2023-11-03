@@ -9,8 +9,9 @@ import { QueueService } from '@Provider/queue';
 import { StorageService } from '@Provider/storage';
 import { Controller, Get, Logger, Param, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Providers')
 @Controller('/providers/:providerName')
 export class FileController {
   private readonly logger = new Logger(FileController.name);
@@ -45,17 +46,14 @@ export class FileController {
 
   @Get('/fileUploadUrl')
   @ApiOperation({
-    summary: 'Get the URL for uploading Twitter data file as a ZIP',
+    summary: 'Get the URL for uploading provider data file as a ZIP',
   })
-  @ApiOkResponse({ description: 'OK' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   getFileUploadUrl(
     @Param('providerName') providerName: string,
     @AuthUser() user: PrincipalData,
   ): Promise<string> {
-    // if (!(providerName in ProviderEnum))
-    //   throw new BadRequestException('Invalid provider');
-
     return this.providersFileService.getUploadUrl(
       user.id,
       providerName as ProviderEnum,

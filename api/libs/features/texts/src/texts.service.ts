@@ -5,13 +5,19 @@ import {
   GetUserTextsReqDto,
   GetUserTextsResDto,
 } from './dtos/get-user-texts.dto';
+import { QueueService } from '@Provider/queue';
 
 @Injectable()
 export class TextsService {
-  constructor(private readonly textsRepo: TextsRepository) {}
+  constructor(
+    private readonly textsRepo: TextsRepository,
+    private readonly queueService: QueueService,
+  ) {}
 
-  async upsertMany(texts: Text[]): Promise<void> {
-    return this.textsRepo.upsertMany(texts);
+  async upsertMany(texts: Text[], userId: string): Promise<void> {
+    await this.textsRepo.upsertMany(texts);
+
+    await this.queueService.sendMessage(process.env.PERSONALITY_REQUESTS_QUEUE_URL, { userId })
   }
 
   async getUserTexts(

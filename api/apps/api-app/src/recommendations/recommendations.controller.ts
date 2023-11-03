@@ -22,8 +22,12 @@ import {
   ApiOperation,
   ApiOkResponse,
   ApiCreatedResponse,
+  ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
+@ApiTags('Recommendations')
+@ApiBearerAuth()
 @Controller('/recommendations')
 export class RecommendationsController {
   constructor(
@@ -32,7 +36,6 @@ export class RecommendationsController {
 
   @Get('/')
   @ApiOperation({ summary: 'Get friendship recommendations' })
-  @ApiOkResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   getRecommendations(
     @Query() dto: GetRecommendationsReqDto,
@@ -43,7 +46,6 @@ export class RecommendationsController {
 
   @Put('/:recommendedUserId')
   @ApiOperation({ summary: 'Accept or discard a friendship recommendation' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   reviewRecommendation(
     @Param('recommendedUserId') recommendedUserId: string,

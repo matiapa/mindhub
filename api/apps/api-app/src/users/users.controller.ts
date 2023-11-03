@@ -24,18 +24,21 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 
+@ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('/me/profile')
   @ApiOperation({ summary: 'Get authenticated user profile' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   getProfile(@AuthUser() user: PrincipalData): Promise<GetOwnUserResDto> {
     return this.usersService.getOwnUserInfo(user.id);
@@ -43,7 +46,6 @@ export class UsersController {
 
   @Put('/me/profile')
   @ApiOperation({ summary: 'Update authenticated user profile' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   updateProfile(
     @Body() dto: UpdateProfileReqDto,
@@ -54,7 +56,6 @@ export class UsersController {
 
   @Put('/me/connection')
   @ApiOperation({ summary: 'Update authenticated user last connection' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   updateLastConnection(
     @Body() dto: UpdateLastConnectionReqDto,
@@ -65,7 +66,6 @@ export class UsersController {
 
   @Get('/me/pictureUploadUrl')
   @ApiOperation({ summary: 'Get a temporary URL for uploading picture' })
-  @ApiOkResponse({ description: 'OK', type: String })
   @UseGuards(AuthGuard)
   getPictureUploadUrl(
     @Query() dto: GetPictureUploadUrlDto,
@@ -76,7 +76,6 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get public information of a user' })
-  @ApiOkResponse({ description: 'OK', type: SharedUserInfo })
   @UseGuards(AuthGuard)
   getById(
     @Param('id') id: string,

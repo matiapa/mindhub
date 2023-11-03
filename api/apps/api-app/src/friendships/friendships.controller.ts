@@ -1,7 +1,9 @@
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   Controller,
@@ -27,13 +29,14 @@ import {
 } from '@Provider/authentication/authentication.guard';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
 
+@ApiTags('Friendships')
+@ApiBearerAuth()
 @Controller('friendships')
 export class FriendshipsController {
   constructor(private readonly friendshipsService: FriendshipsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Send a friendship request' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   proposeFriendship(
     @Body() dto: ProposeFriendshipDto,
@@ -46,7 +49,6 @@ export class FriendshipsController {
   @ApiOperation({
     summary: 'Get friendships, either accepted ones, or sent/received requests',
   })
-  @ApiOkResponse({ description: 'OK', type: Array<SharedUserInfo> })
   @UseGuards(AuthGuard)
   getFriendships(
     @Query() dto: GetFriendshipsDto,
@@ -61,22 +63,8 @@ export class FriendshipsController {
     );
   }
 
-  @Get('/raw')
-  @ApiOperation({
-    summary: 'Get friendships, either accepted ones, or sent/received requests',
-  })
-  @ApiOkResponse({ description: 'OK', type: Array<SharedUserInfo> })
-  @UseGuards(AuthGuard)
-  getRawFriendships(
-    @Query() dto: GetFriendshipsDto,
-    @AuthUser() user: PrincipalData,
-  ) {
-    return this.friendshipsService.getFriendships(user.id, dto.type, true);
-  }
-
-  @Put('/request/:proposerId')
+  @Put('/:proposerId')
   @ApiOperation({ summary: 'Accept or reject a friendship request' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   reviewRequest(
     @Param('proposerId') proposerId: string,

@@ -18,6 +18,8 @@ export class RecommendationsService {
     dto: GetRecommendationsReqDto,
     targetUserId: string,
   ): Promise<GetRecommendationsResDto> {
+    // TODO: Handle priority setting
+
     const recommendations = await this.recommendationRepo.getPaginated(
       {
         offset: dto.offset,

@@ -1,7 +1,9 @@
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   Body,
@@ -26,13 +28,14 @@ import {
 import { ProviderEnum } from '@Feature/providers';
 import { CreateTextDto } from '@Feature/texts/dtos/create-text.dto';
 
+@ApiTags('Texts')
+@ApiBearerAuth()
 @Controller('/texts')
 export class TextsController {
   constructor(private readonly textsService: TextsService) {}
 
   @Post('/')
   @ApiOperation({ summary: 'Post a new text' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   async create(
     @Body() dto: CreateTextDto,
@@ -46,12 +49,11 @@ export class TextsController {
         language: dto.language,
         date: new Date(),
       },
-    ]);
+    ], user.id);
   }
 
   @Get('/')
   @ApiOperation({ summary: 'Get the texts of the authenticated user' })
-  @ApiOkResponse({ description: 'OK', type: GetUserTextsResDto })
   @UseGuards(AuthGuard)
   getOwn(
     @Query() dto: GetUserTextsReqDto,
@@ -62,7 +64,6 @@ export class TextsController {
 
   @Delete('/:id')
   @ApiOperation({ summary: 'Delete a text' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   async delete(
     @Param('id') id: string,
