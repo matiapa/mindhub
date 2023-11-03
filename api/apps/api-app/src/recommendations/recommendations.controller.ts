@@ -45,7 +45,7 @@ export class RecommendationsController {
   @ApiOperation({ summary: 'Accept or discard a friendship recommendation' })
   @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
-  discardRecommendation(
+  reviewRecommendation(
     @Param('recommendedUserId') recommendedUserId: string,
     @Body() dto: ReviewRecommendationReqDto,
     @AuthUser() user: PrincipalData,
