@@ -4,6 +4,7 @@ import {
   ValidateNested,
   IsArray,
   IsNumber,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -11,8 +12,7 @@ import {
   PaginatedResDto,
 } from 'libs/utils/dtos/paginated.dto';
 import { Recommendation, RecommendationScore } from '../entities/recommendation.entity';
-import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
-
+import { RecommendationPriority } from '../enums/recommendation-priority.enum';
 
 export class RecommendationDto
   implements Omit<Recommendation, 'targetUserId' | 'reviewed'>
@@ -26,7 +26,11 @@ export class RecommendationDto
   score: RecommendationScore;
 }
 
-export class GetRecommendationsReqDto extends PaginatedReqDto {}
+export class GetRecommendationsReqDto extends PaginatedReqDto {
+  @IsEnum(RecommendationPriority)
+  @IsNotEmpty()
+  priority: RecommendationPriority;
+}
 
 export class GetRecommendationsResDto extends PaginatedResDto {
   @IsArray()

@@ -6,8 +6,10 @@ import {
 } from '@Provider/authentication/authentication.guard';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Providers')
+@ApiBearerAuth()
 @Controller('/providers')
 export class ConnectionsController {
   constructor(private readonly connService: ProvidersConnService) {}
@@ -16,7 +18,6 @@ export class ConnectionsController {
   @ApiOperation({
     summary: 'Get the connected providers',
   })
-  @ApiOkResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   getConnections(
     @AuthUser() user: PrincipalData,

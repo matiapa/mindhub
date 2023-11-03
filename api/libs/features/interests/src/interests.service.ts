@@ -6,13 +6,20 @@ import {
   GetUserInterestsReqDto,
   GetUserInterestsResDto,
 } from './dtos/get-user-interests.dto';
+import { QueueService } from '@Provider/queue';
 
 @Injectable()
 export class InterestsService {
-  constructor(private readonly interestsRepo: InterestsRepository) {}
+  constructor(
+    private readonly interestsRepo: InterestsRepository,
+    private readonly queueService: QueueService,
+  ) {}
 
-  async upsertMany(interests: Interest[]): Promise<void> {
+  async upsertMany(interests: Interest[], userId: string): Promise<void> {
     await this.interestsRepo.upsertMany(interests);
+
+    await this.queueService.sendMessage(process.env.PERSONALITY_REQUESTS_QUEUE_URL, { userId })
+
   }
 
   async getUserInterests(

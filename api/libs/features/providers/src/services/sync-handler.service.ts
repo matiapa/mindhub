@@ -59,11 +59,11 @@ export class ProvidersSyncHandlerService {
     }
 
     if (result.interests) {
-      await this.interestsService.upsertMany(result.interests);
+      await this.interestsService.upsertMany(result.interests, request.userId);
     }
 
     if (result.texts) {
-      await this.textsService.upsertMany(result.texts);
+      await this.textsService.upsertMany(result.texts, request.userId);
     }
 
     this.logger.log('Synchronization finished - Extracted resources', {

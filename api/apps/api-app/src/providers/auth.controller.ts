@@ -13,8 +13,9 @@ import {
   Response,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Providers')
 @Controller('/providers/:providerName')
 export class AuthController {
   constructor(
@@ -26,17 +27,12 @@ export class AuthController {
   @ApiOperation({
     summary: 'Get the URL for starting the authentication flow',
   })
-  @ApiOkResponse({ description: 'OK' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   login(
     @Param('providerName') providerName: string,
-    @AuthUser() user: PrincipalData,
     @Request() req: any,
-    // @Response() res: any,
-  ) {
-    // if (!(providerName in ProviderEnum))
-    //   throw new BadRequestException('Invalid provider');
-
+  ): string {
     const token = this.authService.extractTokenFromHeader(req);
 
     const loginUrl = this.providersAuthService.getLoginUrl(
@@ -50,7 +46,6 @@ export class AuthController {
   @ApiOperation({
     summary: 'Redeem the obtained code to finalize authentication flow',
   })
-  @ApiOkResponse({ description: 'OK' })
   async redeemCode(
     @Param('providerName') providerName: string,
     @Query('state') state: string,
@@ -58,9 +53,6 @@ export class AuthController {
     @Query('error') error: string,
     @Response() res: any,
   ): Promise<void> {
-    // if (!(providerName in ProviderEnum))
-    //   throw new BadRequestException('Invalid provider');
-
     const decodedToken = await this.authService.verifyToken(state);
     const userId = decodedToken['sub'];
 

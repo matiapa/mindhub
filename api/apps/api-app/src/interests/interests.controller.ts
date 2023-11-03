@@ -1,7 +1,9 @@
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   Body,
@@ -30,13 +32,14 @@ import {
 import { PrincipalData } from '@Provider/authentication/authentication.types';
 import { ProviderEnum } from '@Feature/providers';
 
+@ApiTags('Interests')
+@ApiBearerAuth()
 @Controller('/interests')
 export class InterestsController {
   constructor(private readonly interestsService: InterestsService) {}
 
   @Post('/')
   @ApiOperation({ summary: 'Create an interest relationship' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   async create(
     @Body() dto: CreateInterestDto,
@@ -50,7 +53,7 @@ export class InterestsController {
         resource: dto.resource,
         date: new Date(),
       },
-    ]);
+    ], user.id);
   }
 
   @Get('/shared')
@@ -58,7 +61,6 @@ export class InterestsController {
     summary:
       'Get interests of a user that are shared with the ones of the authenticated user',
   })
-  @ApiOkResponse({ description: 'OK', type: GetSharedInterestsResDto })
   @UseGuards(AuthGuard)
   getShared(
     @Query() dto: GetSharedInterestsReqDto,
@@ -69,7 +71,6 @@ export class InterestsController {
 
   @Get('/me')
   @ApiOperation({ summary: 'Get the interests of the authenticated user' })
-  @ApiOkResponse({ description: 'OK', type: GetUserInterestsResDto })
   @UseGuards(AuthGuard)
   getOwn(
     @Query() dto: GetUserInterestsReqDto,
@@ -80,7 +81,6 @@ export class InterestsController {
 
   @Delete('/:id')
   @ApiOperation({ summary: 'Delete an interest relationship' })
-  @ApiCreatedResponse({ description: 'OK' })
   @UseGuards(AuthGuard)
   async delete(
     @Param('id') id: string,
