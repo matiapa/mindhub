@@ -47,13 +47,7 @@ export class FriendshipsService {
       target: targetId,
     });
     if (sentReq) {
-      if (sentReq.status === FriendshipStatus.ACCEPTED) {
-        throw new BadRequestException('The users are already friends');
-      } else {
-        throw new BadRequestException(
-          'A friendship request to this user has already been sent',
-        );
-      }
+      return;
     }
 
     // Check that there are no pending requests from the target
@@ -84,16 +78,21 @@ export class FriendshipsService {
 
     const authenticatedUser = await this.usersService.getUserEntity(proposerId);
 
-    await this.mailingService.sendEmail({
-      source: this.config.friendshipRequestsSenderEmail,
-      destination: {
-        toAddresses: [targetUser.email],
-      },
-      subject: 'New friendship request',
-      body: {
-        html: `<p>You have received a friendship request from ${authenticatedUser?.profile.name}</p>`,
-      },
-    });
+    try {
+      await this.mailingService.sendEmail({
+        source: this.config.friendshipRequestsSenderEmail,
+        destination: {
+          toAddresses: [targetUser.email],
+        },
+        subject: 'New friendship request',
+        body: {
+          html: `<p>You have received a friendship request from ${authenticatedUser?.profile?.name}</p>`,
+        },
+      });
+    } catch (error) {
+      // TODO: Add a better handling
+      console.error(error);
+    }
   }
 
   async getFriendships(

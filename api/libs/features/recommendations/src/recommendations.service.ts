@@ -16,17 +16,17 @@ export class RecommendationsService {
 
   public async getRecommendations(
     dto: GetRecommendationsReqDto,
-    recomendeeId: string,
+    targetUserId: string,
   ): Promise<GetRecommendationsResDto> {
     const recommendations = await this.recommendationRepo.getPaginated(
       {
         offset: dto.offset,
         limit: dto.limit,
-        sortBy: 'scores.global',
+        sortBy: 'score.global',
         sortOrder: 'desc',
       },
       {
-        targetUserId: recomendeeId,
+        targetUserId,
         reviewed: { $exists: false },
       },
     );
@@ -34,23 +34,23 @@ export class RecommendationsService {
     return {
       recommendations: recommendations.map((r) => ({
         recommendedUserId: r.recommendedUserId,
-        scores: r.scores,
+        score: r.score,
       })),
       count: recommendations.length,
       total: await this.recommendationRepo.count({
-        targetUserId: recomendeeId,
+        targetUserId,
         reviewed: { $exists: false },
       }),
     };
   }
 
   public async reviewRecommendation(
-    recomendeeId: string,
-    recommendedId: string,
+    targetUserId: string,
+    recommendedUserId: string,
     dto: ReviewRecommendationReqDto,
   ): Promise<void> {
     await this.recommendationRepo.updateOne(
-      { targetUserId: recomendeeId, recommendedId },
+      { targetUserId, recommendedUserId },
       {
         reviewed: {
           accepted: dto.accept,
@@ -61,8 +61,8 @@ export class RecommendationsService {
 
     if (dto.accept) {
       await this.friendshipService.proposeFriendship(
-        recomendeeId,
-        recommendedId,
+        targetUserId,
+        recommendedUserId,
       );
     }
   }

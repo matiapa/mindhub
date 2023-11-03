@@ -1,15 +1,15 @@
 import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
-class InterestScores {
+export class RecommendationScore {
   @Prop({ required: true })
   global: number;
 
-  @Prop({ required: true })
-  [ResourceType.ARTIST]: number;
+  @Prop({ type: Object, required: true, _id: false  })
+  friendship: object;
 
-  @Prop({ required: true })
-  [ResourceType.TRACK]: number;
+  @Prop({ type: Object, required: true, _id: false  })
+  interests: object;
 }
 
 class Reviewed {
@@ -29,7 +29,7 @@ export class Recommendation {
   recommendedUserId: string;
 
   @Prop({ required: true, _id: false })
-  scores: InterestScores;
+  score: RecommendationScore;
 
   @Prop({ required: false, _id: false })
   reviewed?: Reviewed;

@@ -10,22 +10,9 @@ import {
   PaginatedReqDto,
   PaginatedResDto,
 } from 'libs/utils/dtos/paginated.dto';
-import { Recommendation } from '../entities/recommendation.entity';
+import { Recommendation, RecommendationScore } from '../entities/recommendation.entity';
 import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
 
-class InterestScoresDto {
-  @IsNumber()
-  @IsNotEmpty()
-  global: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  [ResourceType.ARTIST]: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  [ResourceType.TRACK]: number;
-}
 
 export class RecommendationDto
   implements Omit<Recommendation, 'targetUserId' | 'reviewed'>
@@ -34,9 +21,9 @@ export class RecommendationDto
   @IsNotEmpty()
   recommendedUserId: string;
 
-  @Type(() => InterestScoresDto)
+  @Type(() => RecommendationScore)
   @ValidateNested()
-  scores: InterestScoresDto;
+  score: RecommendationScore;
 }
 
 export class GetRecommendationsReqDto extends PaginatedReqDto {}
