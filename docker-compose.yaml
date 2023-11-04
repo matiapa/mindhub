@@ -19,13 +19,13 @@ services:
   api:
     build:
       dockerfile: apps/api-app/Dockerfile
-      context: api/
+      context: nest/
     env_file:
-      - ./api/.env
+      - ./nest/.env
 
   providers-sync:
     build:
       dockerfile: apps/providers-sync-app/Dockerfile
-      context: api/
+      context: nest/
     env_file:
-      - ./api/.env
+      - ./nest/.env
