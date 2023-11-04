@@ -1,7 +1,6 @@
 FROM node:18.16.0-alpine3.17 AS base
 
 ARG COMMIT="unavailable"
-ARG APPLICATION="unavailable"
 
 RUN mkdir /app && chown node:node /app
 WORKDIR /app
@@ -16,7 +15,7 @@ RUN npm pkg delete scripts.prepare
 FROM base_dependencies AS builder
 COPY . .
 RUN npm ci
-RUN npm run build $APPLICATION
+RUN npm run build api-app
 
 # Production dependencies
 FROM base_dependencies AS production_dependencies
@@ -30,9 +29,9 @@ RUN apk add --no-cache tini
 COPY envs ./envs
 COPY --from=builder /app/dist ./dist
 COPY tsconfig*json ./
-COPY apps/${APPLICATION}/tsconfig*json ./
+COPY apps/api-app/tsconfig*json ./
 COPY --from=production_dependencies /app/node_modules ./node_modules
-RUN ln -s ./dist/apps/${APPLICATION}/main.js main.js
+RUN ln -s ./dist/apps/api-app/main.js main.js
 
 RUN date -u "+%Y-%m-%d %H:%M:%S" > ./build-date.txt
 RUN echo $COMMIT > ./commit-hash.txt
