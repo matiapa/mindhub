@@ -172,42 +172,7 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnetB
 
-  # -------------------------------- ECS --------------------------------
-
-  ECSMainCluster:
-    Type: 'AWS::ECS::Cluster'
-    Properties:
-      ClusterName: main-cluster
-      CapacityProviders:
-        - FARGATE
-        - FARGATE_SPOT
-      ClusterSettings:
-        - Name: containerInsights
-          Value: disabled
-      Configuration:
-        ExecuteCommandConfiguration:
-          Logging: DEFAULT
-      ServiceConnectDefaults:
-        Namespace: main-cluster
-
   # --------------------------- SQS ---------------------------
-
-  ProviderSyncRequestQueue:
-    Type: AWS::SQS::Queue
-    Properties: 
-      QueueName: provider-sync-requests-queue
-      ReceiveMessageWaitTimeSeconds: 20 # Long polling
-      RedrivePolicy:
-        deadLetterTargetArn:
-          !GetAtt ProviderSyncRequestsDltQueue.Arn
-        maxReceiveCount: 5
-      VisibilityTimeout: 30
-
-  ProviderSyncRequestsDltQueue:
-    Type: AWS::SQS::Queue
-    Properties: 
-      QueueName: provider-sync-requests-dlt-queue
-      ReceiveMessageWaitTimeSeconds: 20 # Long polling
 
   ProviderFileUploadedQueue:
     Type: AWS::SQS::Queue
@@ -216,7 +181,63 @@ Resources:
       ReceiveMessageWaitTimeSeconds: 20 # Long polling
       VisibilityTimeout: 30
 
+  ProviderSyncRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-sync-requests-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt ProviderSyncRequestsDLTQueue.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  ProviderSyncRequestsDLTQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-sync-requests-dlt-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+
+  PersonalityRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: personality-requests-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt PersonalityRequestDLTQueue.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  PersonalityRequestDLTQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: personality-requests-dlt-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+
+  RecommendationRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: recommendation-requests-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt RecommendationRequestDLTQueue.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  RecommendationRequestDLTQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: recommendation-requests-dlt-queue
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+
   # --------------------------- S3 ---------------------------
+
+  EnvFilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: mindhub-env-files-bucket
 
   UserPicturesBucket:
     Type: AWS::S3::Bucket
@@ -291,12 +312,7 @@ Outputs:
       Name:
         !Sub "${AWS::StackName}-PublicSecurityGroupId"
 
-  ECSMainClusterName:
-    Value:
-      !Ref ECSMainCluster
-    Export:
-      Name:
-        !Sub "${AWS::StackName}-ECSMainClusterName"
+  # ------------------------- IAM -------------------------
 
   ECSTaskExecutionRoleARN:
     Value:
@@ -305,19 +321,7 @@ Outputs:
       Name:
         !Sub "${AWS::StackName}-ECSTaskExecutionRoleARN"
 
-  ProviderSyncRequestQueueURL:
-    Value:
-      !Ref ProviderSyncRequestQueue
-    Export:
-      Name:
-        !Sub "${AWS::StackName}-ProviderSyncRequestQueueURL"
-
-  ProviderSyncRequestQueueARN:
-    Value:
-      !GetAtt ProviderSyncRequestQueue.Arn
-    Export:
-      Name:
-        !Sub "${AWS::StackName}-ProviderSyncRequestQueueARN"
+  # ------------------------- SQS -------------------------
 
   ProviderFileUploadedQueueURL:
     Value:
@@ -332,6 +336,57 @@ Outputs:
     Export:
       Name:
         !Sub "${AWS::StackName}-ProviderFileUploadedQueueARN"
+
+  ProviderSyncRequestQueueARN:
+    Value:
+      !GetAtt ProviderSyncRequestQueue.Arn
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-ProviderSyncRequestQueueARN"
+
+  ProviderSyncRequestQueueURL:
+    Value:
+      !Ref ProviderSyncRequestQueue
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-ProviderSyncRequestQueueURL"
+
+  PersonalityRequestQueueARN:
+    Value:
+      !GetAtt PersonalityRequestQueue.Arn
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-PersonalityRequestQueueARN"
+
+  PersonalityRequestQueueURL:
+    Value:
+      !Ref PersonalityRequestQueue
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-PersonalityRequestQueueURL"
+
+  RecommendationRequestQueueARN:
+    Value:
+      !GetAtt RecommendationRequestQueue.Arn
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-RecommendationRequestQueueARN"
+
+  RecommendationRequestQueueURL:
+    Value:
+      !Ref RecommendationRequestQueue
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-RecommendationRequestQueueURL"
+
+  # ------------------------- S3 -------------------------
+
+  EnvFilesBucketName:
+    Value:
+      !Ref EnvFilesBucket
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-EnvFilesBucketName"
 
   ProviderFilesBucketName:
     Value:
