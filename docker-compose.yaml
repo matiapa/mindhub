@@ -6,7 +6,7 @@ services:
     build:
       context: ./nginx
     ports:
-      - 80:80
+      - 443:443
     links:
       - api
     healthcheck:
@@ -20,12 +20,16 @@ services:
     build:
       dockerfile: apps/api-app/Dockerfile
       context: nest/
+    # image: mindhub-api
     env_file:
       - ./nest/.env
 
-  providers-sync:
-    build:
-      dockerfile: apps/providers-sync-app/Dockerfile
-      context: nest/
-    env_file:
-      - ./nest/.env
+  # providers-sync:
+  #   build:
+  #     dockerfile: apps/providers-sync-app/Dockerfile
+  #     context: nest/
+  #   env_file:
+  #     - ./nest/.env
+
+  # mongo:
+  #   image: mongodb/mongodb-community-server

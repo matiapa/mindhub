@@ -7,7 +7,6 @@ import {
 } from 'class-validator';
 
 export class MongoConfig {
-  @ValidateIf(() => process.env.NODE_ENV !== 'test')
   @IsNotEmpty()
   @IsString()
   connection?: string = process.env.MONGO_ATLAS_URI;
