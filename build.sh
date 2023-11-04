@@ -1,0 +1,1 @@
+docker build -t mindhub-api -f nest/apps/api-app/Dockerfile nest/
