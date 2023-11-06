@@ -6,5 +6,5 @@ class DummyModel(Model):
     
     def infer(self, texts: List[Text]) -> Tuple[float]:
         text = '\n'.join(map(lambda t : t.rawText, texts))
-        print(len(text))
+        print(f'Texts length: {len(text)}')
         return (1, 2, 3, 4, 5)

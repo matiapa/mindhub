@@ -1,0 +1,10 @@
+.vscode
+.env
+__pycache__
+venv/
+datasets/
+
+Dockerfile
+.dockerignore
+.git
+.gitignore

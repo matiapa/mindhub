@@ -18,3 +18,17 @@ services:
     image: public.ecr.aws/n9t4t7x6/mindhub-providers-sync:latest
     env_file:
       - ./nest/.env
+
+  frs:
+    image: public.ecr.aws/n9t4t7x6/mindhub-frs:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./frs/.env
+
+  apr:
+    image: public.ecr.aws/n9t4t7x6/mindhub-apr:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./apr/.env
