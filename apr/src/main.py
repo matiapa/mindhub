@@ -9,11 +9,11 @@ import boto3
 import json
 
 sqs = boto3.resource('sqs')
-personality_queue = sqs.get_queue_by_name(QueueName='personality-queue')
-recommendations_queue = sqs.get_queue_by_name(QueueName='recommendation-queue')
+personality_queue = sqs.get_queue_by_name(QueueName='personality-requests-queue')
+recommendations_queue = sqs.get_queue_by_name(QueueName='recommendation-requests-queue')
 
 print('Loading model...')
-model: Model = ModelFactory.get_model("mehta")
+model: Model = ModelFactory.get_model("dummy")
 
 print('Listening...')
 while True:

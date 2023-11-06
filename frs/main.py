@@ -6,8 +6,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 sqs = boto3.resource('sqs')
-queue = sqs.get_queue_by_name(QueueName='recommendation-queue')
+queue = sqs.get_queue_by_name(QueueName='recommendation-requests-queue')
 
+print('Listening...')
 while True:
 
     messages = queue.receive_messages()
@@ -24,5 +25,5 @@ while True:
             
             message.delete()
         except Exception as error:
-            print(error)
+            print(f'Error: {error}')
             continue
