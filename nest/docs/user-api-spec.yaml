@@ -1,0 +1,887 @@
+openapi: 3.0.0
+paths:
+  /users/me/profile:
+    get:
+      operationId: UsersController_getProfile
+      summary: Get authenticated user profile
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOwnUserResDto'
+      tags: &ref_0
+        - Users
+      security: &ref_1
+        - bearer: []
+    put:
+      operationId: UsersController_updateProfile
+      summary: Update authenticated user profile
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileReqDto'
+      responses:
+        '200':
+          description: ''
+      tags: *ref_0
+      security: *ref_1
+  /users/me/connection:
+    put:
+      operationId: UsersController_updateLastConnection
+      summary: Update authenticated user last connection
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLastConnectionReqDto'
+      responses:
+        '200':
+          description: ''
+      tags: *ref_0
+      security: *ref_1
+  /users/me/pictureUploadUrl:
+    get:
+      operationId: UsersController_getPictureUploadUrl
+      summary: Get a temporary URL for uploading picture
+      parameters:
+        - name: fileMime
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+      tags: *ref_0
+      security: *ref_1
+  /users/{id}:
+    get:
+      operationId: UsersController_getById
+      summary: Get public information of a user
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: optionalFields
+          required: true
+          in: query
+          schema:
+            default: []
+            type: array
+            items:
+              type: string
+              enum:
+                - distance
+                - pictureUrl
+                - sharedInterests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedUserInfo'
+      tags: *ref_0
+      security: *ref_1
+  /friendships:
+    post:
+      operationId: FriendshipsController_proposeFriendship
+      summary: Send a friendship request
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposeFriendshipDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_2
+        - Friendships
+      security: &ref_3
+        - bearer: []
+    get:
+      operationId: FriendshipsController_getFriendships
+      summary: Get friendships, either accepted ones, or sent/received requests
+      parameters:
+        - name: optionalFields
+          required: true
+          in: query
+          schema:
+            default: []
+            type: array
+            items:
+              type: string
+              enum:
+                - distance
+                - pictureUrl
+                - sharedInterests
+        - name: type
+          required: true
+          in: query
+          schema:
+            enum:
+              - proposed
+              - received
+              - established
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharedUserInfo'
+      tags: *ref_2
+      security: *ref_3
+  /friendships/{proposerId}:
+    put:
+      operationId: FriendshipsController_reviewRequest
+      summary: Accept or reject a friendship request
+      parameters:
+        - name: proposerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequestDto'
+      responses:
+        '200':
+          description: ''
+      tags: *ref_2
+      security: *ref_3
+  /recommendations:
+    get:
+      operationId: RecommendationsController_getRecommendations
+      summary: Get friendship recommendations
+      parameters:
+        - name: priority
+          required: true
+          in: query
+          schema:
+            enum:
+              - affinity
+              - distance
+              - activity
+            type: string
+        - name: optionalFields
+          required: true
+          in: query
+          schema:
+            default: []
+            type: array
+            items:
+              type: string
+              enum:
+                - distance
+                - pictureUrl
+                - sharedInterests
+        - name: offset
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRecommendationsResDto'
+      tags: &ref_4
+        - Recommendations
+      security: &ref_5
+        - bearer: []
+  /recommendations/{recommendedUserId}:
+    put:
+      operationId: RecommendationsController_reviewRecommendation
+      summary: Accept or discard a friendship recommendation
+      parameters:
+        - name: recommendedUserId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRecommendationReqDto'
+      responses:
+        '200':
+          description: ''
+      tags: *ref_4
+      security: *ref_5
+  /interests:
+    post:
+      operationId: InterestsController_create
+      summary: Create an interest relationship
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInterestDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_6
+        - Interests
+      security: &ref_7
+        - bearer: []
+  /interests/shared:
+    get:
+      operationId: InterestsController_getShared
+      summary: >-
+        Get interests of a user that are shared with the ones of the
+        authenticated user
+      parameters:
+        - name: userId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSharedInterestsResDto'
+      tags: *ref_6
+      security: *ref_7
+  /interests/me:
+    get:
+      operationId: InterestsController_getOwn
+      summary: Get the interests of the authenticated user
+      parameters:
+        - name: offset
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserInterestsResDto'
+      tags: *ref_6
+      security: *ref_7
+  /interests/{id}:
+    delete:
+      operationId: InterestsController_delete
+      summary: Delete an interest relationship
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+      security: *ref_7
+  /texts:
+    post:
+      operationId: TextsController_create
+      summary: Post a new text
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTextDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_8
+        - Texts
+      security: &ref_9
+        - bearer: []
+    get:
+      operationId: TextsController_getOwn
+      summary: Get the texts of the authenticated user
+      parameters:
+        - name: offset
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserTextsResDto'
+      tags: *ref_8
+      security: *ref_9
+  /texts/{id}:
+    delete:
+      operationId: TextsController_delete
+      summary: Delete a text
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_8
+      security: *ref_9
+  /providers:
+    get:
+      operationId: ConnectionsController_getConnections
+      summary: Get the connected providers
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProviderConnsResDto'
+      tags:
+        - Providers
+      security:
+        - bearer: []
+  /providers/{providerName}/login:
+    get:
+      operationId: AuthController_login
+      summary: Get the URL for starting the authentication flow
+      parameters:
+        - name: providerName
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+      tags: &ref_10
+        - Providers
+      security:
+        - bearer: []
+  /providers/{providerName}/redeemCode:
+    get:
+      operationId: AuthController_redeemCode
+      summary: Redeem the obtained code to finalize authentication flow
+      parameters:
+        - name: providerName
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: state
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: code
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: error
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /providers/{providerName}/fileUploadUrl:
+    get:
+      operationId: FileController_getFileUploadUrl
+      summary: Get the URL for uploading provider data file as a ZIP
+      parameters:
+        - name: providerName
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+      tags:
+        - Providers
+      security:
+        - bearer: []
+  /health:
+    get:
+      operationId: HealthController_check
+      parameters: []
+      responses:
+        '200':
+          description: The Health Check is successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  info:
+                    type: object
+                    example: &ref_11
+                      database: &ref_12
+                        status: up
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                      additionalProperties:
+                        type: string
+                    nullable: true
+                  error:
+                    type: object
+                    example: {}
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                      additionalProperties:
+                        type: string
+                    nullable: true
+                  details:
+                    type: object
+                    example: *ref_11
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                      additionalProperties:
+                        type: string
+        '503':
+          description: The Health Check is not successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  info:
+                    type: object
+                    example: *ref_11
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                      additionalProperties:
+                        type: string
+                    nullable: true
+                  error:
+                    type: object
+                    example:
+                      redis: &ref_13
+                        status: down
+                        message: Could not connect
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                      additionalProperties:
+                        type: string
+                    nullable: true
+                  details:
+                    type: object
+                    example:
+                      database: *ref_12
+                      redis: *ref_13
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                      additionalProperties:
+                        type: string
+      tags:
+        - Healthcheck
+info:
+  title: MindHub User API
+  description: The user API to the MindHub system
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    Profile:
+      type: object
+      properties:
+        name:
+          type: string
+        gender:
+          type: string
+          enum:
+            - man
+            - woman
+            - other
+        birthday:
+          format: date-time
+          type: string
+        biography:
+          type: string
+      required:
+        - name
+        - gender
+        - birthday
+    GetOwnUserResDto:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+        pictureUrl:
+          type: string
+      required:
+        - profile
+    UpdateProfileReqDto:
+      type: object
+      properties:
+        gender:
+          type: string
+          enum:
+            - man
+            - woman
+            - other
+        birthday:
+          type: string
+        biography:
+          type: string
+      required:
+        - gender
+        - birthday
+    UpdateLastConnectionReqDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+    ResourceDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - track
+            - artist
+      required:
+        - id
+        - name
+        - type
+    RelevanceDto:
+      type: object
+      properties:
+        userId:
+          type: string
+        relevance:
+          type: string
+          enum:
+            - normal
+            - favorite
+      required:
+        - userId
+        - relevance
+    SharedInterestDto:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/ResourceDto'
+        relevances:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelevanceDto'
+      required:
+        - resource
+        - relevances
+    SharedUserInfo:
+      type: object
+      properties:
+        _id:
+          type: string
+        profile:
+          $ref: '#/components/schemas/Profile'
+        distance:
+          type: number
+        pictureUrl:
+          type: string
+        sharedInterests:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedInterestDto'
+      required:
+        - _id
+        - profile
+    ProposeFriendshipDto:
+      type: object
+      properties:
+        target:
+          type: string
+      required:
+        - target
+    ReviewRequestDto:
+      type: object
+      properties:
+        accept:
+          type: boolean
+      required:
+        - accept
+    RecommendationScore:
+      type: object
+      properties:
+        global:
+          type: number
+        friendship:
+          type: object
+        interests:
+          type: object
+      required:
+        - global
+        - friendship
+        - interests
+    RecommendationDto:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/SharedUserInfo'
+        score:
+          $ref: '#/components/schemas/RecommendationScore'
+      required:
+        - user
+        - score
+    GetRecommendationsResDto:
+      type: object
+      properties:
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendationDto'
+        count:
+          type: number
+        total:
+          type: number
+      required:
+        - recommendations
+        - count
+        - total
+    ReviewRecommendationReqDto:
+      type: object
+      properties:
+        accept:
+          type: boolean
+      required:
+        - accept
+    CreateInterestDto:
+      type: object
+      properties:
+        relevance:
+          type: string
+          enum:
+            - normal
+            - favorite
+        resource:
+          $ref: '#/components/schemas/ResourceDto'
+      required:
+        - relevance
+        - resource
+    GetSharedInterestsResDto:
+      type: object
+      properties:
+        sharedInterests:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedInterestDto'
+      required:
+        - sharedInterests
+    UserInterestDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        provider:
+          type: string
+          enum:
+            - spotify
+            - twitter
+            - user
+        relevance:
+          type: string
+          enum:
+            - normal
+            - favorite
+        resource:
+          $ref: '#/components/schemas/ResourceDto'
+        date:
+          format: date-time
+          type: string
+      required:
+        - _id
+        - provider
+        - relevance
+        - resource
+        - date
+    GetUserInterestsResDto:
+      type: object
+      properties:
+        interests:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserInterestDto'
+        count:
+          type: number
+        total:
+          type: number
+      required:
+        - interests
+        - count
+        - total
+    CreateTextDto:
+      type: object
+      properties:
+        rawText:
+          type: string
+        language:
+          type: string
+      required:
+        - rawText
+        - language
+    UserTextDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        provider:
+          type: string
+          enum:
+            - spotify
+            - twitter
+            - user
+        rawText:
+          type: string
+        language:
+          type: string
+        date:
+          format: date-time
+          type: string
+      required:
+        - _id
+        - provider
+        - rawText
+        - language
+    GetUserTextsResDto:
+      type: object
+      properties:
+        texts:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserTextDto'
+        count:
+          type: number
+        total:
+          type: number
+      required:
+        - texts
+        - count
+        - total
+    ProviderConnectionDto:
+      type: object
+      properties:
+        provider:
+          type: string
+        oauth:
+          type: object
+          properties:
+            date:
+              format: date-time
+              type: string
+        file:
+          type: object
+          properties:
+            date:
+              format: date-time
+              type: string
+      required:
+        - provider
+        - oauth
+        - file
+    GetProviderConnsResDto:
+      type: object
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderConnectionDto'
+      required:
+        - connections

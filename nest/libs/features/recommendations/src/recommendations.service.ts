@@ -6,17 +6,20 @@ import {
   GetRecommendationsReqDto,
   GetRecommendationsResDto,
 } from './dtos/get-recommendations.dto';
+import { SharedUserInfo, SharedUserInfoConfig, UsersService } from '@Feature/users';
 
 @Injectable()
 export class RecommendationsService {
   constructor(
     private recommendationRepo: RecommendationRepository,
     private friendshipService: FriendshipsService,
+    private usersService: UsersService,
   ) {}
 
   public async getRecommendations(
     dto: GetRecommendationsReqDto,
     targetUserId: string,
+    userInfoConfig: SharedUserInfoConfig,
   ): Promise<GetRecommendationsResDto> {
     // TODO: Handle priority setting
 
@@ -32,10 +35,13 @@ export class RecommendationsService {
         reviewed: { $exists: false },
       },
     );
+    const ids = recommendations.map(r => r.recommendedUserId)
+
+    const users = await this.usersService.getManySharedUserInfo(ids, targetUserId, userInfoConfig);
 
     return {
-      recommendations: recommendations.map((r) => ({
-        recommendedUserId: r.recommendedUserId,
+      recommendations: recommendations.map((r, i) => ({
+        user: users[i],
         score: r.score,
       })),
       count: recommendations.length,

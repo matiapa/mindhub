@@ -5,6 +5,7 @@ import {
   IsArray,
   IsNumber,
   IsEnum,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -13,13 +14,15 @@ import {
 } from 'libs/utils/dtos/paginated.dto';
 import { Recommendation, RecommendationScore } from '../entities/recommendation.entity';
 import { RecommendationPriority } from '../enums/recommendation-priority.enum';
+import { SharedUserInfo, SharedUserInfoConfig } from '@Feature/users';
+import { OptUserInfoFields } from '@Feature/users/dto';
 
 export class RecommendationDto
-  implements Omit<Recommendation, 'targetUserId' | 'reviewed'>
+  implements Omit<Recommendation, 'recommendedUserId' | 'targetUserId' | 'reviewed'>
 {
-  @IsString()
-  @IsNotEmpty()
-  recommendedUserId: string;
+  @Type(() => SharedUserInfo)
+  @ValidateNested()
+  user: SharedUserInfo;
 
   @Type(() => RecommendationScore)
   @ValidateNested()
@@ -30,6 +33,11 @@ export class GetRecommendationsReqDto extends PaginatedReqDto {
   @IsEnum(RecommendationPriority)
   @IsNotEmpty()
   priority: RecommendationPriority;
+
+  @IsArray()
+  @IsEnum(OptUserInfoFields, { each: true })
+  @IsOptional()
+  optionalFields: OptUserInfoFields[] = [];
 }
 
 export class GetRecommendationsResDto extends PaginatedResDto {

@@ -41,7 +41,7 @@ export class RecommendationsController {
     @Query() dto: GetRecommendationsReqDto,
     @AuthUser() user: PrincipalData,
   ): Promise<GetRecommendationsResDto> {
-    return this.recommendationsService.getRecommendations(dto, user.id);
+    return this.recommendationsService.getRecommendations(dto, user.id, { optionalFields: dto.optionalFields });
   }
 
   @Put('/:recommendedUserId')

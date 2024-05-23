@@ -99,6 +99,9 @@ export class UsersService {
 
   public async getOwnUserInfo(id: string): Promise<GetOwnUserResDto> {
     const user = await this.usersRepo.getOne({ _id: id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     const pictureUrl = await this.storageService.getDownloadUrl(
       this.config.picturesBucket,

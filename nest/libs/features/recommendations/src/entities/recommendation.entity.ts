@@ -1,4 +1,3 @@
-import { ResourceType } from '@Feature/interests/enums/resource-type.enum';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
 export class RecommendationScore {
