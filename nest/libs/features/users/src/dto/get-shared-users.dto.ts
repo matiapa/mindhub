@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -54,6 +55,9 @@ export class SharedUserInfo {
   @IsNumber()
   @IsOptional()
   distance?: number;
+
+  @IsNumber()
+  inactiveHours: number;
 
   @IsUrl()
   @IsOptional()

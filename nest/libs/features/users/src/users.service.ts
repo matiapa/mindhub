@@ -171,6 +171,10 @@ export class UsersService {
       }
     }
 
+    // Calculate inactive hours
+
+    const inactiveHours = user.lastConnection ? moment().diff(user.lastConnection.date, 'hours') : Infinity;
+
     // Get picture URL
 
     let pictureUrl: string | undefined;
@@ -200,6 +204,7 @@ export class UsersService {
         biography: user.profile.biography,
       },
       distance,
+      inactiveHours,
       pictureUrl,
       sharedInterests,
     };

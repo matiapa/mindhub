@@ -7,6 +7,7 @@ import {
   GetRecommendationsResDto,
 } from './dtos/get-recommendations.dto';
 import { SharedUserInfo, SharedUserInfoConfig, UsersService } from '@Feature/users';
+import { RecommendationPriority } from './enums/recommendation-priority.enum';
 
 @Injectable()
 export class RecommendationsService {
@@ -21,8 +22,6 @@ export class RecommendationsService {
     targetUserId: string,
     userInfoConfig: SharedUserInfoConfig,
   ): Promise<GetRecommendationsResDto> {
-    // TODO: Handle priority setting
-
     const recommendations = await this.recommendationRepo.getPaginated(
       {
         offset: dto.offset,
@@ -39,11 +38,20 @@ export class RecommendationsService {
 
     const users = await this.usersService.getManySharedUserInfo(ids, targetUserId, userInfoConfig);
 
+    const recommendationsWithUser = recommendations.map((r, i) => ({
+      user: users[i],
+      score: r.score,
+    }))
+
+    if (dto.priority === RecommendationPriority.AFFINITY)
+      recommendationsWithUser.sort((a, b) => b.score.global - a.score.global);
+    else if (dto.priority === RecommendationPriority.DISTANCE)
+      recommendationsWithUser.sort((a, b) => a.user.distance - b.user.distance);
+    else if (dto.priority === RecommendationPriority.ACTIVITY)
+      recommendationsWithUser.sort((a, b) => a.user.inactiveHours - b.user.inactiveHours);
+
     return {
-      recommendations: recommendations.map((r, i) => ({
-        user: users[i],
-        score: r.score,
-      })),
+      recommendations: recommendationsWithUser,
       count: recommendations.length,
       total: await this.recommendationRepo.count({
         targetUserId,
