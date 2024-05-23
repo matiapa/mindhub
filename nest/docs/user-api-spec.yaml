@@ -186,7 +186,7 @@ paths:
               - distance
               - activity
             type: string
-        - name: optionalFields
+        - name: optionalFields[]
           required: true
           in: query
           schema:
@@ -584,15 +584,14 @@ components:
             - man
             - woman
             - other
-        birthday:
-          format: date-time
-          type: string
+        age:
+          type: number
         biography:
           type: string
       required:
         - name
         - gender
-        - birthday
+        - age
     GetOwnUserResDto:
       type: object
       properties:
@@ -675,6 +674,8 @@ components:
           $ref: '#/components/schemas/Profile'
         distance:
           type: number
+        inactiveHours:
+          type: number
         pictureUrl:
           type: string
         sharedInterests:
@@ -705,8 +706,35 @@ components:
           type: number
         friendship:
           type: object
+          properties:
+            score:
+              type: number
+            by_ratings:
+              type: number
+            by_personality:
+              type: number
+          required:
+            - score
+            - by_ratings
+            - by_personality
         interests:
           type: object
+          properties:
+            score:
+              type: number
+            category:
+              type: object
+              properties:
+                artist:
+                  type: number
+                track:
+                  type: number
+              required:
+                - artist
+                - track
+          required:
+            - score
+            - category
       required:
         - global
         - friendship

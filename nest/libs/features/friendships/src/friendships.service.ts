@@ -113,7 +113,7 @@ export class FriendshipsService {
     } else if (type === FriendshipType.RECEIVED) {
       const received = await this.friendshipsRepo.getMany(
         {
-          proposer: ofUserId,
+          target: ofUserId,
           status: FriendshipStatus.PENDING,
         },
         populateUsers ? ['proposer', 'target'] : undefined,
