@@ -6,7 +6,7 @@ import {
   GetRecommendationsReqDto,
   GetRecommendationsResDto,
 } from './dtos/get-recommendations.dto';
-import { SharedUserInfo, SharedUserInfoConfig, UsersService } from '@Feature/users';
+import { SharedUserInfoConfig, UsersService } from '@Feature/users';
 import { RecommendationPriority } from './enums/recommendation-priority.enum';
 
 @Injectable()

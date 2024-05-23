@@ -4,6 +4,7 @@ import { UsersRepository } from './users.repository';
 import { StorageModule } from '@Provider/storage';
 import { AuthenticationModule } from '@Provider/authentication';
 import { InterestsModule } from '@Feature/interests';
+import { PersonalitiesModule } from '@Feature/personalities';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities';
 
@@ -12,6 +13,7 @@ import { User, UserSchema } from './entities';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     StorageModule,
     InterestsModule,
+    PersonalitiesModule,
     AuthenticationModule,
   ],
   providers: [UsersService, UsersRepository],

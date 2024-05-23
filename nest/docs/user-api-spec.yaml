@@ -88,6 +88,7 @@ paths:
                 - distance
                 - pictureUrl
                 - sharedInterests
+                - personality
       responses:
         '200':
           description: ''
@@ -131,6 +132,7 @@ paths:
                 - distance
                 - pictureUrl
                 - sharedInterests
+                - personality
         - name: type
           required: true
           in: query
@@ -198,6 +200,7 @@ paths:
                 - distance
                 - pictureUrl
                 - sharedInterests
+                - personality
         - name: offset
           required: true
           in: query
@@ -592,6 +595,25 @@ components:
         - name
         - gender
         - age
+    Personality:
+      type: object
+      properties:
+        o:
+          type: number
+        c:
+          type: number
+        e:
+          type: number
+        a:
+          type: number
+        n:
+          type: number
+      required:
+        - o
+        - c
+        - e
+        - a
+        - n
     GetOwnUserResDto:
       type: object
       properties:
@@ -678,7 +700,13 @@ components:
           type: number
         pictureUrl:
           type: string
+        personality:
+          $ref: '#/components/schemas/Personality'
         sharedInterests:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedInterestDto'
+        ts:
           type: array
           items:
             $ref: '#/components/schemas/SharedInterestDto'

@@ -5,6 +5,7 @@ import { SpotifyConfig } from 'libs/providers/spotify/src';
 import { Type, plainToInstance } from 'class-transformer';
 import { ValidateNested, validateSync } from 'class-validator';
 import { TextsConfig } from '@Feature/texts';
+import { PersonalityConfig } from '@Feature/personalities';
 import { MongoConfig } from '@Provider/mongodb';
 import { InterestsConfig } from '@Feature/interests/interests.config';
 import { CorsConfig } from './config/cors.config';
@@ -38,6 +39,10 @@ class AppConfig {
   @Type(() => TextsConfig)
   @ValidateNested()
   texts = new TextsConfig();
+
+  @Type(() => PersonalityConfig)
+  @ValidateNested()
+  personalities = new PersonalityConfig();
 
   @Type(() => SpotifyConfig)
   @ValidateNested()

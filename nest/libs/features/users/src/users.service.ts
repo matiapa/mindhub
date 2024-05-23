@@ -16,6 +16,7 @@ import { getDistanceInKm } from 'libs/utils';
 import { StorageService } from '@Provider/storage';
 import { AuthenticationService } from '@Provider/authentication';
 import { InterestsService, SharedInterestDto } from '@Feature/interests';
+import { PersonalitiesService, UserPersonalityDto } from '@Feature/personalities';
 import { GetOwnUserResDto } from './dto/get-own-user.dto';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class UsersService {
     private readonly storageService: StorageService,
     private readonly authService: AuthenticationService,
     private readonly interestsService: InterestsService,
+    private readonly personalitiesService: PersonalitiesService,
     configService: ConfigService,
   ) {
     this.config = configService.get<UsersConfig>('users')!;
@@ -186,6 +188,8 @@ export class UsersService {
       );
     }
 
+    // Get shared interests
+
     let sharedInterests: SharedInterestDto[] | undefined;
     if (config.optionalFields.includes(OptUserInfoFields.SHARED_INTERESTS)) {
       const res = await this.interestsService.getSharedInterests([
@@ -193,6 +197,13 @@ export class UsersService {
         withUserId,
       ]);
       sharedInterests = res.sharedInterests;
+    }
+
+    // Get user personality
+
+    let personality: UserPersonalityDto;
+    if (config.optionalFields.includes(OptUserInfoFields.PERSONALITY)) { 
+      personality = await this.personalitiesService.getUserPersonality(user._id);
     }
 
     return {
@@ -206,6 +217,7 @@ export class UsersService {
       distance,
       inactiveHours,
       pictureUrl,
+      personality,
       sharedInterests,
     };
   }

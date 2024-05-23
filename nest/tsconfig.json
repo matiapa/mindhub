@@ -59,6 +59,12 @@
       "@Feature/texts/*": [
         "libs/features/texts/src/*"
       ],
+      "@Feature/personalities": [
+        "libs/features/personalities/src"
+      ],
+      "@Feature/personalities/*": [
+        "libs/features/personalities/src/*"
+      ],
       "@Feature/recommendations": [
         "libs/features/recommendations/src"
       ],

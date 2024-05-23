@@ -12,11 +12,13 @@ import {
 import { Gender } from '../entities/user.entity';
 import { Type } from 'class-transformer';
 import { SharedInterestDto } from '@Feature/interests';
+import { UserPersonalityDto } from '@Feature/personalities';
 
 export enum OptUserInfoFields {
   DISTANCE = 'distance',
   PICTURE_URL = 'pictureUrl',
   SHARED_INTERESTS = 'sharedInterests',
+  PERSONALITY = 'personality',
 }
 
 export class SharedUserInfoConfig {
@@ -57,11 +59,15 @@ export class SharedUserInfo {
   distance?: number;
 
   @IsNumber()
+  @IsNotEmpty()
   inactiveHours: number;
 
   @IsUrl()
   @IsOptional()
   pictureUrl?: string;
+
+  @IsOptional()
+  personality?: UserPersonalityDto;
 
   @IsArray()
   @Type(() => SharedInterestDto)
