@@ -77,6 +77,12 @@
       "@Feature/rates/*": [
         "libs/features/rates/src/*"
       ],
+      "@Feature/messages": [
+        "libs/features/messages/src"
+      ],
+      "@Feature/messages/*": [
+        "libs/features/messages/src/*"
+      ],
       "@Feature/healthcheck": [
         "libs/features/healthcheck/src"
       ],

@@ -480,6 +480,42 @@ paths:
                 $ref: '#/components/schemas/GetGivenRatesResDto'
       tags: *ref_11
       security: *ref_12
+  /messages:
+    post:
+      operationId: MessagesController_postMessage
+      summary: Send a message
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostMessageDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_13
+        - Messages
+      security: &ref_14
+        - bearer: []
+    get:
+      operationId: MessagesController_getMessages
+      summary: Get messages with a specific user
+      parameters:
+        - name: counterpartyId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMessagesResDto'
+      tags: *ref_13
+      security: *ref_14
   /health:
     get:
       operationId: HealthController_check
@@ -497,8 +533,8 @@ paths:
                     example: ok
                   info:
                     type: object
-                    example: &ref_13
-                      database: &ref_14
+                    example: &ref_15
+                      database: &ref_16
                         status: up
                     additionalProperties:
                       type: object
@@ -521,7 +557,7 @@ paths:
                     nullable: true
                   details:
                     type: object
-                    example: *ref_13
+                    example: *ref_15
                     additionalProperties:
                       type: object
                       properties:
@@ -541,7 +577,7 @@ paths:
                     example: error
                   info:
                     type: object
-                    example: *ref_13
+                    example: *ref_15
                     additionalProperties:
                       type: object
                       properties:
@@ -553,7 +589,7 @@ paths:
                   error:
                     type: object
                     example:
-                      redis: &ref_15
+                      redis: &ref_17
                         status: down
                         message: Could not connect
                     additionalProperties:
@@ -567,8 +603,8 @@ paths:
                   details:
                     type: object
                     example:
-                      database: *ref_14
-                      redis: *ref_15
+                      database: *ref_16
+                      redis: *ref_17
                     additionalProperties:
                       type: object
                       properties:
@@ -644,25 +680,25 @@ components:
           type: number
         longitude:
           type: number
-    UserPersonalityDto:
+    ProfileDto:
       type: object
       properties:
-        o:
+        name:
+          type: string
+        gender:
+          type: string
+          enum:
+            - man
+            - woman
+            - other
+        age:
           type: number
-        c:
-          type: number
-        e:
-          type: number
-        a:
-          type: number
-        'n':
-          type: number
+        biography:
+          type: string
       required:
-        - o
-        - c
-        - e
-        - a
-        - 'n'
+        - name
+        - gender
+        - age
     ResourceDto:
       type: object
       properties:
@@ -704,25 +740,44 @@ components:
       required:
         - resource
         - relevances
+    UserPersonalityDto:
+      type: object
+      properties:
+        o:
+          type: number
+        c:
+          type: number
+        e:
+          type: number
+        a:
+          type: number
+        'n':
+          type: number
+      required:
+        - o
+        - c
+        - e
+        - a
+        - 'n'
     SharedUserInfo:
       type: object
       properties:
         _id:
           type: string
         profile:
-          $ref: '#/components/schemas/Profile'
-        distance:
-          type: number
+          $ref: '#/components/schemas/ProfileDto'
         inactiveHours:
           type: number
-        pictureUrl:
-          type: string
-        personality:
-          $ref: '#/components/schemas/UserPersonalityDto'
+        distance:
+          type: number
         sharedInterests:
           type: array
           items:
             $ref: '#/components/schemas/SharedInterestDto'
+        personality:
+          $ref: '#/components/schemas/UserPersonalityDto'
+        rating:
+          type: number
       required:
         - _id
         - profile
@@ -976,3 +1031,36 @@ components:
             $ref: '#/components/schemas/GivenRateDto'
       required:
         - rates
+    PostMessageDto:
+      type: object
+      properties:
+        receiverId:
+          type: string
+        text:
+          type: string
+      required:
+        - receiverId
+        - text
+    MessageDto:
+      type: object
+      properties:
+        isOwn:
+          type: boolean
+        createdAt:
+          format: date-time
+          type: string
+        text:
+          type: string
+      required:
+        - isOwn
+        - createdAt
+        - text
+    GetMessagesResDto:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDto'
+      required:
+        - messages

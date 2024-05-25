@@ -1,10 +1,4 @@
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Controller,
   Get,
@@ -16,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { SharedUserInfo } from '@Feature/users';
 import {
   ProposeFriendshipDto,
   GetFriendshipsReqDto,

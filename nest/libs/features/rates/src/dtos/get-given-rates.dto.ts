@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export enum RateType {
   PROPOSED = 'proposed',
@@ -8,9 +14,11 @@ export enum RateType {
 }
 
 export class GivenRateDto {
+  @IsString()
   @IsNotEmpty()
   rateeId: string;
 
+  @IsNumber()
   @IsNotEmpty()
   rating: number;
 }
