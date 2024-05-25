@@ -1,9 +1,7 @@
 import {
-  IsString,
   IsNotEmpty,
   ValidateNested,
   IsArray,
-  IsNumber,
   IsEnum,
   IsOptional,
 } from 'class-validator';
@@ -12,13 +10,18 @@ import {
   PaginatedReqDto,
   PaginatedResDto,
 } from 'libs/utils/dtos/paginated.dto';
-import { Recommendation, RecommendationScore } from '../entities/recommendation.entity';
+import {
+  Recommendation,
+  RecommendationScore,
+} from '../entities/recommendation.entity';
 import { RecommendationPriority } from '../enums/recommendation-priority.enum';
-import { SharedUserInfo, SharedUserInfoConfig } from '@Feature/users';
+import { SharedUserInfo } from '@Feature/users';
 import { OptUserInfoFields } from '@Feature/users/dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RecommendationDto
-  implements Omit<Recommendation, 'recommendedUserId' | 'targetUserId' | 'reviewed'>
+  implements
+    Omit<Recommendation, 'recommendedUserId' | 'targetUserId' | 'reviewed'>
 {
   @Type(() => SharedUserInfo)
   @ValidateNested()
@@ -37,6 +40,7 @@ export class GetRecommendationsReqDto extends PaginatedReqDto {
   @IsArray()
   @IsEnum(OptUserInfoFields, { each: true })
   @IsOptional()
+  @ApiProperty({ name: 'optionalFields[]' })
   optionalFields: OptUserInfoFields[] = [];
 }
 

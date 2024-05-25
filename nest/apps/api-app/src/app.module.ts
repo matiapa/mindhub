@@ -10,6 +10,7 @@ import { ApiTextsModule } from './texts/texts.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { createMongooseOptions } from '@Provider/mongodb/mongoose-config';
 import { HealthModule } from 'libs/features/healthcheck/health.module';
+import { ApiRatesModule } from './rates/rates.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { HealthModule } from 'libs/features/healthcheck/health.module';
     ApiInterestsModule,
     ApiTextsModule,
     ApiProvidersModule,
+    ApiRatesModule,
     HealthModule,
   ],
 })

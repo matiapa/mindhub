@@ -19,8 +19,9 @@ import {
 import { SharedUserInfo } from '@Feature/users';
 import {
   ProposeFriendshipDto,
-  GetFriendshipsDto,
+  GetFriendshipsReqDto,
   ReviewRequestDto,
+  GetFriendshipsResDto,
 } from '@Feature/friendships/dtos';
 import { FriendshipsService } from '@Feature/friendships/friendships.service';
 import {
@@ -51,9 +52,9 @@ export class FriendshipsController {
   })
   @UseGuards(AuthGuard)
   getFriendships(
-    @Query() dto: GetFriendshipsDto,
+    @Query() dto: GetFriendshipsReqDto,
     @AuthUser() user: PrincipalData,
-  ): Promise<SharedUserInfo[]> {
+  ): Promise<GetFriendshipsResDto> {
     return this.friendshipsService.getFriendshipsWithUserInfo(
       user.id,
       dto.type,

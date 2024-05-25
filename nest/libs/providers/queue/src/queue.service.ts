@@ -34,7 +34,7 @@ export class QueueService {
       handleMessage: async (message) => {
         const data = JSON.parse(message.Body!);
 
-        this.logger.debug('Received message', { queue: queueUrl, data });
+        this.logger.debug('Received message', { queue: queueUrl, messageId: message.MessageId, data });
 
         await handler(data);
 

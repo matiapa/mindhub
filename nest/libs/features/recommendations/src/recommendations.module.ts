@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { RecommendationsService } from './recommendations.service';
 import { UsersModule } from '@Feature/users';
 import { InterestsModule } from '@Feature/interests';
@@ -12,12 +12,12 @@ import {
 
 @Module({
   imports: [
+    forwardRef(() => FriendshipsModule),
     MongooseModule.forFeature([
       { name: Recommendation.name, schema: RecommendationSchema },
     ]),
     UsersModule,
     InterestsModule,
-    FriendshipsModule,
   ],
   providers: [RecommendationsService, RecommendationRepository],
   exports: [RecommendationsService],

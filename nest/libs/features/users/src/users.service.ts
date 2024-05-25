@@ -16,8 +16,12 @@ import { getDistanceInKm } from 'libs/utils';
 import { StorageService } from '@Provider/storage';
 import { AuthenticationService } from '@Provider/authentication';
 import { InterestsService, SharedInterestDto } from '@Feature/interests';
-import { PersonalitiesService, UserPersonalityDto } from '@Feature/personalities';
+import {
+  PersonalitiesService,
+  UserPersonalityDto,
+} from '@Feature/personalities';
 import { GetOwnUserResDto } from './dto/get-own-user.dto';
+import { RatesService } from '@Feature/rates/rates.service';
 
 @Injectable()
 export class UsersService {
@@ -25,10 +29,11 @@ export class UsersService {
 
   constructor(
     private readonly usersRepo: UsersRepository,
-    private readonly storageService: StorageService,
-    private readonly authService: AuthenticationService,
     private readonly interestsService: InterestsService,
     private readonly personalitiesService: PersonalitiesService,
+    private readonly ratesService: RatesService,
+    private readonly storageService: StorageService,
+    private readonly authService: AuthenticationService,
     configService: ConfigService,
   ) {
     this.config = configService.get<UsersConfig>('users')!;
@@ -153,6 +158,12 @@ export class UsersService {
 
     const age = moment().diff(user.profile.birthday, 'years');
 
+    // Calculate inactive hours
+
+    const inactiveHours = user.lastConnection
+      ? moment().diff(user.lastConnection.date, 'hours')
+      : Infinity;
+
     // Calculate distance
 
     let distance: number | undefined;
@@ -173,21 +184,6 @@ export class UsersService {
       }
     }
 
-    // Calculate inactive hours
-
-    const inactiveHours = user.lastConnection ? moment().diff(user.lastConnection.date, 'hours') : Infinity;
-
-    // Get picture URL
-
-    let pictureUrl: string | undefined;
-    if (config.optionalFields.includes(OptUserInfoFields.PICTURE_URL)) {
-      pictureUrl = await this.storageService.getDownloadUrl(
-        this.config.picturesBucket,
-        withUserId,
-        this.config.pictureDownloadUrlTtl,
-      );
-    }
-
     // Get shared interests
 
     let sharedInterests: SharedInterestDto[] | undefined;
@@ -202,8 +198,16 @@ export class UsersService {
     // Get user personality
 
     let personality: UserPersonalityDto;
-    if (config.optionalFields.includes(OptUserInfoFields.PERSONALITY)) { 
-      personality = await this.personalitiesService.getUserPersonality(user._id);
+    if (config.optionalFields.includes(OptUserInfoFields.PERSONALITY)) {
+      personality = await this.personalitiesService.getUserPersonality(
+        user._id,
+      );
+    }
+
+    // Get rating
+    let rating: number | undefined;
+    if (config.optionalFields.includes(OptUserInfoFields.RATING)) {
+      rating = await this.ratesService.getRate(withUserId, user._id);
     }
 
     return {
@@ -214,11 +218,11 @@ export class UsersService {
         age,
         biography: user.profile.biography,
       },
-      distance,
       inactiveHours,
-      pictureUrl,
-      personality,
+      distance,
       sharedInterests,
+      personality,
+      rating,
     };
   }
 }

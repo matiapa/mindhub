@@ -1,34 +1,34 @@
 import {
   IsArray,
-  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   ValidateNested,
 } from 'class-validator';
 import { Gender } from '../entities/user.entity';
 import { Type } from 'class-transformer';
 import { SharedInterestDto } from '@Feature/interests';
 import { UserPersonalityDto } from '@Feature/personalities';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum OptUserInfoFields {
   DISTANCE = 'distance',
-  PICTURE_URL = 'pictureUrl',
   SHARED_INTERESTS = 'sharedInterests',
   PERSONALITY = 'personality',
+  RATING = 'rating',
 }
 
 export class SharedUserInfoConfig {
   @IsArray()
   @IsEnum(OptUserInfoFields, { each: true })
   @IsOptional()
+  @ApiProperty({ name: 'optionalFields[]' })
   optionalFields: OptUserInfoFields[] = [];
 }
 
-class Profile {
+class ProfileDto {
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -51,28 +51,33 @@ export class SharedUserInfo {
   @IsNotEmpty()
   _id: string;
 
+  @Type(() => ProfileDto)
+  @ValidateNested()
   @IsNotEmpty()
-  profile: Profile;
-
-  @IsNumber()
-  @IsOptional()
-  distance?: number;
+  profile: ProfileDto;
 
   @IsNumber()
   @IsNotEmpty()
   inactiveHours: number;
 
-  @IsUrl()
+  @IsNumber()
   @IsOptional()
-  pictureUrl?: string;
-
-  @IsOptional()
-  personality?: UserPersonalityDto;
+  distance?: number;
 
   @IsArray()
   @Type(() => SharedInterestDto)
   @ValidateNested({ each: true })
+  @IsOptional()
   sharedInterests?: SharedInterestDto[];
+
+  @Type(() => UserPersonalityDto)
+  @ValidateNested()
+  @IsOptional()
+  personality?: UserPersonalityDto;
+
+  @IsNumber()
+  @IsOptional()
+  rating?: number;
 }
 
 export class GetSharedUserResDto extends SharedUserInfo {}

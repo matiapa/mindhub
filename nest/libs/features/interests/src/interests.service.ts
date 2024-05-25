@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Interest } from './entities/interest.entity';
 import { InterestsRepository } from './interests.repository';
 import { GetSharedInterestsResDto } from './dtos/get-shared-interests.dto';
@@ -7,9 +7,12 @@ import {
   GetUserInterestsResDto,
 } from './dtos/get-user-interests.dto';
 import { QueueService } from '@Provider/queue';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class InterestsService {
+  private readonly logger = new Logger(InterestsService.name);
+
   constructor(
     private readonly interestsRepo: InterestsRepository,
     private readonly queueService: QueueService,
@@ -18,14 +21,23 @@ export class InterestsService {
   async upsertMany(interests: Interest[], userId: string): Promise<void> {
     await this.interestsRepo.upsertMany(interests);
 
-    await this.queueService.sendMessage(process.env.PERSONALITY_REQUESTS_QUEUE_URL, { userId })
+    this.logger.log('Inserted interests in bulk', {
+      userId,
+      amount: interests?.length
+    });
 
+    await this.queueService.sendMessage(process.env.PERSONALITY_REQUESTS_QUEUE_URL, { userId })
   }
 
   async getUserInterests(
     dto: GetUserInterestsReqDto,
     userId: string,
   ): Promise<GetUserInterestsResDto> {
+    const filters = {
+      userId,
+      ...(dto.resourceName && { 'resource.name': { $regex: new RegExp(dto.resourceName, 'i') } })
+    };
+
     const interests = await this.interestsRepo.getPaginated(
       {
         offset: dto.offset,
@@ -33,7 +45,7 @@ export class InterestsService {
         sortBy: 'date',
         sortOrder: 'desc',
       },
-      { userId },
+      filters,
     );
 
     return {
@@ -45,7 +57,7 @@ export class InterestsService {
         date: i.date,
       })),
       count: interests.length,
-      total: await this.interestsRepo.count({ userId }),
+      total: await this.interestsRepo.count(filters),
     };
   }
 

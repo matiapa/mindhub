@@ -1,19 +1,18 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { FriendshipStatus } from './entities';
 import { FriendshipsRepository } from './friendships.repository';
-import {
-  SharedUserInfo,
-  SharedUserInfoConfig,
-  UsersService,
-} from '@Feature/users';
+import { SharedUserInfoConfig, UsersService } from '@Feature/users';
 import { MailingService } from '@Provider/mailing';
-import { FriendshipType } from './dtos';
+import { FriendshipType, GetFriendshipsResDto } from './dtos';
 import { ConfigService } from '@nestjs/config';
 import { FriendshipsConfig } from './friendships.config';
+import { RecommendationsService } from '@Feature/recommendations';
 
 @Injectable()
 export class FriendshipsService {
@@ -21,6 +20,8 @@ export class FriendshipsService {
 
   constructor(
     private readonly friendshipsRepo: FriendshipsRepository,
+    @Inject(forwardRef(() => RecommendationsService))
+    private readonly recommendationService: RecommendationsService,
     private readonly usersService: UsersService,
     private readonly mailingService: MailingService,
     private readonly configService: ConfigService,
@@ -141,14 +142,31 @@ export class FriendshipsService {
     ofUserId: string,
     type: FriendshipType,
     userInfoConfig: SharedUserInfoConfig,
-  ): Promise<SharedUserInfo[]> {
+  ): Promise<GetFriendshipsResDto> {
     const counterpartiesIds = await this.getFriendships(ofUserId, type, false);
 
-    return this.usersService.getManySharedUserInfo(
+    const users = await this.usersService.getManySharedUserInfo(
       counterpartiesIds as string[],
       ofUserId,
       userInfoConfig,
     );
+
+    const recommendations = await Promise.all(
+      counterpartiesIds.map(
+        async (friendUserId) =>
+          await this.recommendationService.getRecommendation(
+            ofUserId,
+            friendUserId,
+          ),
+      ),
+    );
+
+    return {
+      friends: counterpartiesIds.map((id, i) => ({
+        user: users[i],
+        score: recommendations[i]?.score,
+      })),
+    } as any as GetFriendshipsResDto;
   }
 
   async reviewRequest(

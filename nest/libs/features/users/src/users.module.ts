@@ -7,6 +7,7 @@ import { InterestsModule } from '@Feature/interests';
 import { PersonalitiesModule } from '@Feature/personalities';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities';
+import { RatesModule } from '@Feature/rates';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { User, UserSchema } from './entities';
     StorageModule,
     InterestsModule,
     PersonalitiesModule,
+    RatesModule,
     AuthenticationModule,
   ],
   providers: [UsersService, UsersRepository],

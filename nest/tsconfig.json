@@ -71,6 +71,12 @@
       "@Feature/recommendations/*": [
         "libs/features/recommendations/src/*"
       ],
+      "@Feature/rates": [
+        "libs/features/rates/src"
+      ],
+      "@Feature/rates/*": [
+        "libs/features/rates/src/*"
+      ],
       "@Feature/healthcheck": [
         "libs/features/healthcheck/src"
       ],

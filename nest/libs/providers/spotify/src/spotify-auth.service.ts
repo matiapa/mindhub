@@ -21,7 +21,7 @@ export class SpotifyAuthService implements ProviderAuthService {
   getLoginUrl(forUserId: string): string {
     const scope = this.config.requestedScopes;
 
-    return (
+    const loginUrl = (
       'https://accounts.spotify.com/authorize?' +
       new URLSearchParams({
         response_type: 'code',
@@ -31,6 +31,10 @@ export class SpotifyAuthService implements ProviderAuthService {
         scope: scope,
       }).toString()
     );
+
+    console.log(loginUrl);
+
+    return loginUrl;
   }
 
   async redeemAuthCode(code: string): Promise<OAuthToken> {

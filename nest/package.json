@@ -96,6 +96,7 @@
       "^@Feature/texts(|/.*)$": "<rootDir>/libs/features/texts/src/$1",
       "^@Feature/personalities(|/.*)$": "<rootDir>/libs/features/personalities/src/$1",
       "^@Feature/recommendations(|/.*)$": "<rootDir>/libs/features/recommendations/src/$1",
+      "^@Feature/rates(|/.*)$": "<rootDir>/libs/features/rates/src/$1",
       "^@Feature/healthcheck(|/.*)$": "<rootDir>/libs/features/healthcheck/src/$1",
       "^@Provider/spotify(|/.*)$": "<rootDir>/libs/providers/spotify/src/$1",
       "^@Provider/twitter(|/.*)$": "<rootDir>/libs/providers/twitter/src/$1",

@@ -76,19 +76,13 @@ paths:
           in: path
           schema:
             type: string
-        - name: optionalFields
+        - name: optionalFields[]
           required: true
           in: query
           schema:
-            default: []
             type: array
             items:
               type: string
-              enum:
-                - distance
-                - pictureUrl
-                - sharedInterests
-                - personality
       responses:
         '200':
           description: ''
@@ -120,19 +114,13 @@ paths:
       operationId: FriendshipsController_getFriendships
       summary: Get friendships, either accepted ones, or sent/received requests
       parameters:
-        - name: optionalFields
+        - name: optionalFields[]
           required: true
           in: query
           schema:
-            default: []
             type: array
             items:
               type: string
-              enum:
-                - distance
-                - pictureUrl
-                - sharedInterests
-                - personality
         - name: type
           required: true
           in: query
@@ -148,9 +136,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SharedUserInfo'
+                $ref: '#/components/schemas/GetFriendshipsResDto'
       tags: *ref_2
       security: *ref_3
   /friendships/{proposerId}:
@@ -179,6 +165,13 @@ paths:
       operationId: RecommendationsController_getRecommendations
       summary: Get friendship recommendations
       parameters:
+        - name: optionalFields[]
+          required: true
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
         - name: priority
           required: true
           in: query
@@ -188,19 +181,6 @@ paths:
               - distance
               - activity
             type: string
-        - name: optionalFields[]
-          required: true
-          in: query
-          schema:
-            default: []
-            type: array
-            items:
-              type: string
-              enum:
-                - distance
-                - pictureUrl
-                - sharedInterests
-                - personality
         - name: offset
           required: true
           in: query
@@ -287,6 +267,11 @@ paths:
       operationId: InterestsController_getOwn
       summary: Get the interests of the authenticated user
       parameters:
+        - name: resourceName
+          required: false
+          in: query
+          schema:
+            type: string
         - name: offset
           required: true
           in: query
@@ -464,6 +449,37 @@ paths:
         - Providers
       security:
         - bearer: []
+  /rates:
+    post:
+      operationId: RatesController_postRate
+      summary: Send a rate
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRateDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_11
+        - Rates
+      security: &ref_12
+        - bearer: []
+    get:
+      operationId: RatesController_getGivenRates
+      summary: Get given rates
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGivenRatesResDto'
+      tags: *ref_11
+      security: *ref_12
   /health:
     get:
       operationId: HealthController_check
@@ -481,8 +497,8 @@ paths:
                     example: ok
                   info:
                     type: object
-                    example: &ref_11
-                      database: &ref_12
+                    example: &ref_13
+                      database: &ref_14
                         status: up
                     additionalProperties:
                       type: object
@@ -505,7 +521,7 @@ paths:
                     nullable: true
                   details:
                     type: object
-                    example: *ref_11
+                    example: *ref_13
                     additionalProperties:
                       type: object
                       properties:
@@ -525,7 +541,7 @@ paths:
                     example: error
                   info:
                     type: object
-                    example: *ref_11
+                    example: *ref_13
                     additionalProperties:
                       type: object
                       properties:
@@ -537,7 +553,7 @@ paths:
                   error:
                     type: object
                     example:
-                      redis: &ref_13
+                      redis: &ref_15
                         status: down
                         message: Could not connect
                     additionalProperties:
@@ -551,8 +567,8 @@ paths:
                   details:
                     type: object
                     example:
-                      database: *ref_12
-                      redis: *ref_13
+                      database: *ref_14
+                      redis: *ref_15
                     additionalProperties:
                       type: object
                       properties:
@@ -587,33 +603,15 @@ components:
             - man
             - woman
             - other
-        age:
-          type: number
+        birthday:
+          format: date-time
+          type: string
         biography:
           type: string
       required:
         - name
         - gender
-        - age
-    Personality:
-      type: object
-      properties:
-        o:
-          type: number
-        c:
-          type: number
-        e:
-          type: number
-        a:
-          type: number
-        n:
-          type: number
-      required:
-        - o
-        - c
-        - e
-        - a
-        - n
+        - birthday
     GetOwnUserResDto:
       type: object
       properties:
@@ -646,6 +644,25 @@ components:
           type: number
         longitude:
           type: number
+    UserPersonalityDto:
+      type: object
+      properties:
+        o:
+          type: number
+        c:
+          type: number
+        e:
+          type: number
+        a:
+          type: number
+        'n':
+          type: number
+      required:
+        - o
+        - c
+        - e
+        - a
+        - 'n'
     ResourceDto:
       type: object
       properties:
@@ -701,18 +718,15 @@ components:
         pictureUrl:
           type: string
         personality:
-          $ref: '#/components/schemas/Personality'
+          $ref: '#/components/schemas/UserPersonalityDto'
         sharedInterests:
-          type: array
-          items:
-            $ref: '#/components/schemas/SharedInterestDto'
-        ts:
           type: array
           items:
             $ref: '#/components/schemas/SharedInterestDto'
       required:
         - _id
         - profile
+        - inactiveHours
     ProposeFriendshipDto:
       type: object
       properties:
@@ -720,13 +734,6 @@ components:
           type: string
       required:
         - target
-    ReviewRequestDto:
-      type: object
-      properties:
-        accept:
-          type: boolean
-      required:
-        - accept
     RecommendationScore:
       type: object
       properties:
@@ -734,39 +741,38 @@ components:
           type: number
         friendship:
           type: object
-          properties:
-            score:
-              type: number
-            by_ratings:
-              type: number
-            by_personality:
-              type: number
-          required:
-            - score
-            - by_ratings
-            - by_personality
         interests:
           type: object
-          properties:
-            score:
-              type: number
-            category:
-              type: object
-              properties:
-                artist:
-                  type: number
-                track:
-                  type: number
-              required:
-                - artist
-                - track
-          required:
-            - score
-            - category
       required:
         - global
         - friendship
         - interests
+    FriendshipDto:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/SharedUserInfo'
+        score:
+          $ref: '#/components/schemas/RecommendationScore'
+      required:
+        - user
+        - score
+    GetFriendshipsResDto:
+      type: object
+      properties:
+        friends:
+          type: array
+          items:
+            $ref: '#/components/schemas/FriendshipDto'
+      required:
+        - friends
+    ReviewRequestDto:
+      type: object
+      properties:
+        accept:
+          type: boolean
+      required:
+        - accept
     RecommendationDto:
       type: object
       properties:
@@ -941,3 +947,32 @@ components:
             $ref: '#/components/schemas/ProviderConnectionDto'
       required:
         - connections
+    PostRateDto:
+      type: object
+      properties:
+        rateeId:
+          type: string
+        rating:
+          type: number
+      required:
+        - rateeId
+        - rating
+    GivenRateDto:
+      type: object
+      properties:
+        rateeId:
+          type: string
+        rating:
+          type: number
+      required:
+        - rateeId
+        - rating
+    GetGivenRatesResDto:
+      type: object
+      properties:
+        rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/GivenRateDto'
+      required:
+        - rates

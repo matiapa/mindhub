@@ -6,7 +6,7 @@ import {
   UpdateResult,
 } from '@Provider/mongodb';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, UpdateQuery, Model } from 'mongoose';
+import { FilterQuery, UpdateQuery, Model, ProjectionFields, QueryOptions } from 'mongoose';
 
 @Injectable()
 export class RecommendationRepository extends BaseMongooseRepository<Recommendation> {
@@ -29,6 +29,10 @@ export class RecommendationRepository extends BaseMongooseRepository<Recommendat
     filter?: FilterQuery<Recommendation>,
   ): Promise<Recommendation[]> {
     return super.getPaginated(paginated, filter);
+  }
+
+  public getOne(filter: FilterQuery<Recommendation>): Promise<Recommendation> {
+    return super.getOne(filter);
   }
 
   public async updateOne(

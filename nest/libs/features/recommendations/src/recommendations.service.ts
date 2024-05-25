@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { RecommendationRepository } from './recommendation.repository';
 import { ReviewRecommendationReqDto } from './dtos/review-recommendation.dto';
 import { FriendshipsService } from '@Feature/friendships/friendships.service';
@@ -13,6 +13,7 @@ import { RecommendationPriority } from './enums/recommendation-priority.enum';
 export class RecommendationsService {
   constructor(
     private recommendationRepo: RecommendationRepository,
+    @Inject(forwardRef(() => FriendshipsService))
     private friendshipService: FriendshipsService,
     private usersService: UsersService,
   ) {}
@@ -58,6 +59,10 @@ export class RecommendationsService {
         reviewed: { $exists: false },
       }),
     };
+  }
+
+  public async getRecommendation(targetUserId: string, recommendedUserId: string) {
+    return this.recommendationRepo.getOne({ targetUserId, recommendedUserId });
   }
 
   public async reviewRecommendation(

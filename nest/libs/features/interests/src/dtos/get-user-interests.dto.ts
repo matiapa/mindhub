@@ -6,6 +6,7 @@ import {
   IsArray,
   IsDate,
   IsUUID,
+  IsOptional,
 } from 'class-validator';
 import { Interest, InterestRelevance } from '../entities/interest.entity';
 import { ProviderEnum } from '@Feature/providers';
@@ -15,6 +16,7 @@ import {
   PaginatedReqDto,
   PaginatedResDto,
 } from 'libs/utils/dtos/paginated.dto';
+import { ResourceType } from '../enums/resource-type.enum';
 
 export class UserInterestDto implements Omit<Interest, 'userId'> {
   @IsUUID()
@@ -38,7 +40,11 @@ export class UserInterestDto implements Omit<Interest, 'userId'> {
   date: Date;
 }
 
-export class GetUserInterestsReqDto extends PaginatedReqDto {}
+export class GetUserInterestsReqDto extends PaginatedReqDto {
+  @IsString()
+  @IsOptional()
+  resourceName?: string;
+}
 
 export class GetUserInterestsResDto extends PaginatedResDto {
   @IsArray()
