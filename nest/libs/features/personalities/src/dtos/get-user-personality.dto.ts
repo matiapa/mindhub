@@ -1,7 +1,11 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Personality } from '../entities/personality.entity';
 
 export class UserPersonalityDto implements Omit<Personality, 'userId'> {
+  @IsString()
+  @IsNotEmpty()
+  userId?: string;
+
   @IsNumber()
   @IsNotEmpty()
   o: number;

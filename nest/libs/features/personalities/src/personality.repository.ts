@@ -3,7 +3,6 @@ import { Personality } from './entities/personality.entity';
 import { BaseMongooseRepository } from '@Provider/mongodb';
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import _ from 'lodash';
 import { PersonalityConfig } from './personality.config';
 import { ConfigService } from '@nestjs/config';
 
@@ -21,5 +20,9 @@ export class PersonalitiesRepository extends BaseMongooseRepository<Personality>
 
   public getOne(filter: FilterQuery<Personality>): Promise<Personality | null> {
     return super.getOne(filter);
+  }
+
+  public getMany(filter: FilterQuery<Personality>): Promise<Personality[]> {
+    return super.getMany(filter);
   }
 }

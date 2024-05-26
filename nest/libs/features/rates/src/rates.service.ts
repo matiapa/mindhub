@@ -48,8 +48,14 @@ export class RatesService {
     }
   }
 
-  async getGivenRates(raterId: string): Promise<GetGivenRatesResDto> {
-    const res = await this.ratesRepo.getMany({ rater: raterId });
+  async getGivenRates(
+    raterId: string,
+    rateeIds?: string[],
+  ): Promise<GetGivenRatesResDto> {
+    const res = await this.ratesRepo.getMany({
+      rater: raterId,
+      ...(rateeIds && { ratee: { $in: rateeIds } }),
+    });
 
     return {
       rates: res.map((r) => ({

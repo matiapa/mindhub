@@ -20,4 +20,21 @@ export class PersonalitiesService {
       n: personality.n,
     };
   }
+
+  async getUsersPersonalities(
+    userIds: string[],
+  ): Promise<GetUserPersonalityDto[]> {
+    const personalities = await this.personalitiesRepo.getMany({
+      userId: { $in: userIds },
+    });
+
+    return personalities.map((personality) => ({
+      userId: personality.userId,
+      o: personality.o,
+      c: personality.c,
+      e: personality.e,
+      a: personality.a,
+      n: personality.n,
+    }));
+  }
 }

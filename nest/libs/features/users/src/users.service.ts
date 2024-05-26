@@ -142,9 +142,11 @@ export class UsersService {
 
     const users = await this.usersRepo.getMany({ _id: { $in: ids } });
 
-    return Promise.all(
-      users.map((usr) => this.mapEntityToSharedInfo(usr, withUserId, config)),
-    );
+    // return Promise.all(
+    //   users.map((usr) => this.mapEntityToSharedInfo(usr, withUserId, config)),
+    // );
+
+    return this.mapEntitiesToSharedInfo(users, withUserId, config);
   }
 
   private async mapEntityToSharedInfo(
@@ -224,5 +226,110 @@ export class UsersService {
       personality,
       rating,
     };
+  }
+
+  private async mapEntitiesToSharedInfo(
+    users: User[],
+    withUserId: string,
+    config: SharedUserInfoConfig,
+  ): Promise<SharedUserInfo[]> {
+    if (!config.optionalFields) config.optionalFields = [];
+
+    // Calculate age
+
+    const ages = users.map((user) =>
+      moment().diff(user.profile.birthday, 'years'),
+    );
+
+    // Calculate inactive hours
+
+    const inactiveHours = users.map((user) =>
+      user.lastConnection
+        ? moment().diff(user.lastConnection.date, 'hours')
+        : Infinity,
+    );
+
+    // Calculate distances
+
+    let distances: (number | undefined)[] | undefined;
+    if (config.optionalFields.includes(OptUserInfoFields.DISTANCE)) {
+      const authenticatedUser = await this.usersRepo.getOne({
+        _id: withUserId,
+      });
+
+      distances = users.map((user) => {
+        if (user.lastConnection?.location) {
+          if (authenticatedUser.lastConnection?.location) {
+            return getDistanceInKm(
+              user.lastConnection.location.coordinates[1],
+              user.lastConnection.location.coordinates[0],
+              authenticatedUser.lastConnection.location.coordinates[1],
+              authenticatedUser.lastConnection.location.coordinates[0],
+            );
+          }
+        }
+      });
+    }
+
+    // Get shared interests
+
+    let sharedInterests: SharedInterestDto[][] | undefined;
+    if (config.optionalFields.includes(OptUserInfoFields.SHARED_INTERESTS)) {
+      sharedInterests = await Promise.all(
+        users.map(async (user) => {
+          const res = await this.interestsService.getSharedInterests([
+            user['_id'],
+            withUserId,
+          ]);
+          return res.sharedInterests;
+        }),
+      );
+    }
+
+    // Get user personalities
+
+    let personalities: (UserPersonalityDto | undefined)[] | undefined;
+    if (config.optionalFields.includes(OptUserInfoFields.PERSONALITY)) {
+      const res = await this.personalitiesService.getUsersPersonalities(
+        users.map((user) => user['_id']),
+      );
+
+      personalities = users.map((user) => {
+        const personality = res.find((p) => p.userId === user['_id']);
+        return {
+          o: personality?.o,
+          c: personality?.c,
+          e: personality?.e,
+          a: personality?.a,
+          n: personality?.n,
+        };
+      });
+    }
+
+    // Get rating
+    let ratings: (number | undefined)[] | undefined;
+    if (config.optionalFields.includes(OptUserInfoFields.RATING)) {
+      const res = await this.ratesService.getGivenRates(withUserId);
+
+      ratings = users.map((user) => {
+        const rate = res.rates.find((r) => r.rateeId === user['_id']);
+        return rate?.rating;
+      });
+    }
+
+    return users.map((user, i) => ({
+      _id: user['_id'],
+      profile: {
+        name: user.profile.name,
+        gender: user.profile.gender,
+        age: ages[i],
+        biography: user.profile.biography,
+      },
+      inactiveHours: inactiveHours[i],
+      distance: distances?.[i],
+      sharedInterests: sharedInterests?.[i],
+      personality: personalities?.[i],
+      rating: ratings?.[i],
+    }));
   }
 }

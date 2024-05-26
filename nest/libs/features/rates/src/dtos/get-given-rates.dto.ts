@@ -7,12 +7,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export enum RateType {
-  PROPOSED = 'proposed',
-  RECEIVED = 'received',
-  ESTABLISHED = 'established',
-}
-
 export class GivenRateDto {
   @IsString()
   @IsNotEmpty()
