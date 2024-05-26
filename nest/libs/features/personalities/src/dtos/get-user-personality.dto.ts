@@ -1,10 +1,7 @@
-import {
-  IsNotEmpty,
-  IsNumber,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { Personality } from '../entities/personality.entity';
 
-export class UserPersonalityDto implements Omit<Personality, '_id'> {
+export class UserPersonalityDto implements Omit<Personality, 'userId'> {
   @IsNumber()
   @IsNotEmpty()
   o: number;

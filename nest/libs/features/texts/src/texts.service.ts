@@ -17,7 +17,10 @@ export class TextsService {
   async upsertMany(texts: Text[], userId: string): Promise<void> {
     await this.textsRepo.upsertMany(texts);
 
-    await this.queueService.sendMessage(process.env.PERSONALITY_REQUESTS_QUEUE_URL, { userId })
+    await this.queueService.sendMessage(
+      process.env.PERSONALITY_REQUESTS_QUEUE_URL,
+      { userId },
+    );
   }
 
   async getUserTexts(
@@ -36,7 +39,7 @@ export class TextsService {
 
     return {
       texts: texts.map((t) => ({
-        _id: t._id,
+        _id: t['_id'],
         provider: t.provider,
         rawText: t.rawText,
         language: t.language,

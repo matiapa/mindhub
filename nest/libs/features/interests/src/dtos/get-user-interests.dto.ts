@@ -16,9 +16,8 @@ import {
   PaginatedReqDto,
   PaginatedResDto,
 } from 'libs/utils/dtos/paginated.dto';
-import { ResourceType } from '../enums/resource-type.enum';
 
-export class UserInterestDto implements Omit<Interest, 'userId'> {
+export class UserInterestDto implements Omit<Interest, '_id' | 'userId'> {
   @IsUUID()
   @IsNotEmpty()
   _id: string;

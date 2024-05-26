@@ -6,7 +6,7 @@ import {
   UpdateResult,
 } from '@Provider/mongodb';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, UpdateQuery, Model, ProjectionFields, QueryOptions } from 'mongoose';
+import { FilterQuery, UpdateQuery, Model } from 'mongoose';
 
 @Injectable()
 export class RecommendationRepository extends BaseMongooseRepository<Recommendation> {

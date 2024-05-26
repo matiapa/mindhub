@@ -35,21 +35,27 @@ export class RecommendationsService {
         reviewed: { $exists: false },
       },
     );
-    const ids = recommendations.map(r => r.recommendedUserId)
+    const ids = recommendations.map((r) => r.recommendedUserId);
 
-    const users = await this.usersService.getManySharedUserInfo(ids, targetUserId, userInfoConfig);
+    const users = await this.usersService.getManySharedUserInfo(
+      ids,
+      targetUserId,
+      userInfoConfig,
+    );
 
     const recommendationsWithUser = recommendations.map((r, i) => ({
       user: users[i],
       score: r.score,
-    }))
+    }));
 
     if (dto.priority === RecommendationPriority.AFFINITY)
       recommendationsWithUser.sort((a, b) => b.score.global - a.score.global);
     else if (dto.priority === RecommendationPriority.DISTANCE)
       recommendationsWithUser.sort((a, b) => a.user.distance - b.user.distance);
     else if (dto.priority === RecommendationPriority.ACTIVITY)
-      recommendationsWithUser.sort((a, b) => a.user.inactiveHours - b.user.inactiveHours);
+      recommendationsWithUser.sort(
+        (a, b) => a.user.inactiveHours - b.user.inactiveHours,
+      );
 
     return {
       recommendations: recommendationsWithUser,
@@ -61,7 +67,10 @@ export class RecommendationsService {
     };
   }
 
-  public async getRecommendation(targetUserId: string, recommendedUserId: string) {
+  public async getRecommendation(
+    targetUserId: string,
+    recommendedUserId: string,
+  ) {
     return this.recommendationRepo.getOne({ targetUserId, recommendedUserId });
   }
 
@@ -69,6 +78,7 @@ export class RecommendationsService {
     targetUserId: string,
     recommendedUserId: string,
     dto: ReviewRecommendationReqDto,
+    sendFriendship: boolean = true,
   ): Promise<void> {
     await this.recommendationRepo.updateOne(
       { targetUserId, recommendedUserId },
@@ -80,7 +90,7 @@ export class RecommendationsService {
       },
     );
 
-    if (dto.accept) {
+    if (dto.accept && sendFriendship) {
       await this.friendshipService.proposeFriendship(
         targetUserId,
         recommendedUserId,

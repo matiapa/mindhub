@@ -1,13 +1,14 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 
 export class RecommendationScore {
   @Prop({ required: true })
   global: number;
 
-  @Prop({ type: Object, required: true, _id: false  })
+  @Prop({ type: Object, required: true, _id: false })
   friendship: object;
 
-  @Prop({ type: Object, required: true, _id: false  })
+  @Prop({ type: Object, required: true, _id: false })
   interests: object;
 }
 
@@ -20,7 +21,7 @@ class Reviewed {
 }
 
 @Schema({ timestamps: true })
-export class Recommendation {
+export class Recommendation extends BaseMongooseEntity {
   @Prop({ required: true })
   targetUserId: string;
 

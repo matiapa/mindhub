@@ -189,7 +189,7 @@ export class UsersService {
     let sharedInterests: SharedInterestDto[] | undefined;
     if (config.optionalFields.includes(OptUserInfoFields.SHARED_INTERESTS)) {
       const res = await this.interestsService.getSharedInterests([
-        user._id,
+        user['_id'],
         withUserId,
       ]);
       sharedInterests = res.sharedInterests;
@@ -200,18 +200,18 @@ export class UsersService {
     let personality: UserPersonalityDto;
     if (config.optionalFields.includes(OptUserInfoFields.PERSONALITY)) {
       personality = await this.personalitiesService.getUserPersonality(
-        user._id,
+        user['_id'],
       );
     }
 
     // Get rating
     let rating: number | undefined;
     if (config.optionalFields.includes(OptUserInfoFields.RATING)) {
-      rating = await this.ratesService.getRate(withUserId, user._id);
+      rating = await this.ratesService.getRate(withUserId, user['_id']);
     }
 
     return {
-      _id: user._id,
+      _id: user['_id'],
       profile: {
         name: user.profile.name,
         gender: user.profile.gender,

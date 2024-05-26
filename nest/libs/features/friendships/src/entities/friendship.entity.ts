@@ -1,4 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 
 export enum FriendshipStatus {
   PENDING = 'pending',
@@ -7,7 +8,7 @@ export enum FriendshipStatus {
 }
 
 @Schema({ timestamps: true })
-export class Friendship {
+export class Friendship extends BaseMongooseEntity {
   @Prop({ required: true })
   proposer: string;
 

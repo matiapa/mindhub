@@ -1,4 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 
 export enum Gender {
   MAN = 'man',
@@ -37,7 +38,7 @@ class Profile {
 }
 
 @Schema({ timestamps: true })
-export class User {
+export class User extends BaseMongooseEntity {
   @Prop({ required: true })
   _id: string;
 

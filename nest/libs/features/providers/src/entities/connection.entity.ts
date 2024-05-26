@@ -1,3 +1,4 @@
+import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 import { ProviderEnum } from '../enums/providers.enum';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
@@ -21,7 +22,7 @@ class OAuthConn {
 }
 
 @Schema()
-export class ProviderConnection {
+export class ProviderConnection extends BaseMongooseEntity {
   @Prop({ required: true })
   userId: string;
 

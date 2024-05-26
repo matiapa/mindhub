@@ -1,7 +1,8 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 
 @Schema({ timestamps: true })
-export class Rate {
+export class Rate extends BaseMongooseEntity {
   @Prop({ required: true })
   rater: string;
 

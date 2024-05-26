@@ -1,11 +1,9 @@
 import { ProviderEnum } from '@Feature/providers';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 
 @Schema({ timestamps: true })
-export class Text {
-  @Prop({ required: true })
-  _id?: string;
-
+export class Text extends BaseMongooseEntity {
   @Prop({ required: true })
   userId: string;
 

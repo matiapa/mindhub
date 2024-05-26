@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Personality } from './entities/personality.entity';
-import {
-  BaseMongooseRepository,
-} from '@Provider/mongodb';
+import { BaseMongooseRepository } from '@Provider/mongodb';
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import _ from 'lodash';
@@ -21,10 +19,7 @@ export class PersonalitiesRepository extends BaseMongooseRepository<Personality>
     this.config = configService.get<PersonalityConfig>('personalities');
   }
 
-  public getOne(
-    filter: FilterQuery<Personality>,
-  ): Promise<Personality | null> {
+  public getOne(filter: FilterQuery<Personality>): Promise<Personality | null> {
     return super.getOne(filter);
   }
-
 }

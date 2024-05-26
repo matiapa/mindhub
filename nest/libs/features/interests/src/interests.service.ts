@@ -7,7 +7,6 @@ import {
   GetUserInterestsResDto,
 } from './dtos/get-user-interests.dto';
 import { QueueService } from '@Provider/queue';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class InterestsService {
@@ -23,10 +22,13 @@ export class InterestsService {
 
     this.logger.log('Inserted interests in bulk', {
       userId,
-      amount: interests?.length
+      amount: interests?.length,
     });
 
-    await this.queueService.sendMessage(process.env.PERSONALITY_REQUESTS_QUEUE_URL, { userId })
+    await this.queueService.sendMessage(
+      process.env.PERSONALITY_REQUESTS_QUEUE_URL,
+      { userId },
+    );
   }
 
   async getUserInterests(
@@ -35,7 +37,9 @@ export class InterestsService {
   ): Promise<GetUserInterestsResDto> {
     const filters = {
       userId,
-      ...(dto.resourceName && { 'resource.name': { $regex: new RegExp(dto.resourceName, 'i') } })
+      ...(dto.resourceName && {
+        'resource.name': { $regex: new RegExp(dto.resourceName, 'i') },
+      }),
     };
 
     const interests = await this.interestsRepo.getPaginated(
@@ -50,7 +54,7 @@ export class InterestsService {
 
     return {
       interests: interests.map((i) => ({
-        _id: i._id,
+        _id: i['_id'],
         relevance: i.relevance,
         provider: i.provider,
         resource: i.resource,

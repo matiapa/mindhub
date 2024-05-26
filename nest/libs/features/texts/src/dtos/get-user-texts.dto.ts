@@ -15,7 +15,7 @@ import {
   PaginatedResDto,
 } from 'libs/utils/dtos/paginated.dto';
 
-export class UserTextDto implements Omit<Text, 'userId'> {
+export class UserTextDto implements Omit<Text, '_id' | 'userId'> {
   @IsUUID()
   @IsNotEmpty()
   _id: string;

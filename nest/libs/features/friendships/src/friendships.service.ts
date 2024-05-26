@@ -85,9 +85,11 @@ export class FriendshipsService {
         destination: {
           toAddresses: [targetUser.email],
         },
-        subject: 'New friendship request',
+        subject: `${authenticatedUser?.profile?.name} te envió una solicitud de amistad`,
         body: {
-          html: `<p>You have received a friendship request from ${authenticatedUser?.profile?.name}</p>`,
+          html:
+            `<p>¡Hola ${targetUser?.profile.name}! Recibiste una solicitud de amistad de ${authenticatedUser?.profile?.name}</p>` +
+            `<p>Para aceptarla, ingresa a tu cuenta de <a href="${this.config.frontendFriendsUrl}">MindHub</a></p>`,
         },
       });
     } catch (error) {
@@ -198,5 +200,14 @@ export class FriendshipsService {
         status: accept ? FriendshipStatus.ACCEPTED : FriendshipStatus.REJECTED,
       },
     );
+
+    if (accept) {
+      await this.recommendationService.reviewRecommendation(
+        proposerId,
+        targetId,
+        { accept: true },
+        false,
+      );
+    }
   }
 }
