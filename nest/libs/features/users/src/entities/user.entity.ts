@@ -7,6 +7,13 @@ export enum Gender {
   OTHER = 'other',
 }
 
+export enum SignupState {
+  PENDING_PROFILE = 'pending_profile',
+  PENDING_PROVIDERS = 'pending_providers',
+  PENDING_RECOMMENDATIONS = 'pending_recommendations',
+  ACTIVE = 'active',
+}
+
 class Location {
   @Prop({ type: String, enum: ['Point'], required: true })
   type: 'Point';
@@ -50,6 +57,9 @@ export class User extends BaseMongooseEntity {
 
   @Prop({ required: false, _id: false })
   lastConnection?: LastConnection;
+
+  @Prop({ required: true, enum: SignupState })
+  signupState: SignupState;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

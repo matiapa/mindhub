@@ -10,6 +10,10 @@ export class UsersRepository extends BaseMongooseRepository<User> {
     super(model);
   }
 
+  public async createOne(entity: User): Promise<void> {
+    await this.createMany([entity]);
+  }
+
   public updateOne(
     filter: FilterQuery<User>,
     update: Partial<User>,

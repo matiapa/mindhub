@@ -5,8 +5,10 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  ValidateNested,
 } from 'class-validator';
-import { Gender } from '../entities/user.entity';
+import { Gender, SignupState } from '../entities/user.entity';
+import { Type } from 'class-transformer';
 
 class Profile {
   @IsString()
@@ -27,12 +29,14 @@ class Profile {
 }
 
 export class OwnUserInfo {
+  @Type(() => Profile)
+  @ValidateNested()
   @IsNotEmpty()
   profile: Profile;
 
-  @IsUrl()
-  @IsOptional()
-  pictureUrl?: string;
+  @IsEnum(SignupState)
+  @IsNotEmpty()
+  signupState: SignupState;
 }
 
 export class GetOwnUserResDto extends OwnUserInfo {}

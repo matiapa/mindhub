@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import moment from 'moment';
 import {
@@ -9,7 +13,7 @@ import {
   SharedUserInfoConfig,
   OptUserInfoFields,
 } from './dto';
-import { User } from './entities';
+import { SignupState, User } from './entities';
 import { UsersRepository } from './users.repository';
 import { UsersConfig } from './users.config';
 import { getDistanceInKm } from 'libs/utils';
@@ -22,6 +26,8 @@ import {
 } from '@Feature/personalities';
 import { GetOwnUserResDto } from './dto/get-own-user.dto';
 import { RatesService } from '@Feature/rates/rates.service';
+import { SignupReqDto } from './dto/signup.dto';
+import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class UsersService {
@@ -39,29 +45,46 @@ export class UsersService {
     this.config = configService.get<UsersConfig>('users')!;
   }
 
+  public async signup(dto: SignupReqDto): Promise<void> {
+    let decoded: any;
+    try {
+      decoded = jwt.verify(
+        dto.token,
+        process.env.COGNITO_SIGNUP_HANDLER_SECRET_KEY,
+      );
+    } catch (err) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    await this.usersRepo.updateOne(
+      { _id: decoded['_id'] },
+      {
+        _id: decoded['_id'],
+        email: decoded['email'],
+        profile: {
+          name: decoded['name'],
+        } as any,
+        signupState: SignupState.PENDING_PROFILE,
+      },
+      { upsert: true },
+    );
+  }
+
   // ----------------- UPDATE OPS -----------------
 
   public async updateProfile(
     userId: string,
     dto: UpdateProfileReqDto,
   ): Promise<void> {
-    const userData = await this.authService.getUserAuthProviderData(
-      userId,
-      this.config.cognitoPoolId,
-    );
-
     await this.usersRepo.updateOne(
       { _id: userId },
       {
-        email: userData!.email,
         profile: {
-          name: userData!.name,
           gender: dto.gender,
           birthday: new Date(dto.birthday),
           biography: dto.biography,
-        },
+        } as any,
       },
-      { upsert: true },
     );
   }
 
@@ -109,16 +132,9 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    const pictureUrl = await this.storageService.getDownloadUrl(
-      this.config.picturesBucket,
-      id,
-      this.config.pictureDownloadUrlTtl,
-    );
-
     return {
       profile: user.profile,
-      pictureUrl,
+      signupState: user.signupState,
     };
   }
 

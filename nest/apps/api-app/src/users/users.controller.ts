@@ -9,6 +9,7 @@ import {
   GetPictureUploadUrlDto,
 } from '@Feature/users/dto';
 import { GetOwnUserResDto } from '@Feature/users/dto/get-own-user.dto';
+import { SignupReqDto } from '@Feature/users/dto/signup.dto';
 import {
   AuthGuard,
   AuthUser,
@@ -22,14 +23,9 @@ import {
   Put,
   Query,
   UseGuards,
+  Post,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -37,10 +33,16 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('/me/profile')
-  @ApiOperation({ summary: 'Get authenticated user profile' })
+  @Post('/me')
+  @ApiOperation({ summary: 'Sign up the user' })
+  signupUser(@Body() dto: SignupReqDto): Promise<void> {
+    return this.usersService.signup(dto);
+  }
+
+  @Get('/me')
+  @ApiOperation({ summary: 'Get authenticated user information' })
   @UseGuards(AuthGuard)
-  getProfile(@AuthUser() user: PrincipalData): Promise<GetOwnUserResDto> {
+  getOwnUser(@AuthUser() user: PrincipalData): Promise<GetOwnUserResDto> {
     return this.usersService.getOwnUserInfo(user.id);
   }
 

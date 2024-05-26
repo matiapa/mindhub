@@ -1,4 +1,4 @@
-FROM node:18.16.0-alpine3.17 AS base
+FROM node:18.17.1-alpine AS base
 
 ARG COMMIT="unavailable"
 
