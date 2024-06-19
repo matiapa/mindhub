@@ -1,6 +1,6 @@
 import boto3
 import json
-from global_affinity import calculate_recommendations
+from global_affinity import generate_recommendations
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,7 +19,7 @@ while True:
 
             print(f'Calculating affinities for user {userId}')
 
-            affinities = calculate_recommendations(userId)
+            affinities = generate_recommendations(userId)
 
             print(f'{len(affinities)} affinities calculated')
             

@@ -1,8 +1,8 @@
 import sys
 sys.path.append(".")
 
-from models.interfaces.model import Model, Text
-from models.interfaces.model_factory import ModelFactory
+from interfaces.model import Model, Text
+from interfaces.model_factory import ModelFactory
 from db import texts_repo, bigfive_repo
 
 import boto3
@@ -13,7 +13,7 @@ personality_queue = sqs.get_queue_by_name(QueueName='personality-requests-queue'
 recommendations_queue = sqs.get_queue_by_name(QueueName='recommendation-requests-queue')
 
 print('Loading model...')
-model: Model = ModelFactory.get_model("dummy")
+model: Model = ModelFactory.get_model("gpt-fine-tuned")
 
 print('Listening...')
 while True:

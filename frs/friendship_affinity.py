@@ -64,7 +64,9 @@ def affinity_by_user_ratings(user, potentials):
         ratees_pvs = bigfive.find({'_id': {'$in': user_ratees}})
         ratees_pvs = list(map(to_ndarray, ratees_pvs))
 
-        neigh = KNeighborsRegressor(n_neighbors=KNN_K, weights='distance')
+        n_neighbors = min(KNN_K, len(ratees_pvs))
+
+        neigh = KNeighborsRegressor(n_neighbors, weights='distance')
         rate_regressor = neigh.fit(ratees_pvs, user_rates)
 
         potentials_pvs = list(map(to_ndarray, potentials_pvs))

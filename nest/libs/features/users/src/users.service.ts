@@ -18,7 +18,6 @@ import { UsersRepository } from './users.repository';
 import { UsersConfig } from './users.config';
 import { getDistanceInKm } from 'libs/utils';
 import { StorageService } from '@Provider/storage';
-import { AuthenticationService } from '@Provider/authentication';
 import { InterestsService, SharedInterestDto } from '@Feature/interests';
 import {
   PersonalitiesService,
@@ -39,7 +38,6 @@ export class UsersService {
     private readonly personalitiesService: PersonalitiesService,
     private readonly ratesService: RatesService,
     private readonly storageService: StorageService,
-    private readonly authService: AuthenticationService,
     configService: ConfigService,
   ) {
     this.config = configService.get<UsersConfig>('users')!;

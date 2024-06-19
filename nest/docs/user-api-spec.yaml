@@ -1,9 +1,26 @@
 openapi: 3.0.0
 paths:
-  /users/me/profile:
+  /users/me:
+    post:
+      operationId: UsersController_signupUser
+      summary: Sign up the user
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupReqDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_0
+        - Users
+      security: &ref_1
+        - bearer: []
     get:
-      operationId: UsersController_getProfile
-      summary: Get authenticated user profile
+      operationId: UsersController_getOwnUser
+      summary: Get authenticated user information
       parameters: []
       responses:
         '200':
@@ -12,10 +29,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOwnUserResDto'
-      tags: &ref_0
-        - Users
-      security: &ref_1
-        - bearer: []
+      tags: *ref_0
+      security: *ref_1
+  /users/me/profile:
     put:
       operationId: UsersController_updateProfile
       summary: Update authenticated user profile
@@ -628,6 +644,13 @@ components:
       bearerFormat: JWT
       type: http
   schemas:
+    SignupReqDto:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
     Profile:
       type: object
       properties:
@@ -653,10 +676,16 @@ components:
       properties:
         profile:
           $ref: '#/components/schemas/Profile'
-        pictureUrl:
+        signupState:
           type: string
+          enum:
+            - pending_profile
+            - pending_providers
+            - pending_recommendations
+            - active
       required:
         - profile
+        - signupState
     UpdateProfileReqDto:
       type: object
       properties:
@@ -743,6 +772,8 @@ components:
     UserPersonalityDto:
       type: object
       properties:
+        userId:
+          type: string
         o:
           type: number
         c:

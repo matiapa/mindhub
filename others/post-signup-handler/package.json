@@ -1,0 +1,16 @@
+{
+  "name": "post-signup-handler",
+  "version": "1.0.0",
+  "description": "This is an AWS Lambda app that handles the post-signup processing of Cognito users",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

@@ -3,31 +3,31 @@ version: "3.8"
 services:
 
   nginx:
-    image: public.ecr.aws/n9t4t7x6/nginx:latest
+    image: public.ecr.aws/s3y9y4j4/nginx:latest
     ports:
       - 443:443
     links:
       - api
 
   api:
-    image: public.ecr.aws/n9t4t7x6/mindhub-api:latest
+    image: public.ecr.aws/s3y9y4j4/mindhub-api
     env_file:
       - ./nest/.env
 
   providers-sync:
-    image: public.ecr.aws/n9t4t7x6/mindhub-providers-sync:latest
+    image: public.ecr.aws/s3y9y4j4/mindhub-providers-sync
     env_file:
       - ./nest/.env
 
   frs:
-    image: public.ecr.aws/n9t4t7x6/mindhub-frs:latest
+    image: public.ecr.aws/s3y9y4j4/mindhub-frs:latest
     stdin_open: true
     tty: true
     env_file:
       - ./frs/.env
 
   apr:
-    image: public.ecr.aws/n9t4t7x6/mindhub-apr:latest
+    image: public.ecr.aws/s3y9y4j4/mindhub-apr:latest
     stdin_open: true
     tty: true
     env_file:
