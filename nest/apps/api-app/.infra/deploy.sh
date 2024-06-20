@@ -1,5 +1,5 @@
-aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/n9t4t7x6
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/s3y9y4j4
 
 docker build -t mindhub-api -f Dockerfile ../../..
-docker tag mindhub-api:latest public.ecr.aws/n9t4t7x6/mindhub-api:latest
-docker push public.ecr.aws/n9t4t7x6/mindhub-api:latest
+docker tag mindhub-api:latest public.ecr.aws/s3y9y4j4/mindhub-api:latest
+docker push public.ecr.aws/s3y9y4j4/mindhub-api:latest

@@ -1,3 +1,11 @@
+interface SharedInterest {
+  resource: {
+    id: string;
+    name: string;
+    type: string;
+  }
+}
+
 export default interface User {
     user: {
       _id: string;
@@ -9,14 +17,7 @@ export default interface User {
       };
       inactiveHours: number;
       distance?: number;
-      sharedInterests?: {
-        resource: {
-          id: string;
-          name: string;
-          pictureUrl: string;
-          type: string;
-        }[];
-      };
+      sharedInterests?: SharedInterest[];
       personality?: {
         o: number;
         c: number;
@@ -28,8 +29,11 @@ export default interface User {
     };
     score: {
       global: number;
-      friendship: number;
-      interests: number;
+      friendship: {
+        score: number;
+      };
+      interests: {
+        score: number;
+      };
     };
   }
-  

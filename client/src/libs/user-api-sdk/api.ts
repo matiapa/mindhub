@@ -320,6 +320,7 @@ export interface HealthControllerCheck200ResponseInfoValue {
      * @type {string}
      * @memberof HealthControllerCheck200ResponseInfoValue
      */
+    // @ts-ignore: Ignore the next line's error
     'status'?: string;
 }
 /**

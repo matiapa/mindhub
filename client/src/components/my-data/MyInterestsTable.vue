@@ -43,7 +43,7 @@
       <template v-slot:item.provider="{ item }">
         <div class="text-end">
           <v-chip
-            :color="presentation.colors.providers[item.provider]"
+            :color="presentation.colors.providers[item.provider as 'spotify' | 'twitter' | 'user']"
             :text="item.provider"
             class="text-uppercase"
             label
@@ -132,7 +132,7 @@
         }
       },
 
-      async getInterests({ page, itemsPerPage }) {
+      async getInterests({ page, itemsPerPage } : { page: number, itemsPerPage: number }) {
         this.loading = true;
 
         const res = await interestsApi.interestsControllerGetOwn((page - 1) * itemsPerPage, itemsPerPage, this.search);

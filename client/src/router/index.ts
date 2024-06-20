@@ -1,7 +1,6 @@
-// Composables
+import { createRouter, createWebHistory } from 'vue-router'
 import { signInWithRefreshToken } from '@/libs/cognito';
 import { jwtDecode } from 'jwt-decode';
-import { createRouter, createWebHistory } from 'vue-router'
 import { GetOwnUserResDtoSignupStateEnum, UsersApiFactory } from '@/libs/user-api-sdk';
 
 const routes = [
@@ -54,9 +53,10 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
-  routes,
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes
 })
+
 
 router.beforeEach(async (to, from, next) => {
   document.title = to.meta.title as string;

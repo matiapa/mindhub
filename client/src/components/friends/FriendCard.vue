@@ -19,8 +19,8 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn text @click="rate" :disabled="saving">Calificar</v-btn>
-                <v-btn text @click="cancel" :disabled="saving">Cancelar</v-btn>
+                <v-btn @click="rate" :disabled="saving">Calificar</v-btn>
+                <v-btn @click="cancel" :disabled="saving">Cancelar</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -38,6 +38,8 @@
 import ProfilePreviewCard from '@/components/profile/ProfilePreviewCard.vue'
 import ChatCard from '@/components/friends/ChatCard.vue'
 import { RatesApiFactory } from '@/libs/user-api-sdk';
+import type User from '@/types/user.interface';
+import type { PropType } from 'vue';
 
 let ratesApi: ReturnType<typeof RatesApiFactory>;
 
@@ -48,7 +50,10 @@ export default {
     },
 
     props: {
-        user: Object,
+        user: {
+            type: Object as PropType<User>,
+            required: true
+        },
     },
 
     data() {
@@ -69,10 +74,8 @@ export default {
             this.saving = true;
 
             try {
-                console.log('Rate', {
-                    rating: this.rating,
-                    rateeId: this.user.user._id,
-                })
+                if (!this.rating) return;
+
                 await ratesApi.ratesControllerPostRate({
                     rating: this.rating,
                     rateeId: this.user.user._id,

@@ -5,8 +5,10 @@
     </ProfilePreviewCard>
 </template>
 
-<script>
+<script lang="ts">
 import ProfilePreviewCard from '@/components/profile/ProfilePreviewCard.vue'
+import type User from '@/types/user.interface';
+import type { PropType } from 'vue';
 
 export default {
     components: {
@@ -14,7 +16,10 @@ export default {
     },
 
     props: {
-        user: Object,
+        user: {
+            type: Object as PropType<User>,
+            required: true
+        },
     },
 
     emits: ['accept', 'reject'],

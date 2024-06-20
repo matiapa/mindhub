@@ -77,7 +77,7 @@
 </style>
 
 <script setup lang="ts">
-import User from '@/types/user.interface'
+import type User from '@/types/user.interface'
 import FriendCard from '@/components/friends/FriendCard.vue'
 import { FriendshipsApiFactory, FriendshipsControllerGetFriendshipsTypeEnum } from '@/libs/user-api-sdk/api'
 </script>

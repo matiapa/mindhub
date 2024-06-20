@@ -3,7 +3,7 @@
     "containerDefinitions": [
         {
             "name": "nginx",
-            "image": "public.ecr.aws/n9t4t7x6/nginx",
+            "image": "public.ecr.aws/s3y9y4j4/nginx",
             "cpu": 0,
             "portMappings": [
                 {
@@ -39,7 +39,7 @@
         },
         {
             "name": "api",
-            "image": "public.ecr.aws/n9t4t7x6/mindhub-api",
+            "image": "public.ecr.aws/s3y9y4j4/mindhub-api",
             "cpu": 0,
             "portMappings": [],
             "essential": true,

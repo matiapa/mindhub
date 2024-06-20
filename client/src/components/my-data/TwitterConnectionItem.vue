@@ -37,7 +37,7 @@
 
       <v-card-actions  v-if="state == 'initial' || state == 'finished'">
         <v-spacer></v-spacer>
-        <v-btn text @click="showDialog = false">Close</v-btn>
+        <v-btn @click="showDialog = false">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -47,7 +47,7 @@
   </v-snackbar>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: {
     isConnected: Boolean,
@@ -57,7 +57,7 @@ export default {
     return {
       // eslint-disable-next-line vue/no-reserved-keys
       showDialog: false,
-      selectedFile: null,
+      selectedFile: null as any,
       state: 'initial',
       snackbar: {
         enabled: false,
@@ -83,12 +83,7 @@ export default {
 
       try {
         this.state = 'uploadingFile';
-        // const response = await fetch(uploadUrl, options);
-        const response = await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ ok: true });
-          }, 2000);
-        });
+        const response = await fetch(uploadUrl, options);
         if (!response.ok) {
           throw new Error('Upload failed');
         }

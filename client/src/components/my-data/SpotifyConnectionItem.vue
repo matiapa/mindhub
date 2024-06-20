@@ -32,7 +32,7 @@
 
       <v-card-actions  v-if="state == 'initial' || state == 'finished'">
         <v-spacer></v-spacer>
-        <v-btn text @click="showDialog = false">Close</v-btn>
+        <v-btn @click="showDialog = false">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

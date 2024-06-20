@@ -4,7 +4,7 @@
             <v-avatar class="mt-8 mb-8" size="150">
                 <v-img :src="getPictureUrl(user.user._id)" contain>
                     <template #error>
-                        <v-img src="@/assets/avatar.png" contain />
+                        <v-img :src="avatar" contain />
                     </template>
                 </v-img>
             </v-avatar>
@@ -14,7 +14,7 @@
             <v-card-title>{{ user.user.profile.name }}</v-card-title>
 
             <div class="mt-2">
-                <v-chip>{{ presentation.genderIcons[user.user.profile.gender] }}</v-chip>
+                <v-chip>{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
                 <v-chip class="ml-2">{{ user.user.profile.age }} y</v-chip>
                 <v-chip class="ml-2">{{ user.user.distance }} km</v-chip>
                 <v-chip class="ml-2">Activo hace {{ user.user.inactiveHours }} hs</v-chip>
@@ -84,6 +84,9 @@
 
 <script lang="ts">
 import ProfileDetailCard from '@/components/profile/ProfileDetailCard.vue'
+import type User from '@/types/user.interface'
+import type { PropType } from 'vue';
+import _avatar from "@/assets/avatar.png"
 
 export default {
     components: {
@@ -91,7 +94,10 @@ export default {
     },
 
     props: {
-        user: Object,
+        user: {
+            type: Object as PropType<User>,
+            required: true
+        },
     },
 
     data() {
@@ -104,6 +110,7 @@ export default {
                 }
             },
             showDialog: false,
+            avatar: _avatar
         }
     },
 

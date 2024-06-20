@@ -3,7 +3,7 @@
         <v-row justify="center" align="center" class="fill-height text-center">
             <template v-if="state === 'signed_out'">
                 <v-col cols="12" class="text-center">  
-                    <v-img src="@/assets/person-light.png" max-height="100px" class="mb-4"></v-img>
+                    <v-img :src="image" max-height="100px" class="mb-4"></v-img>
 
                     <p class="text-h5 font-weight-bold my-16" style="color: white; font-family: monospace">
                         ¡Bienvenido a MindHub!
@@ -26,8 +26,9 @@
     </v-snackbar>
 </template>
 
-<script>
+<script lang="ts">
 import { signInWithCode } from '@/libs/cognito';
+import _image from "@/assets/person-light.png"
 
 export default {
     data: () => ({
@@ -36,6 +37,7 @@ export default {
             enabled: false,
             text: ''
         },
+        image: _image
     }),
 
     methods: {

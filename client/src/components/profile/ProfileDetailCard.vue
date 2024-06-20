@@ -17,7 +17,7 @@
                 <v-card-title>{{ userData.user.profile.name }}</v-card-title>
 
                 <div class="mt-2">
-                    <v-chip>{{ presentation.genderIcons[userData.user.profile.gender] }}</v-chip>
+                    <v-chip>{{ presentation.genderIcons[userData.user.profile.gender as "man" | "woman" | "other"] }}</v-chip>
                     <v-chip class="ml-2">{{ userData.user.profile.age }} y</v-chip>
                     <v-chip class="ml-2">{{ userData.user.distance }} km</v-chip>
                     <v-chip class="ml-2">Activo hace {{ userData.user.inactiveHours }} hs</v-chip>
@@ -165,6 +165,8 @@
 <script lang="ts">
 import PersonalityCard from '@/components/PersonalityCard.vue'
 import { UsersApiFactory } from '@/libs/user-api-sdk';
+import type User from '@/types/user.interface';
+import type { PropType } from 'vue';
 
 let usersApi: ReturnType<typeof UsersApiFactory>;
 
@@ -174,7 +176,10 @@ export default {
     },
 
     props: {
-        user: Object,
+        user: {
+            type: Object as PropType<User>,
+            required: true
+        },
     },
 
     data() {

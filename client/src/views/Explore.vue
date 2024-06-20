@@ -50,7 +50,7 @@
 </style>
 
 <script setup lang="ts">
-import User from '@/types/user.interface'
+import type User from '@/types/user.interface'
 import RecommendationCard from '@/components/recommendations/RecommendationCard.vue'
 import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum } from '@/libs/user-api-sdk/api'
 </script>

@@ -35,13 +35,18 @@
 
 <script lang="ts">
 import { InterestsApiFactory, MessagesApiFactory } from '@/libs/user-api-sdk';
+import type { PropType } from 'vue';
+import type User from '@/types/user.interface';
 
 let messagesApi: ReturnType<typeof MessagesApiFactory>;
 let interestsApi: ReturnType<typeof InterestsApiFactory>;
 
 export default {
   props: {
-    user: Object,
+    user: {
+        type: Object as PropType<User>,
+        required: true
+    },
     prefilledMessage: String,
   },
 
@@ -118,7 +123,7 @@ export default {
 
     scrollToEnd() {
       this.$nextTick(() => {
-        const container = this.$refs.messages;
+        const container = this.$refs.messages as any;
         if (container) {
           container.scrollTop = container.scrollHeight;
         }

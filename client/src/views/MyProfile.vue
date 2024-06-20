@@ -75,22 +75,22 @@
     </v-snackbar>
 </template>
 
-<script>
+<script lang="ts">
 import { UsersApiFactory } from '@/libs/user-api-sdk/api';
 import axios from 'axios';
 
-let userApi;
+let usersApi: ReturnType<typeof UsersApiFactory>;
 
 export default {
     data: () => ({
         state: 'loading',
         saving: false,
-        showDatePicker: null,
+        showDatePicker: false,
 
-        name: null,
-        gender: null,
-        birthday: null,
-        biography: null,
+        name: '',
+        gender: 'man' as 'man' | 'woman' | 'other',
+        birthday: null as Date | null,
+        biography: '',
 
         presentation: {
             genders: [
@@ -116,13 +116,27 @@ export default {
         async save() {
             this.saving = true;
 
-            await userApi.usersControllerUpdateProfile({
+            if(!this.name) {
+                this.snackbar.text = 'Por favor, selecciona tu nombre';
+                this.snackbar.enabled = true;
+                this.saving = false;
+                return;
+            }
+
+            if(!this.birthday) {
+                this.snackbar.text = 'Por favor, selecciona tu fecha de nacimiento';
+                this.snackbar.enabled = true;
+                this.saving = false;
+                return;
+            }
+
+            await usersApi.usersControllerUpdateProfile({
                 gender: this.gender,
-                birthday: this.birthday,
+                birthday: this.birthday.toISOString(),
                 biography: this.biography
             });
             
-            localStorage.setItem('completed_profile', true);
+            localStorage.setItem('completed_profile', "true");
 
             this.saving = false;
             this.snackbar.text = 'Perfil actualizado';
@@ -131,8 +145,9 @@ export default {
     },
 
     async created() {
-        const idToken = localStorage.getItem('id_token');
-        userApi = UsersApiFactory({
+        const idToken = localStorage.getItem('id_token')!;
+
+        usersApi = UsersApiFactory({
             basePath: 'http://localhost:3000',
             accessToken: () => idToken,
             isJsonMime: () => true,
@@ -143,16 +158,16 @@ export default {
         this.state = 'loading';
 
         try {
-            const res = await userApi.usersControllerGetOwnUser();
+            const res = await usersApi.usersControllerGetOwnUser();
 
             this.name = res.data.profile.name;
             this.gender = res.data.profile.gender;
             this.birthday = new Date(res.data.profile.birthday);
-            this.biography = res.data.profile.biography;
+            this.biography = res.data.profile.biography ?? "";
 
             this.state = 'edit';
         } catch (error) {
-            if (axios.isAxiosError(error) && error.response.status === 404) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
                 this.state = 'create';
             } else {
                 console.error(error);
@@ -164,4 +179,3 @@ export default {
     }
 }
 </script>
-@/libs/user-api-sdk/api

@@ -28,6 +28,8 @@ export class AuthGuard implements CanActivate {
     try {
       request['user'] = await this.verifyToken(token);
     } catch (error) {
+      // TODO: Remove this console log after auth problems have been resolved
+      console.error(error);
       throw new UnauthorizedException();
     }
 
