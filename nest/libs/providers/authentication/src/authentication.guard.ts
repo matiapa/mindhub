@@ -10,13 +10,28 @@ import { PrincipalData, TokenPayload } from './authentication.types';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 import { UsersConfig } from '@Feature/users/users.config';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
+import { CognitoJwtVerifierSingleUserPool } from 'aws-jwt-verify/cognito-verifier';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   config: UsersConfig;
+  verifier: CognitoJwtVerifierSingleUserPool<{
+    userPoolId: string;
+    clientId: string;
+    tokenUse: 'id';
+  }>;
 
   constructor(configService: ConfigService) {
     this.config = configService.get<UsersConfig>('users');
+
+    this.verifier = CognitoJwtVerifier.create({
+      userPoolId: this.config.cognitoPoolId,
+      clientId: this.config.cognitoClientId,
+      tokenUse: 'id',
+    });
+
+    // Fetch and cache the JWKS for all configured issuers
+    this.verifier.hydrate();
   }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -28,8 +43,7 @@ export class AuthGuard implements CanActivate {
     try {
       request['user'] = await this.verifyToken(token);
     } catch (error) {
-      // TODO: Remove this console log after auth problems have been resolved
-      console.error(error);
+      console.warn('Failed to verify token', { token, error });
       throw new UnauthorizedException();
     }
 
@@ -37,13 +51,7 @@ export class AuthGuard implements CanActivate {
   }
 
   public async verifyToken(token: string) {
-    const verifier = CognitoJwtVerifier.create({
-      userPoolId: this.config.cognitoPoolId,
-      clientId: this.config.cognitoClientId,
-      tokenUse: 'id',
-    });
-
-    return await verifier.verify(token, {});
+    return await this.verifier.verify(token, {});
   }
 
   public extractTokenFromHeader(request: Request): string | undefined {

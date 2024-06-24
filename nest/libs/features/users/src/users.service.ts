@@ -77,11 +77,12 @@ export class UsersService {
     await this.usersRepo.updateOne(
       { _id: userId },
       {
-        profile: {
-          gender: dto.gender,
-          birthday: new Date(dto.birthday),
-          biography: dto.biography,
-        } as any,
+        $set: {
+          'profile.gender': dto.gender,
+          'profile.birthday': new Date(dto.birthday),
+          'profile.biography': dto.biography,
+        },
+        signupState: SignupState.PENDING_PROVIDERS,
       },
     );
   }

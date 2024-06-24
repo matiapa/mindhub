@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, QueryOptions, Model } from 'mongoose';
+import { FilterQuery, UpdateQuery, QueryOptions, Model } from 'mongoose';
 import { User } from './entities';
 import { BaseMongooseRepository, UpdateResult } from '@Provider/mongodb';
 
@@ -16,7 +16,7 @@ export class UsersRepository extends BaseMongooseRepository<User> {
 
   public updateOne(
     filter: FilterQuery<User>,
-    update: Partial<User>,
+    update: UpdateQuery<User>,
     options?: QueryOptions<User>,
   ): Promise<UpdateResult> {
     return super.updateOne(filter, update, options);
