@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "FRS"
+version = "0.1.0"
+description = "Friendship Recommendation Service"
+authors = ["Matías Apablaza <mapablaza@itba.edu.ar>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9, <3.12"
+boto3 = "^1.28.65"
+pymongo = "^4.5.0"
+python-dotenv = "^1.0.0"
+numpy = "^1.26.1"
+scikit-learn = "^1.3.1"
+pandas = "^2.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

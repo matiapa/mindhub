@@ -1,4 +1,4 @@
-from db import ratings, users, recommendations
+from db import users, recommendations, bigfive
 from friendship_affinity import friendship_affinity
 from interests_affinity import interest_affinity
 
@@ -9,9 +9,10 @@ def get_ids(iterable):
     return list(map(lambda o : o['_id'], iterable))
 
 def global_affinity(user, potentials):
-
+    print("Calculating friendship affinities")
     friendship_affinities = friendship_affinity(user, potentials)
 
+    print("Calculating interests affinities")
     interests_affinities = interest_affinity(user, potentials)
 
     scores = []
@@ -32,8 +33,17 @@ def global_affinity(user, potentials):
     return scores
 
 def generate_recommendations(user):
-    ratees = ratings.distinct('ratee', {'rater': user})
-    potentials = users.distinct('_id', {'_id': {'$not': {'$in': ratees}}})
+    # Get the list of already recommended users which where accepted or rejected
+    reviewed_ids = recommendations.distinct('recommendedUserId', {'targetUserId': user, 'reviewed': {'$exists': True}})
+
+    # Get the list of users with a personality vector
+    with_personality_ids = bigfive.distinct('userId')
+    
+    # Potentials are all the users which have a personality vector and the user has not reviewed yet
+    potentials = users.distinct('_id', {
+        '_id': {'$nin': reviewed_ids + [user]},
+        '_id': {'$in': with_personality_ids}
+    })
 
     user_recommendations = global_affinity(user, potentials)
 

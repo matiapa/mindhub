@@ -7,5 +7,5 @@ class BertMlpModel(Model):
     
     def infer(self, texts: List[Text]) -> Tuple[float]:
         text = '\n'.join(map(lambda t : t.rawText, texts))
-        vec = predict(text, embedding_model='bert-base', segment_length=512, finetune_model='mlp_lm', pkl_dir='models/mehta/data/')
+        vec = predict(text, embedding_model='bert-base', segment_length=512, finetune_model='mlp_lm', pkl_dir='src/models/bert_mlp/data/')
         return (float(vec[0]), float(vec[1]), float(vec[2]), float(vec[3]), float(vec[4]))

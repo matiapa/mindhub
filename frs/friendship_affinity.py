@@ -2,18 +2,18 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from db import bigfive, ratings
 import pandas as pd
+import os
 
 MAX_DIM_VALUE = 5
-MAX_RATE_VALUE = 5
 PERS_DIMS = ['o','c','e','a','n']
 
-POSITIVE_RATE_THRESHOLD = MAX_RATE_VALUE / 2
-KNN_K = 5
-RATING_WEIGHT_GROWTH_RATE = 1
-RATING_WEIGHT_MIDDLE_POINT = 1
+POSITIVE_RATE_THRESHOLD = int(os.environ.get("FA_RA_IQ_POSITIVE_RATE_THRESHOLD"))
+KNN_K = int(os.environ.get("FA_RA_KNN_K"))
+RATING_WEIGHT_GROWTH_RATE = float(os.environ.get("FA_RW_GROWTH_RATE"))
+RATING_WEIGHT_MIDDLE_POINT = float(os.environ.get("FA_RW_MIDDLE_POINT"))
 
-AFFINITY_BY_RATING_STRATEGY = 'knn'
-AFFINITY_BY_PERSONALITY_STRATEGY = 'selfhout'
+AFFINITY_BY_RATING_STRATEGY = os.environ.get("FA_RA_STRATEGY")
+AFFINITY_BY_PERSONALITY_STRATEGY = os.environ.get("FA_PA_STRATEGY")
 
 def to_ndarray(data):
     return np.array([data['o'], data['c'], data['e'], data['a'], data['n']])
@@ -29,13 +29,14 @@ def ponderate_dim_scores(dim_scores):
 
 
 def affinity_by_user_ratings(user, potentials):
-    potentials_pvs = bigfive.find({'_id': {'$in': potentials}})
+    potentials_pvs = bigfive.find({'userId': {'$in': potentials}})
     affinity_scores = []
 
     if AFFINITY_BY_RATING_STRATEGY == 'interquartile':
-        positive_ratings = ratings.find({'rater': user, 'rate': {'$gt': POSITIVE_RATE_THRESHOLD}})
+        positive_ratings = ratings.find({'rater': user, 'rate': {'$gte': POSITIVE_RATE_THRESHOLD}})
+        
         positive_ratees = list(map(lambda r : r['ratee'], positive_ratings))
-        positive_ratees_pvs = bigfive.find({'_id': {'$in': positive_ratees}}, {'o': 1, 'c': 1, 'e': 1, 'a': 1, 'n': 1})
+        positive_ratees_pvs = bigfive.find({'userId': {'$in': positive_ratees}}, {'o': 1, 'c': 1, 'e': 1, 'a': 1, 'n': 1})
 
         positive_rates_df = pd.DataFrame(list(positive_ratees_pvs))
         
@@ -57,11 +58,12 @@ def affinity_by_user_ratings(user, potentials):
     
     elif AFFINITY_BY_RATING_STRATEGY == 'knn':
         user_ratings = list(ratings.find({'rater': user}))
+        
         user_ratees = list(map(lambda r : r['ratee'], user_ratings))
 
         user_rates = list(map(lambda r : r['rate'], user_ratings))
 
-        ratees_pvs = bigfive.find({'_id': {'$in': user_ratees}})
+        ratees_pvs = bigfive.find({'userId': {'$in': user_ratees}})
         ratees_pvs = list(map(to_ndarray, ratees_pvs))
 
         n_neighbors = min(KNN_K, len(ratees_pvs))
@@ -77,8 +79,8 @@ def affinity_by_user_ratings(user, potentials):
 
 
 def affinity_by_user_personality(user, potentials):
-    user_pv = bigfive.find_one({'_id': user})
-    potentials_pvs = bigfive.find({'_id': {'$in': potentials}})
+    user_pv = bigfive.find_one({'userId': user})
+    potentials_pvs = bigfive.find({'userId': {'$in': potentials}})
 
     affinity_scores = []
 
@@ -140,10 +142,10 @@ def affinity_by_user_personality(user, potentials):
 def friendship_affinity(user, potentials):
     target_rate_count = ratings.count_documents({'rater': user})
 
-    ratings_weight = sigmoid(target_rate_count, RATING_WEIGHT_GROWTH_RATE, RATING_WEIGHT_MIDDLE_POINT)
+    ratings_weight = sigmoid(target_rate_count, RATING_WEIGHT_GROWTH_RATE, RATING_WEIGHT_MIDDLE_POINT) if target_rate_count > 0 else 0
 
     pers_affinity_scores = affinity_by_user_personality(user, potentials)
-    rating_affinity_scores = affinity_by_user_ratings(user, potentials)
+    rating_affinity_scores = affinity_by_user_ratings(user, potentials) if target_rate_count > 0 else [0] * len(potentials)
 
     affinities = []
 

@@ -139,6 +139,12 @@ def predict(new_text, embedding_model, segment_length, finetune_model, pkl_dir):
     # Preprocess the text
     new_text_pre = dataset_processors.preprocess_text(new_text)
 
+    max_tokens = int(os.environ.get("INFER_BERT_MLP_MAX_TOKENS_PER_USER"))
+    if len(new_text_pre.split()) > max_tokens:
+        new_text_pre = " ".join(new_text_pre.split()[:max_tokens])
+
+    print(f"Predicting - Word count: {len(new_text_pre.split())}")
+
     # Load the feature extraction model
     tokenizer, model = get_embedding_model(embedding_model)
     model.to(DEVICE)
@@ -168,5 +174,3 @@ def predict(new_text, embedding_model, segment_length, finetune_model, pkl_dir):
         scores.append(prediction)
 
     return scores
-
-predict("This is a new short sample text", embedding_model='bert-base', segment_length=512, finetune_model='mlp_lm', pkl_dir='models/mehta/data/')

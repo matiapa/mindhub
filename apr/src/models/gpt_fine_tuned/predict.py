@@ -25,7 +25,11 @@ def predict(texts: List[str]):
     texts = [clean_text(text) for text in texts]
     texts = " \n ".join(texts)
 
-    print("Predicting: ", texts)
+    max_tokens = int(os.environ.get("INFER_GPT_FINETUNED_MAX_TOKENS_PER_USER"))
+    if len(texts.split()) > max_tokens:
+        texts = " ".join(texts.split()[:max_tokens])
+
+    print(f"Predicting - Word count: {len(texts.split())}")
 
     chat_completion = client.chat.completions.create(
         messages=[

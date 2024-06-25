@@ -3,8 +3,6 @@ import pandas as pd
 import re
 import csv
 import preprocessor as p
-import math
-
 
 def preprocess_text(sentence):
     # remove hyperlinks, hashtags, smileys, emojies
