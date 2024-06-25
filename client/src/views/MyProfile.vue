@@ -78,6 +78,7 @@
 <script lang="ts">
 import { UsersApiFactory } from '@/libs/user-api-sdk/api';
 import axios from 'axios';
+import { useUserStore } from '@/stores/user';
 
 let usersApi: ReturnType<typeof UsersApiFactory>;
 
@@ -113,6 +114,30 @@ export default {
     },
 
     methods: {
+        async loadData() {
+            this.state = 'loading';
+
+            try {
+                const ownUser = await useUserStore().fetchOwnUser();
+
+                this.name = ownUser.profile.name;
+                this.gender = ownUser.profile.gender;
+                this.birthday = ownUser.profile.birthday ? new Date(ownUser.profile.birthday) : null;
+                this.biography = ownUser.profile.biography ?? "";
+
+                this.state = 'edit';
+            } catch (error) {
+                if (axios.isAxiosError(error) && error.response?.status === 404) {
+                    this.state = 'create';
+                } else {
+                    console.error(error);
+                    this.snackbar.text = 'Ha ocurrido un error.'
+                    this.snackbar.enabled = true
+                    this.state = 'error';
+                }
+            }
+        },
+
         async save() {
             this.saving = true;
 
@@ -148,34 +173,12 @@ export default {
         const idToken = localStorage.getItem('id_token')!;
 
         usersApi = UsersApiFactory({
-            basePath: 'http://localhost:3000',
+            basePath: import.meta.env.VITE_API_URL,
             accessToken: () => idToken,
             isJsonMime: () => true,
         });
+
+        this.loadData();
     },
-
-    async mounted() {
-        this.state = 'loading';
-
-        try {
-            const res = await usersApi.usersControllerGetOwnUser();
-
-            this.name = res.data.profile.name;
-            this.gender = res.data.profile.gender;
-            this.birthday = new Date(res.data.profile.birthday);
-            this.biography = res.data.profile.biography ?? "";
-
-            this.state = 'edit';
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response?.status === 404) {
-                this.state = 'create';
-            } else {
-                console.error(error);
-                this.snackbar.text = 'Ha ocurrido un error.'
-                this.snackbar.enabled = true
-                this.state = 'error';
-            }
-        }
-    }
 }
 </script>

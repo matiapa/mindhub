@@ -10,6 +10,7 @@ import { streamToBuffer } from 'libs/utils/streams';
 import { TextsService } from '@Feature/texts';
 import { ProviderServices } from '../types/provider.factory';
 import { SyncSource } from '../enums/sync-source.enum';
+import { ProvidersConnRepository } from '../repositories/connection.repository';
 
 @Injectable()
 export class ProvidersSyncHandlerService {
@@ -23,14 +24,18 @@ export class ProvidersSyncHandlerService {
     private readonly fileService: ProvidersFileService,
     private readonly providersServices: ProviderServices,
     private readonly configService: ConfigService,
+    private connRepo: ProvidersConnRepository,
   ) {
     this.config = this.configService.get<ProvidersConfig>('providers')!;
   }
 
-  public async handleRequest(request: SyncRequestDto): Promise<void> {
+  public async handleRequest(
+    request: SyncRequestDto,
+    trie: number,
+  ): Promise<void> {
     // We use lambda syntax for keeping the context
 
-    this.logger.log(`Synchronization started`, request);
+    this.logger.log(`Synchronization started`, { request, trie });
 
     const provider = this.providersServices.getSyncService(request.provider);
     if (!provider) {
@@ -38,6 +43,53 @@ export class ProvidersSyncHandlerService {
       return;
     }
 
+    try {
+      const result = await this.processRequest(request, provider);
+
+      await this.connRepo.updateOne(
+        { userId: request.userId, provider: request.provider },
+        {
+          lastProcessed: {
+            success: true,
+            summary: {
+              interests: result.interests?.length ?? 0,
+              texts: result.texts?.length ?? 0,
+            },
+            date: new Date(),
+          },
+        },
+      );
+
+      this.logger.log('Synchronization finished - Summary', {
+        interests: result.interests?.length ?? 0,
+        texts: result.texts?.length ?? 0,
+      });
+    } catch (error) {
+      if (trie == this.config.sync.maxRetries) {
+        this.logger.warn('Marking request as failed', { request, error });
+        await this.connRepo.updateOne(
+          { userId: request.userId, provider: request.provider },
+          {
+            lastProcessed: {
+              success: false,
+              error: error.message,
+              date: new Date(),
+            },
+          },
+        );
+      }
+
+      this.logger.warn('Synchronization failed', { request, error });
+
+      // We pass the error so that message is not ACKed
+      throw error;
+    }
+  }
+
+  private async processRequest(
+    request: SyncRequestDto,
+    provider: ProviderSyncService,
+  ) {
     let result: SyncResult;
     switch (request.source) {
       case SyncSource.API:
@@ -54,10 +106,6 @@ export class ProvidersSyncHandlerService {
         return;
     }
 
-    if (!result) {
-      return;
-    }
-
     if (result.interests) {
       await this.interestsService.upsertMany(result.interests, request.userId);
     }
@@ -66,10 +114,7 @@ export class ProvidersSyncHandlerService {
       await this.textsService.upsertMany(result.texts, request.userId);
     }
 
-    this.logger.log('Synchronization finished - Extracted resources', {
-      interests: result.interests?.length ?? 0,
-      texts: result.texts?.length ?? 0,
-    });
+    return result;
   }
 
   private async syncFromFile(

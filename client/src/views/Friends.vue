@@ -111,7 +111,7 @@ export default {
   }),
 
   methods: {
-    async getFriendshipRequests() {
+    async loadData() {
       this.loading = true;
 
       let res = await friendsApi.friendshipsControllerGetFriendships(
@@ -173,7 +173,7 @@ export default {
       isJsonMime: () => true,
     })
 
-    this.getFriendshipRequests()
+    this.loadData()
   },
 }
 </script>@/libs/user-api-sdk/api

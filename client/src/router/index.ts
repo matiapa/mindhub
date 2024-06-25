@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { signInWithRefreshToken } from '@/libs/cognito';
 import { jwtDecode } from 'jwt-decode';
 import { GetOwnUserResDtoSignupStateEnum, UsersApiFactory } from '@/libs/user-api-sdk';
+import { AxiosError } from 'axios';
+import { useUserStore } from '@/stores/user';
 
 const routes = [
   {
@@ -61,6 +63,8 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   document.title = to.meta.title as string;
 
+  // console.debug(document.title)
+
   // -------- Validate that user is authenticated --------
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
@@ -68,6 +72,8 @@ router.beforeEach(async (to, from, next) => {
     next();
     return;
   }
+
+  // console.debug('Validating authentication')
 
   const idToken = localStorage.getItem('id_token');
   if (!idToken) {
@@ -97,6 +103,29 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // -------- Validate that user is confirmed (exists on DB) --------
+
+  // console.debug('Validating account confirmation')
+
+  let ownUser;
+  try {
+    ownUser = await useUserStore().fetchOwnUser();
+  } catch (error: any) {
+    /* TODO: This happens when post confirmation trigger has not been executed
+     this can happen either because of no confirmation or due to a delay.
+     See if we can improve the handling of this situation */
+    if (error instanceof AxiosError && error.response?.status == 404) {
+      console.log('The user has not confirmed its account');
+      /* TODO: We use browser redirect because when using normal redirect the mounted
+       hook of the component is not executed, this should also be fixed */
+      window.location.href = import.meta.env.VITE_APP_URL + '/?error=unconfirmed_account';
+      // next({ path: '/', query: { error: 'unconfirmed_account' }});
+      return;
+    } else {
+      throw error;
+    }
+  }
+
   // -------- Validate that the user profile is completed --------
 
   const requiresProfileCompletion = to.matched.some(record => record.meta.requiresProfileCompletion);
@@ -105,22 +134,11 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  const usersApi = UsersApiFactory({
-    basePath: import.meta.env.VITE_API_URL,
-    accessToken: () => idToken,
-    isJsonMime: () => true,
-  });
-
-  const res = await usersApi.usersControllerGetOwnUser(decodedIdToken.sub!);
-  const ownUser = res.data;
+  // console.debug('Validating profile completion')
 
   if (ownUser.signupState == GetOwnUserResDtoSignupStateEnum.PendingProfile) {
     console.log('The user has not completed the profile');
     next({ path: '/profile' });
-    return;
-  } else if (ownUser.signupState == GetOwnUserResDtoSignupStateEnum.PendingProviders) {
-    console.log('The user has not completed the providers');
-    next({ path: '/data' });
     return;
   }
 

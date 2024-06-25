@@ -9,7 +9,12 @@ import { QueueService } from '@Provider/queue';
 import { StorageService } from '@Provider/storage';
 import { Controller, Get, Logger, Param, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiOperation, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiOkResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Providers')
 @Controller('/providers/:providerName')
@@ -31,6 +36,11 @@ export class FileController {
     this.queueService.registerHandler(
       this.config.file.uploadedQueueUrl,
       this.handleFileUploaded,
+    );
+
+    console.log(
+      'Registered handler for uploaded files',
+      this.config.file.uploadedQueueUrl,
     );
   }
 

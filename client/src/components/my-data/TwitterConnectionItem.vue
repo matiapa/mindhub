@@ -7,14 +7,15 @@
     </template>
 
     <template v-slot:append>
-      <!-- <v-btn icon="mdi-connection" variant="text"></v-btn> -->
-      <v-btn @click="showDialog = true" variant="text" :disabled="isConnected">{{ isConnected ? 'Conectado' : 'Conectar' }}</v-btn>
+      <v-btn @click="openDialog" variant="text">
+        {{ getButtonLabel() }}
+      </v-btn>
     </template>
   </v-list-item>
 
   <v-dialog v-model="showDialog" max-width="50%" persistent>
     <v-card>
-      <v-card-title>Conexion a Twitter</v-card-title>
+      <v-card-title>Conexión a Twitter</v-card-title>
       <v-card-text>  
         <template v-if="state == 'initial'">
           Por el momento no es posible conectar tu cuenta de Twitter mediante login, pero puedes subir un archivo con tus datos.
@@ -22,22 +23,28 @@
           <v-btn @click="uploadFile">Subir</v-btn>
         </template >
         <template v-else-if="state == 'uploadingFile'">
-          Cargando archivo, por favor no cierres esta ventana.
+          Cargando archivo...
           <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
         <template v-else-if="state == 'processingFile'">
-          Procesando archivo, por favor no cierres esta ventana.
+          Procesando archivo...
           <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
         <template v-else-if="state == 'finished'">
-          Conexion finalizada.
+          <p>Conexión finalizada.</p><br>
+          <p>Intereses extraidos: {{ connection?.lastProcessed?.summary?.interests }}</p>
+          <p>Textos extraidos: {{ connection?.lastProcessed?.summary?.texts }}</p>
+        </template>
+        <template v-else-if="state == 'failed'">
+          <p>La conexión ha fallado, por favor vuelve a intentarlo más tarde o comunícate con soporte.</p><br>
+          <p>ERROR: {{ connection?.lastProcessed?.error }}</p>
         </template>
         
       </v-card-text>
 
-      <v-card-actions  v-if="state == 'initial' || state == 'finished'">
+      <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="showDialog = false">Close</v-btn>
+        <v-btn @click="closeDialog" :disabled="state == 'uploadingFile'">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -48,17 +55,28 @@
 </template>
 
 <script lang="ts">
-export default {
-  props: {
-    isConnected: Boolean,
-  },
+import { ProvidersApiFactory } from '@/libs/user-api-sdk';
+import type ProviderConnection from '@/types/provider.interface';
 
+let providersApi: ReturnType<typeof ProvidersApiFactory>;
+let interval: any;
+
+enum ConnectionState {
+  Initial = 'initial',
+  UploadingFile = 'uploadingFile',
+  ProcessingFile = 'processingFile',
+  Finished = 'finished',
+  Failed = 'failed',
+}
+
+export default {
   data() {
     return {
       // eslint-disable-next-line vue/no-reserved-keys
+      connection: undefined as ProviderConnection | undefined,
       showDialog: false,
       selectedFile: null as any,
-      state: 'initial',
+      state: 'initial' as ConnectionState,
       snackbar: {
         enabled: false,
         text: '',
@@ -67,12 +85,16 @@ export default {
   },
 
   methods: {
+    async loadData() {
+      const res = await providersApi.connectionsControllerGetConnections();
+      this.connection = res.data.connections.find((c: any) => c.provider === 'twitter');
+    },
+
     async uploadFile() {
       if (!this.selectedFile) {
         return;
       }
 
-      const uploadUrl = 'https://your-upload-url';
       const options = {
         method: 'PUT',
         headers: {
@@ -82,38 +104,106 @@ export default {
       };
 
       try {
-        this.state = 'uploadingFile';
+        console.log('Uploading file')
+
+        this.state = ConnectionState.UploadingFile;
+
+        // Upload the file
+
+        const res = await providersApi.fileControllerGetFileUploadUrl('twitter');
+        const uploadUrl = res.data;
+        console.log("Upload URL", uploadUrl)
+
         const response = await fetch(uploadUrl, options);
         if (!response.ok) {
-          throw new Error('Upload failed');
+          throw new Error('Failed to upload file');
         }
 
-        console.log('Upload successful');
+        console.log('File uploaded succesfully')
 
-        // Await for processing (wait SQS message)
-        this.state = 'processingFile';
-        await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ ok: true });
-          }, 2000);
-        });
-
-        this.state = 'finished';
-
-        this.$emit('connected', { provider: 'twitter', file: { date: new Date() } });
+        this.state = ConnectionState.ProcessingFile;
       } catch (error) {
-        console.error('Error:', error);
-        this.state = 'initial';
-        this.snackbar = {
-          enabled: true,
-          text: 'Error al subir el archivo',
-        };
+        this.logError(error, 'Error al subir el archivo')
+        this.state = ConnectionState.Initial;
       } finally {
         this.selectedFile = null;
       }
-
-      
     },
+
+    logError(error: any, message: string) {
+      console.error(error);
+      this.snackbar = {
+        enabled: true,
+        text: message,
+      };
+    },
+
+    getButtonLabel() {
+      if (this.state == ConnectionState.Initial) {
+        return 'Conectar';
+      } else if (this.state == ConnectionState.UploadingFile) {
+        return 'Subiendo archivo...';
+      } else if (this.state == ConnectionState.ProcessingFile) {
+        return 'Procesando...';
+      } else if (this.state == ConnectionState.Finished) {
+        return 'Conectado';
+      } else if (this.state == ConnectionState.Failed) {
+        return 'Fallido';
+      }
+    },
+
+    openDialog() {
+      this.showDialog = true;
+
+      interval = setInterval(async () => {
+        console.log('Checking for connection updates')
+        const res = await providersApi.connectionsControllerGetConnections();
+        this.connection = res.data.connections.find((c: any) => c.provider === 'twitter');
+      }, 5000);
+    },
+
+    closeDialog() {
+      this.showDialog = false;
+      clearInterval(interval);
+    }
+  },
+
+  watch: {
+    connection() {
+      if (this.connection) {
+        if (this.connection.lastProcessed) {
+          if (this.connection.lastProcessed.success) {
+            this.state = ConnectionState.Finished;
+
+            this.$emit('new-connection');
+
+            console.log('Connection finished')
+          } else {
+            this.state = ConnectionState.Failed;
+            console.log('Connection failed')
+          }
+
+          if(interval)
+            clearInterval(interval);
+        } else {
+          this.state = ConnectionState.ProcessingFile;
+        }
+      } else {
+        this.state = ConnectionState.Initial;
+      }
+    }
+  },
+
+  created() {
+    const idToken = localStorage.getItem('id_token')!;
+
+    providersApi = ProvidersApiFactory({
+      basePath: import.meta.env.VITE_API_URL,
+      accessToken: () => idToken,
+      isJsonMime: () => true,
+    })
+
+    this.loadData();
   },
 }
 </script>

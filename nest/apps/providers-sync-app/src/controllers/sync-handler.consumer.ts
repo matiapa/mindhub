@@ -30,7 +30,7 @@ export class ProvidersSyncController {
     );
   }
 
-  handleRequest = async (eventMessage: any) => {
+  handleRequest = async (eventMessage: any, trie: number) => {
     const request = plainToInstance(SyncRequestDto, eventMessage);
 
     const err = await validate(request);
@@ -39,6 +39,6 @@ export class ProvidersSyncController {
       return;
     }
 
-    await this.syncService.handleRequest(request);
+    await this.syncService.handleRequest(request, trie);
   };
 }

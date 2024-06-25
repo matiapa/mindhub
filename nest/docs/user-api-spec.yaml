@@ -1003,6 +1003,28 @@ components:
         - texts
         - count
         - total
+    ProcessingSummaryDto:
+      type: object
+      properties:
+        interests:
+          type: number
+        texts:
+          type: number
+    LastProcessedDto:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
+        summary:
+          $ref: '#/components/schemas/ProcessingSummaryDto'
+        date:
+          format: date-time
+          type: string
+      required:
+        - success
+        - date
     ProviderConnectionDto:
       type: object
       properties:
@@ -1020,6 +1042,8 @@ components:
             date:
               format: date-time
               type: string
+        lastProcessed:
+          $ref: '#/components/schemas/LastProcessedDto'
       required:
         - provider
         - oauth

@@ -20,17 +20,39 @@
       </v-col>
 
       <v-col cols="10">
-        <v-row v-if="!loading">
-          <v-col v-for="(recommendation, index) in recommendations" :key="recommendation.user._id" cols="4">
-            <RecommendationCard :user="recommendation" @accept="acceptRecommendation(index)" @reject="rejectRecommendation(index)"></RecommendationCard>
-          </v-col>
-        </v-row>
-
         <v-row v-if="loading" align="center" justify="center">
           <v-col cols="auto">
             <v-progress-circular class="mt-8" indeterminate size="64" />
           </v-col>
         </v-row>
+
+        <div v-else>
+          <v-row v-if="recommendations.length">
+            <v-col v-for="(recommendation, index) in recommendations" :key="recommendation.user._id" cols="4">
+              <RecommendationCard :user="recommendation" @accept="acceptRecommendation(index)" @reject="rejectRecommendation(index)"></RecommendationCard>
+            </v-col>
+          </v-row>
+
+          <v-row v-else class="mt-4 justify-center">
+            <v-card v-if="!isTwitterConnected">
+              <v-card-title>Conectá tu cuenta de Twitter</v-card-title>
+              <v-card-text>
+                <p>¡Ya casi estás! Para empezar a darte recomendaciones, es necesario que conectes tu cuenta de Twitter</p>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn @click="$router.push('/data')">Conectar</v-btn>
+              </v-card-actions>
+            </v-card>
+
+            <v-card v-else>
+              <v-card-title>Generando recomendaciones</v-card-title>
+              <v-card-text>
+                <p>Tus recomendaciones se están generando, por favor aguarda</p>
+                <v-progress-linear class="my-6" indeterminate></v-progress-linear>
+              </v-card-text>
+            </v-card>
+          </v-row>
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -56,6 +78,12 @@ import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsP
 </script>
 
 <script lang="ts">
+import { ProvidersApiFactory } from '@/libs/user-api-sdk';
+
+import type ProviderConnection from '@/types/provider.interface';
+
+let providersApi: ReturnType<typeof ProvidersApiFactory>;
+
 enum Priority {
   Compatibility = 'compatibility',
   Nearest = 'nearest',
@@ -64,23 +92,26 @@ enum Priority {
 
 let recommApi: ReturnType<typeof RecommendationsApiFactory>;
 
+let interval: any;
+
 export default {
   compononents: {
     RecommendationCard,
   },
 
   data: () => ({
+    priority: 'compatibility' as Priority,
     loading: true,
+    recommendations: [] as User[],
+    connectedProviders: [] as ProviderConnection[],
     snackbar: {
       enabled: false,
       text: ''
     },
-    recommendations: [] as User[],
-    priority: 'compatibility' as Priority,
   }),
 
   methods: {
-    async getProfiles() {
+    async loadData() {
       this.loading = true;
 
       const priorityMap = {
@@ -89,16 +120,35 @@ export default {
         activity: RecommendationsControllerGetRecommendationsPriorityEnum.Activity,
       }
 
-      const res = await recommApi.recommendationsControllerGetRecommendations(
+      const res1 = await recommApi.recommendationsControllerGetRecommendations(
         ['distance'],
         priorityMap[this.priority],
         0,
         20
       );
+      this.recommendations = res1.data.recommendations as any as User[];
 
-      this.recommendations = res.data.recommendations as any as User[];
+      const res2 = await providersApi.connectionsControllerGetConnections();
+      this.connectedProviders = res2.data.connections;
 
-      console.log('First recommendation:', this.recommendations[0])
+      if (this.recommendations.length === 0 && this.isTwitterConnected) {
+        // Recommendations are being generated, check them every 5 seconds
+        interval = setInterval(async () => {
+          console.log('Checking for recommendations')
+
+          const res = await recommApi.recommendationsControllerGetRecommendations(
+            ['distance'],
+            priorityMap[this.priority],
+            0,
+            20
+          );
+          this.recommendations = res.data.recommendations as any as User[];
+
+          if (this.recommendations.length > 0) {
+            clearInterval(interval)
+          }
+        }, 5000)
+      }
 
       this.loading = false
     },
@@ -136,11 +186,18 @@ export default {
     },
   },
 
+  computed: {
+    isTwitterConnected() {
+      const conn = this.connectedProviders.find(c => c.provider === 'twitter')
+      return conn && conn.lastProcessed && conn.lastProcessed.success
+    }
+  },
+
   watch: {
     'priority': {
       handler: function () {
         console.log(this.priority)
-        this.getProfiles();
+        this.loadData();
       }
     }
   },
@@ -154,7 +211,17 @@ export default {
       isJsonMime: () => true,
     })
 
-    this.getProfiles()
+    providersApi = ProvidersApiFactory({
+      basePath: import.meta.env.VITE_API_URL,
+      accessToken: () => idToken,
+      isJsonMime: () => true,
+    })
+
+    this.loadData()
   },
+
+  unmounted() {
+    clearInterval(interval)
+  }
 }
 </script>@/libs/user-api-sdk/api

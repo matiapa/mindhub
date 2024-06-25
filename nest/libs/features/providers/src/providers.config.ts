@@ -1,10 +1,20 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, IsUrl, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUrl,
+  ValidateNested,
+} from 'class-validator';
 
 class SyncConfig {
   @IsUrl()
   @IsNotEmpty()
   requestsQueueUrl: string = process.env.PROVIDERS_SYNC_REQUESTS_QUEUE_URL!;
+
+  @IsNumber()
+  @IsNotEmpty()
+  maxRetries: number = Number(process.env.PROVIDERS_SYNC_MAX_RETRIES!);
 }
 
 class ApiConfig {

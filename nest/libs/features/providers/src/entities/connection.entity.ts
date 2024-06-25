@@ -21,6 +21,28 @@ class OAuthConn {
   date: Date;
 }
 
+class ProcessingSummary {
+  @Prop({ required: false })
+  interests?: number;
+
+  @Prop({ required: false })
+  texts?: number;
+}
+
+class LastProcessed {
+  @Prop({ required: true })
+  success: boolean;
+
+  @Prop({ required: false })
+  error?: string;
+
+  @Prop({ required: false })
+  summary?: ProcessingSummary;
+
+  @Prop({ required: true })
+  date: Date;
+}
+
 @Schema()
 export class ProviderConnection extends BaseMongooseEntity {
   @Prop({ required: true })
@@ -34,6 +56,9 @@ export class ProviderConnection extends BaseMongooseEntity {
 
   @Prop({ required: false, _id: false })
   file?: FileConn;
+
+  @Prop({ required: false, _id: false })
+  lastProcessed?: LastProcessed;
 }
 
 export const ProviderConnectionSchema =

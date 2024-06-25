@@ -2,7 +2,7 @@
   <v-container class="d-flex justify-center">
     <v-row>
       <v-col cols="3">
-        <MyAccountsList/>
+        <MyAccountsList @new-connection="refreshData"/>
       </v-col>
 
       <v-col cols="6">
@@ -46,7 +46,11 @@
         } catch (error) {
           console.error(error);
         }
-      }
+      },
+
+      refreshData() {
+        // this.getOwnUserData();
+      },
     },
 
     created() {

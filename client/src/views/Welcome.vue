@@ -29,6 +29,7 @@
 <script lang="ts">
 import { signInWithCode } from '@/libs/cognito';
 import _image from "@/assets/person-light.png"
+import { useUserStore } from '@/stores/user';
 
 export default {
     data: () => ({
@@ -55,7 +56,16 @@ export default {
             this.state = 'exchanging_code'
 
             try {
+                console.log('Exchanging code for token')
+
                 await signInWithCode(code);
+
+                console.log('Fetching own user')
+
+                const userStore = useUserStore()
+
+                await userStore.fetchOwnUser()
+
                 this.$router.push('/explore');
             } catch (error) {
                 console.error(error);
@@ -64,6 +74,17 @@ export default {
                 this.snackbar.text = 'Error logging in. Please try again.'
                 this.snackbar.enabled = true
             }
+            return;
+        }
+
+        const error = new URL(window.location.href).searchParams.get('error');
+        console.log(error)
+        if (error == 'unconfirmed_account') {
+            console.log('Unconfirmed user account')
+
+            this.state = 'signed_out'
+            this.snackbar.text = 'Aún no has confirmado tu cuenta'
+            this.snackbar.enabled = true
         }
     },
 }

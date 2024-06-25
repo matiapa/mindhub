@@ -16,6 +16,7 @@ export class ProvidersConnService {
         provider: c.provider,
         ...(c.oauth && { oauth: { date: c.oauth.date } }),
         ...(c.file && { file: { date: c.file.date } }),
+        ...(c.lastProcessed && { lastProcessed: c.lastProcessed }),
       })),
     };
   }

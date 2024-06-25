@@ -27,19 +27,26 @@ export class QueueService {
 
   async registerHandler<K>(
     queueUrl: string,
-    handler: (message: K) => Promise<void>,
+    handler: (message: K, trie?: number) => Promise<void>,
   ): Promise<void> {
     const consumer = Consumer.create({
       queueUrl: queueUrl,
       handleMessage: async (message) => {
         const data = JSON.parse(message.Body!);
 
-        this.logger.debug('Received message', { queue: queueUrl, messageId: message.MessageId, data });
+        this.logger.debug('Received message', {
+          queue: queueUrl,
+          messageId: message.MessageId,
+          data,
+        });
 
-        await handler(data);
+        const trie = Number(message.Attributes['ApproximateReceiveCount']);
+
+        await handler(data, trie);
 
         this.logger.debug('Message processed');
       },
+      attributeNames: ['ApproximateReceiveCount'],
     });
 
     consumer.on('error', (err) => {
