@@ -23,18 +23,13 @@ export class RecommendationsService {
     targetUserId: string,
     userInfoConfig: SharedUserInfoConfig,
   ): Promise<GetRecommendationsResDto> {
-    const recommendations = await this.recommendationRepo.getPaginated(
-      {
-        offset: dto.offset,
-        limit: dto.limit,
-        sortBy: 'score.global',
-        sortOrder: 'desc',
-      },
-      {
-        targetUserId,
-        reviewed: { $exists: false },
-      },
-    );
+    /* TODO: We dont sort nor paginate the recommendations on database level
+     because we may need to sort them based on user info that is not stored
+     in that collection, like distance or activity. See if we can improve this */
+    const recommendations = await this.recommendationRepo.getMany({
+      targetUserId,
+      reviewed: { $exists: false },
+    });
     const ids = recommendations.map((r) => r.recommendedUserId);
 
     const users = await this.usersService.getManySharedUserInfo(
@@ -43,7 +38,7 @@ export class RecommendationsService {
       userInfoConfig,
     );
 
-    const recommendationsWithUser = recommendations.map((r, i) => ({
+    let recommendationsWithUser = recommendations.map((r, i) => ({
       user: users[i],
       score: r.score,
     }));
@@ -57,9 +52,14 @@ export class RecommendationsService {
         (a, b) => a.user.inactiveHours - b.user.inactiveHours,
       );
 
+    recommendationsWithUser = recommendationsWithUser.splice(
+      dto.offset,
+      dto.limit,
+    );
+
     return {
       recommendations: recommendationsWithUser,
-      count: recommendations.length,
+      count: recommendationsWithUser.length,
       total: await this.recommendationRepo.count({
         targetUserId,
         reviewed: { $exists: false },

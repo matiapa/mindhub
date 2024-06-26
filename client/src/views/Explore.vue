@@ -5,10 +5,10 @@
         <v-card class="floating-card" rounded="lg">
           <v-card-text>
             <h2 class="text-h6 mb-2">
-              Priorizar
+              Ordernar por
             </h2>
 
-            <v-chip-group v-model="priority" column>
+            <v-chip-group v-model="sortBy" column>
               <v-chip value="compatibility">Similaridad</v-chip>
 
               <v-chip value="nearest">Cercania</v-chip>
@@ -20,20 +20,21 @@
       </v-col>
 
       <v-col cols="10">
-        <v-row v-if="loading" align="center" justify="center">
-          <v-col cols="auto">
-            <v-progress-circular class="mt-8" indeterminate size="64" />
-          </v-col>
-        </v-row>
-
-        <div v-else>
           <v-row v-if="recommendations.length">
             <v-col v-for="(recommendation, index) in recommendations" :key="recommendation.user._id" cols="4">
               <RecommendationCard :user="recommendation" @accept="acceptRecommendation(index)" @reject="rejectRecommendation(index)"></RecommendationCard>
             </v-col>
           </v-row>
 
-          <v-row v-else class="mt-4 justify-center">
+          <div ref="loadMore" class="load-more"></div>
+
+          <v-row v-if="loading" align="center" justify="center">
+            <v-col cols="auto">
+              <v-progress-circular class="mt-8" indeterminate size="64" />
+            </v-col>
+          </v-row>
+
+          <v-row v-if="!loading && !recommendations.length" class="mt-4 justify-center">
             <v-card v-if="!isTwitterConnected">
               <v-card-title>Conectá una cuenta</v-card-title>
               <v-card-text>
@@ -52,7 +53,6 @@
               </v-card-text>
             </v-card>
           </v-row>
-        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -84,7 +84,7 @@ import type ProviderConnection from '@/types/provider.interface';
 
 let providersApi: ReturnType<typeof ProvidersApiFactory>;
 
-enum Priority {
+enum SortBy {
   Compatibility = 'compatibility',
   Nearest = 'nearest',
   Activity = 'activity',
@@ -94,16 +94,26 @@ let recommApi: ReturnType<typeof RecommendationsApiFactory>;
 
 let interval: any;
 
+const recommendationsPerScroll = 12;
+
+const sortMap = {
+  compatibility: RecommendationsControllerGetRecommendationsPriorityEnum.Affinity,
+  nearest: RecommendationsControllerGetRecommendationsPriorityEnum.Distance,
+  activity: RecommendationsControllerGetRecommendationsPriorityEnum.Activity,
+}
+
 export default {
   compononents: {
     RecommendationCard,
   },
 
   data: () => ({
-    priority: 'compatibility' as Priority,
+    sortBy: 'compatibility' as SortBy,
     loading: true,
     recommendations: [] as User[],
+    page: 0,
     connectedProviders: [] as ProviderConnection[],
+    observer: null as IntersectionObserver | null,
     snackbar: {
       enabled: false,
       text: ''
@@ -111,25 +121,26 @@ export default {
   }),
 
   methods: {
-    async loadData() {
+    async loadRecommendations() {
       this.loading = true;
 
-      const priorityMap = {
-        compatibility: RecommendationsControllerGetRecommendationsPriorityEnum.Affinity,
-        nearest: RecommendationsControllerGetRecommendationsPriorityEnum.Distance,
-        activity: RecommendationsControllerGetRecommendationsPriorityEnum.Activity,
-      }
+      console.log('Getting recommendations', this.page * recommendationsPerScroll, recommendationsPerScroll)
 
-      const res1 = await recommApi.recommendationsControllerGetRecommendations(
+      const res = await recommApi.recommendationsControllerGetRecommendations(
         ['distance'],
-        priorityMap[this.priority],
-        0,
-        20
+        sortMap[this.sortBy],
+        this.page * recommendationsPerScroll,
+        recommendationsPerScroll
       );
-      this.recommendations = res1.data.recommendations as any as User[];
+      this.recommendations.push(...res.data.recommendations as any as User[]);
 
-      const res2 = await providersApi.connectionsControllerGetConnections();
-      this.connectedProviders = res2.data.connections;
+      this.page += 1;
+
+      this.loading = false
+    },
+
+    async loadData() {
+      await this.loadRecommendations();
 
       if (this.recommendations.length === 0 && this.isTwitterConnected) {
         // Recommendations are being generated, check them every 5 seconds
@@ -138,9 +149,9 @@ export default {
 
           const res = await recommApi.recommendationsControllerGetRecommendations(
             ['distance'],
-            priorityMap[this.priority],
-            0,
-            20
+            sortMap[this.sortBy],
+            this.page * recommendationsPerScroll,
+            recommendationsPerScroll
           );
           this.recommendations = res.data.recommendations as any as User[];
 
@@ -150,7 +161,8 @@ export default {
         }, 5000)
       }
 
-      this.loading = false
+      const res = await providersApi.connectionsControllerGetConnections();
+      this.connectedProviders = res.data.connections;
     },
 
     async acceptRecommendation(index: number) {
@@ -184,6 +196,13 @@ export default {
         this.snackbar.enabled = true
       }
     },
+
+    handleIntersect(entries: any) {
+      const entry = entries[0];
+      if (entry.isIntersecting && !this.loading) {
+        this.loadRecommendations();
+      }
+    }
   },
 
   computed: {
@@ -194,10 +213,11 @@ export default {
   },
 
   watch: {
-    'priority': {
+    'sortBy': {
       handler: function () {
-        console.log(this.priority)
-        this.loadData();
+        this.recommendations = [];
+        this.page = 0;
+        this.loadRecommendations();
       }
     }
   },
@@ -220,8 +240,18 @@ export default {
     this.loadData()
   },
 
+  mounted() {
+    const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 1.0
+      };
+    this.observer = new IntersectionObserver(this.handleIntersect, options);
+    this.observer.observe(this.$refs.loadMore as any);
+  },
+
   unmounted() {
     clearInterval(interval)
   }
 }
-</script>@/libs/user-api-sdk/api
+</script>

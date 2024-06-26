@@ -24,6 +24,12 @@ export class RecommendationRepository extends BaseMongooseRepository<Recommendat
     return super.count(filter);
   }
 
+  public getMany(
+    filter?: FilterQuery<Recommendation>,
+  ): Promise<Recommendation[]> {
+    return super.getMany(filter);
+  }
+
   public getPaginated(
     paginated: IPaginatedParams<Recommendation>,
     filter?: FilterQuery<Recommendation>,
