@@ -66,6 +66,10 @@ export default {
 
                 await userStore.fetchOwnUser()
 
+                // This is to remove the code query param from the URL, since it came as a query param
+                // and we are using hash history mode, it wont be removed when moving to another route
+                window.history.replaceState({}, document.title, window.location.pathname);
+
                 this.$router.push('/explore');
             } catch (error) {
                 console.error(error);
@@ -78,7 +82,6 @@ export default {
         }
 
         const error = new URL(window.location.href).searchParams.get('error');
-        console.log(error)
         if (error == 'unconfirmed_account') {
             console.log('Unconfirmed user account')
 

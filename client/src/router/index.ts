@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { signInWithRefreshToken } from '@/libs/cognito';
 import { jwtDecode } from 'jwt-decode';
 import { AxiosError } from 'axios';
@@ -54,7 +54,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
   routes
 })
 
@@ -63,6 +63,15 @@ router.beforeEach(async (to, from, next) => {
   document.title = to.meta.title as string;
 
   // console.debug(document.title)
+
+  // -------- If goes to signin and it authenticated redirect to explore --------
+  
+  if (to.path === '/') {
+    const idToken = localStorage.getItem('id_token');
+    if (idToken) {
+        next('/explore');
+    }
+  }
 
   // -------- Validate that user is authenticated --------
 
