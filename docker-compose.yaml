@@ -13,25 +13,25 @@ services:
       - ./nginx/certs/fullchain.pem:/etc/nginx/fullchain.pem
 
   api:
-    image: public.ecr.aws/s3y9y4j4/mindhub-api
+    image: public.ecr.aws/s3y9y4j4/mindhub-api:latest
     env_file:
       - ./nest/.env
 
-  # providers-sync:
-  #   image: public.ecr.aws/s3y9y4j4/mindhub-providers-sync
-  #   env_file:
-  #     - ./nest/.env
+  providers-sync:
+    image: public.ecr.aws/s3y9y4j4/mindhub-providers-sync:latest
+    env_file:
+      - ./nest/.env
 
-  # frs:
-  #   image: public.ecr.aws/s3y9y4j4/mindhub-frs:latest
-  #   stdin_open: true
-  #   tty: true
-  #   env_file:
-  #     - ./frs/.env
+  frs:
+    image: public.ecr.aws/s3y9y4j4/mindhub-frs:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./frs/.env
 
-  # apr:
-  #   image: public.ecr.aws/s3y9y4j4/mindhub-apr:latest
-  #   stdin_open: true
-  #   tty: true
-  #   env_file:
-  #     - ./apr/.env
+  apr:
+    image: public.ecr.aws/s3y9y4j4/mindhub-apr:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./apr/.env

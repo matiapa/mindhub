@@ -18,7 +18,11 @@ import { createMongooseOptions } from '@Provider/mongodb/mongoose-config';
     ConfigModule.forRoot({
       validate,
       isGlobal: true,
-      envFilePath: ['.env', 'envs/.env.default'],
+      envFilePath: [
+        '.env',
+        'envs/.env.default',
+        `envs/.env.${process.env.NODE_ENV ?? 'local'}`,
+      ],
     }),
     QueueModule,
     ProvidersModule,

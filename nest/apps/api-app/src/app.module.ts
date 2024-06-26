@@ -18,7 +18,11 @@ import { ApiMessagesModule } from './messages/messages.module';
     ConfigModule.forRoot({
       validate,
       isGlobal: true,
-      envFilePath: ['.env', 'envs/.env.default'],
+      envFilePath: [
+        '.env',
+        'envs/.env.default',
+        `envs/.env.${process.env.NODE_ENV ?? 'local'}`,
+      ],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

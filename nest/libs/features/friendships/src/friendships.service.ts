@@ -93,7 +93,6 @@ export class FriendshipsService {
         },
       });
     } catch (error) {
-      // TODO: Add a better handling
       console.error(error);
     }
   }

@@ -33,6 +33,8 @@ async function bootstrap() {
 
   await app.listen(envConfig.port, '0.0.0.0');
 
+  console.log(`🔥  Environment Config: ${process.env.NODE_ENV ?? 'local'}`);
+
   console.log(
     `🚀  Application is running on: http://localhost:${envConfig.port}`,
   );

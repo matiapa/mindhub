@@ -1,7 +1,6 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class InterestsConfig {
-  @IsUUID()
   @IsNotEmpty()
-  uuidNamespace: string = process.env.INTERESTS_UUID_NAMESPACE;
+  uuidNamespace: string = 'DEPRECATED_FIELD';
 }

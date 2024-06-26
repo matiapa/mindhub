@@ -17,13 +17,6 @@ class SyncConfig {
   maxRetries: number = Number(process.env.PROVIDERS_SYNC_MAX_RETRIES!);
 }
 
-class ApiConfig {
-  @IsUrl()
-  @IsNotEmpty()
-  codeRedeemRedirectUrl: string =
-    process.env.PROVIDERS_API_CODE_REDEEM_REDIRECT_URL!;
-}
-
 class FileConfig {
   @IsString()
   @IsNotEmpty()
@@ -42,10 +35,6 @@ export class ProvidersConfig {
   @Type(() => SyncConfig)
   @ValidateNested()
   sync: SyncConfig = new SyncConfig();
-
-  @Type(() => ApiConfig)
-  @ValidateNested()
-  api: ApiConfig = new ApiConfig();
 
   @Type(() => FileConfig)
   @ValidateNested()

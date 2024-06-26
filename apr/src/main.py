@@ -53,6 +53,5 @@ while True:
 
             message.delete()
         except Exception as error:
-           # TODO: Improve error handling
            print(f'Error: {error}')
            continue

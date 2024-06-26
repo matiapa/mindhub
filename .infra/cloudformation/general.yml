@@ -1,11 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Parameters:
-  PublicFrontUrl:
-    Type: String
-    Default: https://app.mindhub.ar
-    Description: When we add Route53 to the CF stacks this wont be a parameter any more
-
 Resources:
 
   # -------------------------------- IAM --------------------------------
@@ -251,7 +245,7 @@ Resources:
             - GET
             - PUT
           AllowedOrigins:
-            - !Ref PublicFrontUrl
+            - "*"
 
   ProviderFilesBucket:
     Type: AWS::S3::Bucket

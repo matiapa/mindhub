@@ -107,8 +107,6 @@ export abstract class BaseMongooseRepository<T extends object> {
     so its not possible to evaluate document by document as we
     do here, note that bulkWrite executes on one round trip to db */
   protected async upsertMany(entities: T[]): Promise<void> {
-    // TODO: Update T definition to require _id field
-
     const ops = entities.map((e) => ({
       replaceOne: {
         filter: { _id: (e as any)._id },
