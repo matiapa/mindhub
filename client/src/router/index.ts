@@ -144,9 +144,9 @@ router.beforeEach(async (to, from, next) => {
 
   // console.debug('Validating profile completion')
 
-  if (!ownUser.profile.completed) {
+  if (!ownUser.profile.completed && !localStorage.getItem('profile_completed')) {
     console.log('The user has not completed the profile');
-    next({ path: '/profile' });
+    next({ path: '/profile', query: {firstCompletion: "true"}});
     return;
   }
 

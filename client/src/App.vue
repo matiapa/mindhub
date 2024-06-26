@@ -86,6 +86,7 @@ export default {
       localStorage.removeItem('uuid');
       localStorage.removeItem('id_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('profile_completed');
       this.$router.push('/');
     },
   },

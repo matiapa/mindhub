@@ -35,10 +35,24 @@
         </v-card>
 
         <v-card v-else-if="state == 'edit'" class="mx-auto" max-width="600">
-            <v-card-title class="headline">Edita tu perfil</v-card-title>
+            <v-card-title v-if="firstCompletion" class="headline">Completa tu perfil</v-card-title>
+            <v-card-title v-else class="headline">Edita tu perfil</v-card-title>
 
             <v-card-text>
                 <v-form ref="form">
+                    <v-row class="my-3">
+                        <v-col cols="12" md="6">
+                            <v-img :src="pictureUrl" aspect-ratio="1" height="150px" contain>
+                                <template #error>
+                                    <v-img :src="avatar" contain />
+                                </template>
+                            </v-img>
+                        </v-col>
+                        <v-col cols="12" md="6" class="align-self-center">
+                            <v-file-input v-model="selectedFile" label="Foto de perfil" accept="image/*"></v-file-input>
+                        </v-col>
+                    </v-row>
+
                     <v-text-field label="Nombre" :model-value="name" readonly></v-text-field>
 
                     <v-select label="Genero" v-model="gender" :items="presentation.genders" item-title="title"
@@ -79,6 +93,8 @@
 import { UsersApiFactory } from '@/libs/user-api-sdk/api';
 import axios from 'axios';
 import { useUserStore } from '@/stores/user';
+import _avatar from "@/assets/avatar.png"
+import { jwtDecode } from 'jwt-decode';
 
 let usersApi: ReturnType<typeof UsersApiFactory>;
 
@@ -92,6 +108,9 @@ export default {
         gender: 'man' as 'man' | 'woman' | 'other',
         birthday: null as Date | null,
         biography: '',
+        avatar: _avatar,
+        pictureUrl: _avatar,
+        selectedFile: null as any,
 
         presentation: {
             genders: [
@@ -100,6 +119,8 @@ export default {
                 { title: 'Otro', value: 'other' }
             ]
         },
+
+        firstCompletion: false,
 
         snackbar: {
             enabled: false,
@@ -124,6 +145,10 @@ export default {
                 this.gender = ownUser.profile.gender;
                 this.birthday = ownUser.profile.birthday ? new Date(ownUser.profile.birthday) : null;
                 this.biography = ownUser.profile.biography ?? "";
+
+                const idToken = localStorage.getItem('id_token')!;
+                const ownUserId = jwtDecode(idToken).sub;
+                this.pictureUrl = `${import.meta.env.VITE_USER_PICTURES_BUCKET_URL}/${ownUserId}`
 
                 this.state = 'edit';
             } catch (error) {
@@ -160,13 +185,51 @@ export default {
                 birthday: this.birthday.toISOString(),
                 biography: this.biography
             });
+
+            if (this.selectedFile) {
+                // Upload the profile picture
+
+                const res = await usersApi.usersControllerGetPictureUploadUrl(this.selectedFile.type);
+                const uploadUrl = res.data;
+
+                const response = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': this.selectedFile.type,
+                    },
+                    body: this.selectedFile,
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to upload file');
+                }
+
+                console.log('File uploaded succesfully')
+            }
             
-            localStorage.setItem('completed_profile', "true");
+            localStorage.setItem('profile_completed', "true");
 
             this.saving = false;
             this.snackbar.text = 'Perfil actualizado';
             this.snackbar.enabled = true;
+
+            if (this.firstCompletion) {
+                this.$router.push('/explore');
+            }
         }
+    },
+
+    watch: {
+        selectedFile () {
+            if (this.selectedFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.pictureUrl = (e?.target?.result ?? '') as string;
+                };
+                reader.readAsDataURL(this.selectedFile);
+            } else {
+                this.pictureUrl = _avatar;
+            }
+        },
     },
 
     async created() {
@@ -177,6 +240,8 @@ export default {
             accessToken: () => idToken,
             isJsonMime: () => true,
         });
+
+        this.firstCompletion = this.$route.query.firstCompletion === 'true';
 
         this.loadData();
     },
