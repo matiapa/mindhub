@@ -57,17 +57,21 @@ def interest_affinity(user, potentials):
 
             score_a = INTEREST_SCORE_BY_RELEVANCE[relevance_a]
             score_b = INTEREST_SCORE_BY_RELEVANCE[relevance_b]
-
             common_score = (score_a + score_b) / 2
-            category_affinities[shared_interest['resource']['type']] += \
-                neg_exp_decay(common_score, INTEREST_AFFINITY_GROWTH_RATE)
+
+            resource_type = shared_interest['resource']['type']
+            category_affinities[resource_type] += common_score
+        
+        category_affinities['artist'] = neg_exp_decay(category_affinities['artist'], INTEREST_AFFINITY_GROWTH_RATE)
+        category_affinities['track'] = neg_exp_decay(category_affinities['track'], INTEREST_AFFINITY_GROWTH_RATE)
 
         # Add up the resource type scores into a global score
         # considering the resource type relevance of the user
 
-        ponderated_weight = CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['artist']] * category_affinities['artist']
-        ponderated_weight += CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['track']] * category_affinities['track']
-        affinity_score = ponderated_weight / (2 * CATEGORY_RELEVANCE_WEIGHTS['high'])
+        affinity_score = \
+            CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['artist']] * category_affinities['artist'] \
+            + CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['track']] * category_affinities['track']
+        affinity_score /= CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['artist']] + CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['track']]
 
         affinities.append({
             'category': category_affinities,
