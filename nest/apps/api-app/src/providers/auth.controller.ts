@@ -13,7 +13,12 @@ import {
   Response,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiOkResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Providers')
 @Controller('/providers/:providerName')
@@ -63,13 +68,14 @@ export class AuthController {
       error,
     );
 
-    const redirectUrl =
-      `${data.url}/?` +
-      new URLSearchParams({
-        status: data.status,
-        reason: data.reason ?? '',
-      }).toString();
+    let response = '';
+    if (data.status === 'success') {
+      response =
+        'Conexión exitosa. Puede cerrar esta ventana y volver a MindHub.';
+    } else {
+      response = `Lo sentimos, ha fallado la conexión, por favor volvé a intentarlo o comunicate con soporte. Error: ${data.reason}`;
+    }
 
-    res.redirect(redirectUrl);
+    res.send(response);
   }
 }

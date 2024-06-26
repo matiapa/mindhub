@@ -42,7 +42,7 @@
                         <template v-slot:prepend>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-account</v-icon>
+                                    <v-icon v-bind="props">mdi-star</v-icon>
                                 </template>
                                 <span>Afinidad general</span>
                             </v-tooltip>
@@ -55,7 +55,8 @@
                                 <template v-slot:activator="{ props }">
                                 <v-icon v-bind="props">mdi-information</v-icon>
                                 </template>
-                                <span>Nivel de afinidad general con {{ userData.user.profile.name }}</span>
+                                <span>Es el nivel de afinidad en general que tenés con {{ userData.user.profile.name }},
+                                    combina los niveles de afinidad de amistad y de intereses</span>
                             </v-tooltip>
                         </template>
                     </v-list-item>
@@ -63,7 +64,7 @@
                         <template v-slot:prepend>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-emoticon-happy</v-icon>
+                                    <v-icon v-bind="props">mdi-account-multiple</v-icon>
                                 </template>
                                 <span>Afinidad de amistad</span>
                             </v-tooltip>
@@ -74,9 +75,9 @@
                         <template v-slot:append>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props">mdi-information</v-icon>
+                                    <v-icon v-bind="props">mdi-information</v-icon>
                                 </template>
-                                <span>Nivel de afinidad de amistad con {{ userData.user.profile.name }}</span>
+                                <span>Indica el grado de afinidad que tienen en cuanto a la formación de una amistad</span>
                             </v-tooltip>
                         </template>
                     </v-list-item>
@@ -84,9 +85,9 @@
                         <template v-slot:prepend>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-multimedia</v-icon>
+                                    <v-icon v-bind="props">mdi-music</v-icon>
                                 </template>
-                                <span>Afinidad de intereses</span>
+                                <span>Indica el grado de afinidad que tienen en cuanto a intereses en común</span>
                             </v-tooltip>
                         </template>
 
@@ -95,7 +96,7 @@
                         <template v-slot:append>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props">mdi-information</v-icon>
+                                    <v-icon v-bind="props">mdi-information</v-icon>
                                 </template>
                                 <span>Nivel de afinidad de intereses con {{ userData.user.profile.name }}</span>
                             </v-tooltip>
@@ -116,7 +117,7 @@
 
         <div>
             <div class="px-4" v-if="userData.user.personality">
-                <PersonalityCard :personality="userData.user.personality" />
+                <PersonalityCard :personality="userData.user.personality" :flat="true"/>
             </div>
             <div class="center-container mb-4" v-else>
                 <v-progress-circular indeterminate />

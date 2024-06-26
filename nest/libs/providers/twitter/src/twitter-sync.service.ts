@@ -29,7 +29,11 @@ export class TwitterSyncService implements ProviderSyncService {
 
     for (const t of tweets) {
       // Skip retweets because it's not text produced by the user
+      // NOTE: The tweet.retweeted field is not properly set in the data
       if (t.tweet.full_text.substring(0, 4) === 'RT @') continue;
+
+      // Remove mentions from tweets
+      t.tweet.full_text = t.tweet.full_text.replace(/@\w+/g, '');
 
       textData.push({
         userId: userId,

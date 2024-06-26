@@ -9,7 +9,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { SharedInterestDto } from './dtos';
 import _ from 'lodash';
-import { v5 as uuidv5 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { InterestsConfig } from './interests.config';
 
@@ -26,11 +25,12 @@ export class InterestsRepository extends BaseMongooseRepository<Interest> {
   }
 
   public async upsertMany(interests: Interest[]): Promise<void> {
+    /** This ID override is needed so that the same interest is
+     * not inserted twice in the database, note that the ID has
+     * coded both the userId and the resourceId.
+     */
     const interestsWithIds = interests.map((i) => {
-      const _id = uuidv5(
-        `${i.userId}|${i.resource.id}`,
-        this.config.uuidNamespace,
-      );
+      const _id = this.hashObjectId(`${i.userId}|${i.resource.id}`);
       return _.assign(i, { _id });
     });
     await super.upsertMany(interestsWithIds);

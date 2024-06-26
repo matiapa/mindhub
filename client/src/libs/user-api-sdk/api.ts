@@ -139,23 +139,7 @@ export interface GetOwnUserResDto {
      * @memberof GetOwnUserResDto
      */
     'profile': Profile;
-    /**
-     * 
-     * @type {string}
-     * @memberof GetOwnUserResDto
-     */
-    'signupState': GetOwnUserResDtoSignupStateEnum;
 }
-
-export const GetOwnUserResDtoSignupStateEnum = {
-    PendingProfile: 'pending_profile',
-    PendingProviders: 'pending_providers',
-    PendingRecommendations: 'pending_recommendations',
-    Active: 'active'
-} as const;
-
-export type GetOwnUserResDtoSignupStateEnum = typeof GetOwnUserResDtoSignupStateEnum[keyof typeof GetOwnUserResDtoSignupStateEnum];
-
 /**
  * 
  * @export
@@ -496,6 +480,12 @@ export interface Profile {
      * @memberof Profile
      */
     'biography'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Profile
+     */
+    'completed': boolean;
 }
 
 export const ProfileGenderEnum = {
@@ -2799,10 +2789,11 @@ export const TextsApiAxiosParamCreator = function (configuration?: Configuration
          * @summary Get the texts of the authenticated user
          * @param {number} offset 
          * @param {number} limit 
+         * @param {string} [subtext] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        textsControllerGetOwn: async (offset: number, limit: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        textsControllerGetOwn: async (offset: number, limit: number, subtext?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'offset' is not null or undefined
             assertParamExists('textsControllerGetOwn', 'offset', offset)
             // verify required parameter 'limit' is not null or undefined
@@ -2822,6 +2813,10 @@ export const TextsApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (subtext !== undefined) {
+                localVarQueryParameter['subtext'] = subtext;
+            }
 
             if (offset !== undefined) {
                 localVarQueryParameter['offset'] = offset;
@@ -2883,11 +2878,12 @@ export const TextsApiFp = function(configuration?: Configuration) {
          * @summary Get the texts of the authenticated user
          * @param {number} offset 
          * @param {number} limit 
+         * @param {string} [subtext] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async textsControllerGetOwn(offset: number, limit: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetUserTextsResDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.textsControllerGetOwn(offset, limit, options);
+        async textsControllerGetOwn(offset: number, limit: number, subtext?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetUserTextsResDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.textsControllerGetOwn(offset, limit, subtext, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TextsApi.textsControllerGetOwn']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2927,11 +2923,12 @@ export const TextsApiFactory = function (configuration?: Configuration, basePath
          * @summary Get the texts of the authenticated user
          * @param {number} offset 
          * @param {number} limit 
+         * @param {string} [subtext] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        textsControllerGetOwn(offset: number, limit: number, options?: any): AxiosPromise<GetUserTextsResDto> {
-            return localVarFp.textsControllerGetOwn(offset, limit, options).then((request) => request(axios, basePath));
+        textsControllerGetOwn(offset: number, limit: number, subtext?: string, options?: any): AxiosPromise<GetUserTextsResDto> {
+            return localVarFp.textsControllerGetOwn(offset, limit, subtext, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2972,12 +2969,13 @@ export class TextsApi extends BaseAPI {
      * @summary Get the texts of the authenticated user
      * @param {number} offset 
      * @param {number} limit 
+     * @param {string} [subtext] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TextsApi
      */
-    public textsControllerGetOwn(offset: number, limit: number, options?: RawAxiosRequestConfig) {
-        return TextsApiFp(this.configuration).textsControllerGetOwn(offset, limit, options).then((request) => request(this.axios, this.basePath));
+    public textsControllerGetOwn(offset: number, limit: number, subtext?: string, options?: RawAxiosRequestConfig) {
+        return TextsApiFp(this.configuration).textsControllerGetOwn(offset, limit, subtext, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

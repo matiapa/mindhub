@@ -36,7 +36,6 @@ export class ProvidersAuthService {
   ) {
     if (!code) {
       return {
-        url: this.config.api.codeRedeemRedirectUrl,
         status: 'failed',
         reason: error,
       };
@@ -76,7 +75,6 @@ export class ProvidersAuthService {
     // Return the result with redirect uri
 
     return {
-      url: this.config.api.codeRedeemRedirectUrl,
       status: 'success',
     };
   }

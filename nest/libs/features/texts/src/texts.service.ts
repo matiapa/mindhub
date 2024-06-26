@@ -27,6 +27,13 @@ export class TextsService {
     dto: GetUserTextsReqDto,
     userId: string,
   ): Promise<GetUserTextsResDto> {
+    const filters = {
+      userId,
+      ...(dto.subtext && {
+        rawText: { $regex: new RegExp(dto.subtext, 'i') },
+      }),
+    };
+
     const texts = await this.textsRepo.getPaginated(
       {
         offset: dto.offset,
@@ -34,7 +41,7 @@ export class TextsService {
         sortBy: 'date',
         sortOrder: 'desc',
       },
-      { userId },
+      filters,
     );
 
     return {

@@ -13,7 +13,7 @@ import {
   SharedUserInfoConfig,
   OptUserInfoFields,
 } from './dto';
-import { SignupState, User } from './entities';
+import { User } from './entities';
 import { UsersRepository } from './users.repository';
 import { UsersConfig } from './users.config';
 import { getDistanceInKm } from 'libs/utils';
@@ -61,8 +61,8 @@ export class UsersService {
         email: decoded['email'],
         profile: {
           name: decoded['name'],
+          completed: false,
         } as any,
-        signupState: SignupState.PENDING_PROFILE,
       },
       { upsert: true },
     );
@@ -81,8 +81,8 @@ export class UsersService {
           'profile.gender': dto.gender,
           'profile.birthday': new Date(dto.birthday),
           'profile.biography': dto.biography,
+          'profile.completed': true,
         },
-        signupState: SignupState.PENDING_PROVIDERS,
       },
     );
   }
@@ -91,8 +91,6 @@ export class UsersService {
     userId: string,
     dto: UpdateLastConnectionReqDto,
   ): Promise<void> {
-    // TODO: Invalidate recomendations cache
-
     await this.usersRepo.updateOne(
       { _id: userId },
       {
@@ -133,7 +131,6 @@ export class UsersService {
     }
     return {
       profile: user.profile,
-      signupState: user.signupState,
     };
   }
 

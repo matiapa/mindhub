@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { signInWithRefreshToken } from '@/libs/cognito';
 import { jwtDecode } from 'jwt-decode';
-import { GetOwnUserResDtoSignupStateEnum, UsersApiFactory } from '@/libs/user-api-sdk';
 import { AxiosError } from 'axios';
 import { useUserStore } from '@/stores/user';
 
@@ -136,7 +135,7 @@ router.beforeEach(async (to, from, next) => {
 
   // console.debug('Validating profile completion')
 
-  if (ownUser.signupState == GetOwnUserResDtoSignupStateEnum.PendingProfile) {
+  if (!ownUser.profile.completed) {
     console.log('The user has not completed the profile');
     next({ path: '/profile' });
     return;

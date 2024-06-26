@@ -344,6 +344,11 @@ paths:
       operationId: TextsController_getOwn
       summary: Get the texts of the authenticated user
       parameters:
+        - name: subtext
+          required: false
+          in: query
+          schema:
+            type: string
         - name: offset
           required: true
           in: query
@@ -667,25 +672,20 @@ components:
           type: string
         biography:
           type: string
+        completed:
+          type: boolean
       required:
         - name
         - gender
         - birthday
+        - completed
     GetOwnUserResDto:
       type: object
       properties:
         profile:
           $ref: '#/components/schemas/Profile'
-        signupState:
-          type: string
-          enum:
-            - pending_profile
-            - pending_providers
-            - pending_recommendations
-            - active
       required:
         - profile
-        - signupState
     UpdateProfileReqDto:
       type: object
       properties:

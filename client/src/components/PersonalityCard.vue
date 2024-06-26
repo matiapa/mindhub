@@ -1,5 +1,5 @@
 <template>
-  <v-card class="pa-3" flat>
+  <v-card class="pa-3" :flat="flat">
     <v-card-title v-if="title">{{ title }}</v-card-title>
     <v-list>
       <v-list-item
@@ -34,6 +34,10 @@
   export default {
     props: {
       title: String,
+      flat: {
+        type: Boolean,
+        default: false,
+      },
       personality: {
         type: Object,
         required: true,

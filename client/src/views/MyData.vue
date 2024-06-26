@@ -2,15 +2,29 @@
   <v-container class="d-flex justify-center">
     <v-row>
       <v-col cols="3">
-        <MyAccountsList @new-connection="refreshData"/>
+        <MyAccountsList @new-connection="newConnection"/>
       </v-col>
 
       <v-col cols="6">
-        <MyInterestsTable/>
+        <v-card class="pa-3">
+          <MyInterestsTable ref="myInterestsTable"/>
+          
+          <div class="mt-6">
+            <MyTextsTable ref="myTextsTable"/>
+          </div>
+        </v-card>
       </v-col>
 
       <v-col cols="3">
-        <PersonalityCard v-if="ownUser.personality" title="Tu Personalidad" :personality="ownUser.personality"/>
+        <PersonalityCard v-if="ownPersonality" title="Tu Personalidad" :personality="ownPersonality"/>
+
+        <v-card v-else class="pa-3">
+          <v-card-title>Tu personalidad</v-card-title>
+          <v-card-text class="mt-3">
+            <p v-if="!refreshingPersonality">Por favor, conecta al menos una cuenta para poder evaluar tu personalidad.</p>
+            <v-progress-circular v-else indeterminate color="primary"></v-progress-circular>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -19,6 +33,7 @@
 <script lang="ts">
   import MyAccountsList from '@/components/my-data/MyAccountsList.vue'
   import MyInterestsTable from '@/components/my-data/MyInterestsTable.vue'
+  import MyTextsTable from '@/components/my-data/MyTextsTable.vue'
   import PersonalityCard from '@/components/PersonalityCard.vue'
   import { UsersApiFactory } from '@/libs/user-api-sdk';
 
@@ -28,28 +43,40 @@
     components: {
       MyAccountsList,
       MyInterestsTable,
+      MyTextsTable,
       PersonalityCard
     },
 
     data: () => ({
-      ownUser: {} as any,
+      ownPersonality: undefined as any,
+      refreshingPersonality: false,
     }),
 
     methods: {
-      async getOwnUserData() {
+      async loadPersonality() {
         try {
+          console.log('Loading personality')
           const uuid = localStorage.getItem('uuid')!;
           const res = await usersApi.usersControllerGetById(uuid, ['personality']);
-          this.ownUser = res.data;
-
-          console.log(this.ownUser)
+          this.ownPersonality = res.data.personality;
         } catch (error) {
           console.error(error);
         }
       },
 
-      refreshData() {
-        // this.getOwnUserData();
+      async newConnection() {
+        // Extracted resources will be instantly available
+        (this.$refs.myInterestsTable as InstanceType<typeof MyInterestsTable>).loadInterests();
+        (this.$refs.myTextsTable as InstanceType<typeof MyTextsTable>).loadTexts();
+
+        // But personality may take a while to be generated, so we need to wait
+        // and will only be refreshed if there wasn't a previous personality calculated
+        this.refreshingPersonality = true;
+        while (!this.ownPersonality) {
+          this.loadPersonality();
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+        this.refreshingPersonality = false;
       },
     },
 
@@ -62,7 +89,7 @@
         isJsonMime: () => true,
       });
       
-      this.getOwnUserData()
+      this.loadPersonality()
     },
   }
-</script>@/libs/user-api-sdk
+</script>

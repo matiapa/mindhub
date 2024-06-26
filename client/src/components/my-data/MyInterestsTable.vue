@@ -20,19 +20,25 @@
     <v-divider></v-divider>
 
     <v-data-table-server
-      v-model:items-per-page="itemsPerPage"
+      v-model:items-per-page="interestsPerPage"
       v-model:search="search"
       :headers="presentation.headers"
       :items="interests"
-      :items-length="totalItems"
+      :items-length="totalInterests"
       :loading="loading"
       item-value="name"
       @update:options="getInterests"
     >
+      <template v-slot:item.name="{ item }">
+        <div class="text-start">
+          {{ item.resource.name }}
+        </div>
+      </template>
+
       <template v-slot:item.type="{ item }">
-        <div class="text-end">
+        <div class="text-start">
           <v-chip
-            :text="item.type"
+            :text="item.resource.type"
             class="text-uppercase"
             label
             size="small"
@@ -41,9 +47,9 @@
       </template>
 
       <template v-slot:item.provider="{ item }">
-        <div class="text-end">
+        <div class="text-start">
           <v-chip
-            :color="presentation.colors.providers[item.provider as 'spotify' | 'twitter' | 'user']"
+            :color="presentation.colors.providers[item.provider as 'spotify' | 'user']"
             :text="item.provider"
             class="text-uppercase"
             label
@@ -52,20 +58,12 @@
         </div>
       </template>
 
-      <!-- <template v-slot:item.relevance="{ item }">
-        <div class="text-end">
-          <v-icon :color="item.relevance === 'favourite' ? 'red' : ''">
-            {{ item.relevance === 'favorite' ? 'mdi-heart' : 'mdi-heart-outline' }}
-          </v-icon>
-        </div>
-      </template> -->
-
       <template v-slot:item.actions="{ item }">
-        <v-btn flat icon :href="getResourceUrl(item.resourceId, item.type)" target="_blank">
+        <v-btn flat icon :href="getResourceUrl(item.resource.id, item.resource.type)" target="_blank">
           <v-icon>mdi-open-in-new</v-icon>
         </v-btn>
 
-        <v-btn flat icon @click="deleteItem(item)">
+        <v-btn flat icon @click="deleteInterest(item)">
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </template>
@@ -79,6 +77,7 @@
 
 <script lang="ts">
   import { InterestsApiFactory } from '@/libs/user-api-sdk';
+  import { type Interest } from '@/types/resources.interface';
 
   let interestsApi: ReturnType<typeof InterestsApiFactory>;
 
@@ -89,23 +88,21 @@
           headers: [
             { title: 'Nombre', key: 'name' },
             { title: 'Tipo', key: 'type' },
-            { title: 'Provedor', key: 'provider' },
-            // { title: 'Favorito', key: 'relevance' },
+            { title: 'Proveedor', key: 'provider' },
             { title: 'Acciones', key: 'actions' },
           ],
           colors: {
             providers: {
               spotify: 'green',
-              twitter: 'blue',
               user: 'purple',
             }
           },
         },
         search: '',
         loading: false,
-        interests: [] as any[],
-        itemsPerPage: 5,
-        totalItems: 0,
+        interests: [] as Interest[],
+        interestsPerPage: 5,
+        totalInterests: 0,
         snackbar: {
           enabled: false,
           text: ''
@@ -114,7 +111,36 @@
     },
 
     methods: {
-      async deleteItem(interest: any) {
+      async getInterests({ page, itemsPerPage } : { page: number, itemsPerPage: number }) {
+        this.loading = true;
+
+        console.log('Getting interests', page, itemsPerPage)
+
+        const res = await interestsApi.interestsControllerGetOwn((page - 1) * itemsPerPage, itemsPerPage, this.search);
+
+        console.log('Interests', res.data.interests)
+
+        this.totalInterests = res.data.total;
+
+        this.interests = res.data.interests;
+
+        this.loading = false;
+      },
+
+      async loadInterests() {
+        console.log('Loading interests')
+        await this.getInterests({ page: 1, itemsPerPage: this.interestsPerPage });
+      },
+
+      getResourceUrl(resourceId: string, resourceType: string) {
+        if (resourceType === 'artist') {
+            return `https://open.spotify.com/artist/${resourceId}`;
+        } else if (resourceType === 'track') {
+            return `https://open.spotify.com/track/${resourceId}`;
+        }
+      },
+
+      async deleteInterest(interest: any) {
         const index = this.interests.findIndex(i => i === interest);
         if (index !== -1) {
           this.interests.splice(index, 1);
@@ -131,35 +157,7 @@
           this.snackbar.enabled = true
         }
       },
-
-      async getInterests({ page, itemsPerPage } : { page: number, itemsPerPage: number }) {
-        this.loading = true;
-
-        const res = await interestsApi.interestsControllerGetOwn((page - 1) * itemsPerPage, itemsPerPage, this.search);
-
-        this.totalItems = res.data.total;
-
-        this.interests = res.data.interests.map(i => ({
-          _id: i._id,
-          provider: i.provider,
-          relevance: i.relevance,
-          resourceId: i.resource.id,
-          type: i.resource.type,
-          name: i.resource.name
-        }));
-
-        this.loading = false;
-      },
-
-      getResourceUrl(resourceId: string, resourceType: string) {
-        if (resourceType === 'artist') {
-            return `https://open.spotify.com/artist/${resourceId}`;
-        } else if (resourceType === 'track') {
-            return `https://open.spotify.com/track/${resourceId}`;
-        }
-      }
     },
-
     created() {
       const idToken = localStorage.getItem('id_token')!;
 
@@ -169,7 +167,7 @@
         isJsonMime: () => true,
       })
 
-      this.getInterests({ page: 1, itemsPerPage: 10 })
+      this.loadInterests();
     },
   }
-</script>@/libs/user-api-sdk
+</script>

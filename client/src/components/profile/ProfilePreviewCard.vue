@@ -36,7 +36,7 @@
                         <template v-slot:prepend>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-account</v-icon>
+                                    <v-icon v-bind="props">mdi-star</v-icon>
                                 </template>
                                 <span>Afinidad general</span>
                             </v-tooltip>
@@ -48,7 +48,7 @@
                         <template v-slot:prepend>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-emoticon-happy</v-icon>
+                                    <v-icon v-bind="props">mdi-account-multiple</v-icon>
                                 </template>
                                 <span>Afinidad de amistad</span>
                             </v-tooltip>
@@ -60,7 +60,7 @@
                         <template v-slot:prepend>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-multimedia</v-icon>
+                                    <v-icon v-bind="props">mdi-music</v-icon>
                                 </template>
                                 <span>Afinidad de intereses</span>
                             </v-tooltip>

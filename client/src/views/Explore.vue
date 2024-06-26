@@ -35,9 +35,9 @@
 
           <v-row v-else class="mt-4 justify-center">
             <v-card v-if="!isTwitterConnected">
-              <v-card-title>Conectá tu cuenta de Twitter</v-card-title>
+              <v-card-title>Conectá una cuenta</v-card-title>
               <v-card-text>
-                <p>¡Ya casi estás! Para empezar a darte recomendaciones, es necesario que conectes tu cuenta de Twitter</p>
+                <p class="mt-3">¡Ya casi estás! Para empezar a darte recomendaciones, es necesario que conectes al menos una cuenta</p>
               </v-card-text>
               <v-card-actions>
                 <v-btn @click="$router.push('/data')">Conectar</v-btn>

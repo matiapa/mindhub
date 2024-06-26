@@ -3,6 +3,7 @@ import {
   IsDate,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
@@ -37,7 +38,11 @@ export class UserTextDto implements Omit<Text, '_id' | 'userId'> {
   date?: Date;
 }
 
-export class GetUserTextsReqDto extends PaginatedReqDto {}
+export class GetUserTextsReqDto extends PaginatedReqDto {
+  @IsString()
+  @IsOptional()
+  subtext?: string;
+}
 
 export class GetUserTextsResDto extends PaginatedResDto {
   @IsArray()

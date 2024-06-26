@@ -1,13 +1,13 @@
 import {
+  IsBoolean,
   IsDate,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { Gender, SignupState } from '../entities/user.entity';
+import { Gender } from '../entities/user.entity';
 import { Type } from 'class-transformer';
 
 class Profile {
@@ -26,6 +26,10 @@ class Profile {
   @IsString()
   @IsOptional()
   biography?: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  completed: boolean;
 }
 
 export class OwnUserInfo {
@@ -33,10 +37,6 @@ export class OwnUserInfo {
   @ValidateNested()
   @IsNotEmpty()
   profile: Profile;
-
-  @IsEnum(SignupState)
-  @IsNotEmpty()
-  signupState: SignupState;
 }
 
 export class GetOwnUserResDto extends OwnUserInfo {}

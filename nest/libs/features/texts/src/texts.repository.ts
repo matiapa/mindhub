@@ -8,7 +8,6 @@ import {
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import _ from 'lodash';
-import { v5 as uuidv5 } from 'uuid';
 import { TextsConfig } from './texts.config';
 import { ConfigService } from '@nestjs/config';
 
@@ -25,8 +24,12 @@ export class TextsRepository extends BaseMongooseRepository<Text> {
   }
 
   public async upsertMany(texts: Text[]): Promise<void> {
+    /** This ID override is needed so that the same text is
+     * not inserted twice in the database, note that the ID has
+     * coded both the userId and the text content.
+     */
     const textsWithIds = texts.map((t) => {
-      const _id = uuidv5(`${t.userId}|${t.rawText}`, this.config.uuidNamespace);
+      const _id = this.hashObjectId(`${t.userId}|${t.rawText}`);
       return _.assign(t, { _id });
     });
     await super.upsertMany(textsWithIds);

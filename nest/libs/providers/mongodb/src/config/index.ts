@@ -9,7 +9,7 @@ import {
 export class MongoConfig {
   @IsNotEmpty()
   @IsString()
-  connection?: string = process.env.MONGO_ATLAS_URI;
+  connection?: string = process.env.MONGO_URI;
 
   @IsOptional()
   @IsNumber()

@@ -1,5 +1,3 @@
-import type { GetOwnUserResDto, GetOwnUserResDtoSignupStateEnum } from "@/libs/user-api-sdk";
-
-export type SignupStateEnum = GetOwnUserResDtoSignupStateEnum;
+import type { GetOwnUserResDto } from "@/libs/user-api-sdk";
 
 export interface OwnUser extends GetOwnUserResDto {}

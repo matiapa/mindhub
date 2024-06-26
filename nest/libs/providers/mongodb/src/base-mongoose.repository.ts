@@ -13,6 +13,8 @@ import {
 import { IPaginatedParams, UpdateResult, DeleteResult } from './types';
 import { NestedKeyOf } from 'libs/utils/types/nested.type';
 import _ from 'lodash';
+import { ObjectId } from 'bson';
+import crypto from 'crypto';
 
 export abstract class BaseMongooseRepository<T extends object> {
   protected readonly model: Model<T>;
@@ -150,5 +152,11 @@ export abstract class BaseMongooseRepository<T extends object> {
     if (!session.hasEnded) session.endSession();
 
     return fnResult;
+  }
+
+  protected hashObjectId(data: string): ObjectId {
+    const hash = crypto.createHash('md5').update(data).digest('hex');
+    const buffer = Buffer.from(hash.substring(0, 24), 'hex');
+    return new ObjectId(buffer);
   }
 }

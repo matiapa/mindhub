@@ -21,7 +21,7 @@ export class SpotifyAuthService implements ProviderAuthService {
   getLoginUrl(forUserId: string): string {
     const scope = this.config.requestedScopes;
 
-    const loginUrl = (
+    const loginUrl =
       'https://accounts.spotify.com/authorize?' +
       new URLSearchParams({
         response_type: 'code',
@@ -29,10 +29,7 @@ export class SpotifyAuthService implements ProviderAuthService {
         redirect_uri: this.config.authCodeRedeemUrl,
         state: forUserId,
         scope: scope,
-      }).toString()
-    );
-
-    console.log(loginUrl);
+      }).toString();
 
     return loginUrl;
   }

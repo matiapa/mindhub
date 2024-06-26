@@ -16,30 +16,32 @@
   <v-dialog v-model="showDialog" max-width="50%" persistent>
     <v-card>
       <v-card-title>Conexión a Twitter</v-card-title>
+
       <v-card-text>  
         <template v-if="state == 'initial'">
           Por el momento no es posible conectar tu cuenta de Twitter mediante login, pero puedes subir un archivo con tus datos.
           <v-file-input class="my-6" v-model="selectedFile" label="Archivo de datos" accept="application/zip"/>
           <v-btn @click="uploadFile">Subir</v-btn>
         </template >
+
         <template v-else-if="state == 'uploadingFile'">
           Cargando archivo...
           <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
+
         <template v-else-if="state == 'processingFile'">
           Procesando archivo...
           <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
+
         <template v-else-if="state == 'finished'">
-          <p>Conexión finalizada.</p><br>
-          <p>Intereses extraidos: {{ connection?.lastProcessed?.summary?.interests }}</p>
-          <p>Textos extraidos: {{ connection?.lastProcessed?.summary?.texts }}</p>
+          <p>¡Conexión finalizada! Se han extraído y procesado {{ connection?.lastProcessed?.summary?.texts }} textos.</p>
         </template>
+        
         <template v-else-if="state == 'failed'">
           <p>La conexión ha fallado, por favor vuelve a intentarlo más tarde o comunícate con soporte.</p><br>
           <p>ERROR: {{ connection?.lastProcessed?.error }}</p>
         </template>
-        
       </v-card-text>
 
       <v-card-actions>
@@ -70,6 +72,8 @@ enum ConnectionState {
 }
 
 export default {
+  emits: ['new-connection'],
+  
   data() {
     return {
       // eslint-disable-next-line vue/no-reserved-keys

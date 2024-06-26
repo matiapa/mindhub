@@ -5,9 +5,6 @@ import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 @Schema({ timestamps: true })
 export class Text extends BaseMongooseEntity {
   @Prop({ required: true })
-  _id?: string;
-
-  @Prop({ required: true })
   userId: string;
 
   @Prop({ type: String, enum: ProviderEnum, required: true })

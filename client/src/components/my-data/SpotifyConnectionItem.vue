@@ -7,8 +7,9 @@
     </template>
 
     <template v-slot:append>
-      <!-- <v-btn icon="mdi-connection" variant="text"></v-btn> -->
-      <v-btn @click="showDialog = true" variant="text" :disabled="isConnected">{{ isConnected ? 'Conectado' : 'Conectar' }}</v-btn>
+      <v-btn @click="openDialog" variant="text" :disabled="!enabled">
+        {{ getButtonLabel() }}
+      </v-btn>
     </template>
   </v-list-item>
 
@@ -18,21 +19,32 @@
       <v-card-text>  
         <template v-if="state == 'initial'">
           <p>Al continuar, te redirigiremos a la pagina de Spotify para que inicies sesion y nos des permisos para acceder a tus datos.</p>
-          <v-btn @click="startFlow" class="my-3">Continuar</v-btn>
+          <v-btn @click="openLoginPage" class="my-3">Continuar</v-btn>
         </template >
-        <template v-else-if="state == 'pendingConnection'">
+
+        <template v-else-if="state == 'waitingAuth'">
           Por favor, completa la conexion y al finalizar vuelve a esta ventana.
           <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
+
+        <template v-else-if="state == 'processingData'">
+          Procesando datos...
+          <v-progress-linear class="my-6" indeterminate></v-progress-linear>
+        </template>
+
         <template v-else-if="state == 'finished'">
-          Conexion finalizada.
+          <p>¡Conexión finalizada! Se han extraído y procesado {{ connection?.lastProcessed?.summary?.interests }} intereses.</p>
         </template>
         
+        <template v-else-if="state == 'failed'">
+          <p>La conexión ha fallado, por favor vuelve a intentarlo más tarde o comunícate con soporte.</p><br>
+          <p>ERROR: {{ connection?.lastProcessed?.error }}</p>
+        </template>
       </v-card-text>
 
-      <v-card-actions  v-if="state == 'initial' || state == 'finished'">
+      <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="showDialog = false">Close</v-btn>
+        <v-btn @click="closeDialog" :disabled="state == 'waitingAuth'">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -44,19 +56,30 @@
 
 <script lang="ts">
 import { ProvidersApiFactory } from '@/libs/user-api-sdk';
+import type ProviderConnection from '@/types/provider.interface';
 
 let providersApi: ReturnType<typeof ProvidersApiFactory>;
+let interval: any;
+
+enum ConnectionState {
+  Initial = 'initial',
+  WaitingAuth = 'waitingAuth',
+  ProcessingData = 'processingData',
+  Finished = 'finished',
+  Failed = 'failed',
+}
 
 export default {
-  props: {
-    isConnected: Boolean,
-  },
+  emits: ['new-connection'],
 
   data() {
     return {
       // eslint-disable-next-line vue/no-reserved-keys
+      connection: undefined as ProviderConnection | undefined,
       showDialog: false,
-      state: 'initial',
+      selectedFile: null as any,
+      state: 'initial' as ConnectionState,
+      enabled: false,
       snackbar: {
         enabled: false,
         text: '',
@@ -65,35 +88,84 @@ export default {
   },
 
   methods: {
-    async startFlow() {
+    async loadData() {
+      const res = await providersApi.connectionsControllerGetConnections();
+      this.connection = res.data.connections.find((c: any) => c.provider === 'spotify');
+
+      const twitterConnection = res.data.connections.find((c: any) => c.provider === 'twitter');
+
+      // Spotify will only be enabled after connecting Twitter because currently
+      // recommendations cannot be generated without text data
+      this.enabled = twitterConnection?.lastProcessed?.success || false;
+    },
+
+    async openLoginPage() {
       // Get the Spotify login URL
       const res = await providersApi.authControllerLogin('spotify');
+
+      console.log('Opening Spotify login page')
+      console.log(res.data)
 
       // Open Spotify login page on a new tab
       window.open(res.data, '_blank')!.focus();
 
-      this.state = 'pendingConnection';
-
-      // Await for connection (wait SQS message)
-      const connectionPromise = new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(0);
-        }, 5000);
-      });
-
-      connectionPromise.then(() => {
-        this.state = 'finished';
-
-        this.$emit('connected', { provider: 'spotify', oauth: { date: new Date() } });
-      }).catch((error) => {
-        console.error('Error:', error);
-        this.state = 'initial';
-        this.snackbar = {
-          enabled: true,
-          text: 'Error al conectar con Spotify',
-        };
-      });   
+      this.state = ConnectionState.WaitingAuth; 
     },
+
+    getButtonLabel() {
+      if (this.state == ConnectionState.Initial) {
+        return 'Conectar';
+      } else if (this.state == ConnectionState.WaitingAuth) {
+        return 'Aguardando autenticación...';
+      } else if (this.state == ConnectionState.ProcessingData) {
+        return 'Procesando...';
+      } else if (this.state == ConnectionState.Finished) {
+        return 'Conectado';
+      } else if (this.state == ConnectionState.Failed) {
+        return 'Fallido';
+      }
+    },
+
+    openDialog() {
+      this.showDialog = true;
+
+      interval = setInterval(async () => {
+        console.log('Checking for connection updates')
+        const res = await providersApi.connectionsControllerGetConnections();
+        this.connection = res.data.connections.find((c: any) => c.provider === 'spotify');
+      }, 5000);
+    },
+
+    closeDialog() {
+      this.showDialog = false;
+      clearInterval(interval);
+    }
+  },
+
+  watch: {
+    connection() {
+      if (this.connection) {
+        if (this.connection.lastProcessed) {
+          if (this.connection.lastProcessed.success) {
+            this.state = ConnectionState.Finished;
+
+            this.$emit('new-connection');
+
+            console.log('Connection finished')
+          } else {
+            this.state = ConnectionState.Failed;
+            console.log('Connection failed')
+          }
+
+          if(interval)
+            clearInterval(interval);
+        } else {
+          this.state = ConnectionState.ProcessingData;
+        }
+      } else {
+        this.state = ConnectionState.Initial;
+      }
+    }
   },
 
   async created() {
@@ -104,6 +176,8 @@ export default {
       accessToken: () => idToken,
       isJsonMime: () => true,
     })
+
+    this.loadData();
   },
 }
-</script>@/libs/user-api-sdk
+</script>
