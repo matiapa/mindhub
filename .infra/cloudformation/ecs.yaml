@@ -101,6 +101,23 @@ Resources:
           Weight: 1
           CapacityProvider: !Ref EC2CapacityProvider
 
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ecs-task-execution-role
+      Description: Gives ECS permissions needed to start a task, for example for pulling images from ECR
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2008-10-17'
+        Statement:
+        - Sid: ''
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        
 Outputs:
   ECSCluster:
     Description: The created cluster.

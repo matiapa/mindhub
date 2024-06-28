@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  PostSignupHandlerLambda:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Lambda::Function"
+    DeletionPolicy: "Delete"
+    Properties:
+      FunctionName: "post-signup-handler"
+      Runtime: "nodejs20.x"
+      PackageType: "Zip"
+      Handler: "index.handler"
+      Code:
+        S3Bucket:
+          Ref: "LambdaFunction00postsignuphandler00ISCQACodeS3BucketOneOfZ0b1Z"
+        S3Key:
+          Ref: "LambdaFunction00postsignuphandler00ISCQACodeS3KeyOneOfjWxHP"
+      Timeout: 3
+      Environment:
+        Variables:
+          JWT_SIGNING_SECRET_KEY: "3kYKUVAG59xA6eDlcfcZGt8rTBZ5oJ9LULU8fNRmf54="
+          USERS_API_SIGNUP_URL: "http://200.117.38.84:3000/users/me"
+      Role:
+        Fn::GetAtt:
+        - "PostSignupHandlerLambdaRole"
+        - "Arn"
+
+  PostSignupHandlerLambdaRole:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::Role"
+    DeletionPolicy: "Delete"
+    Properties:
+      Path: "/service-role/"
+      ManagedPolicyArns:
+      - "arn:aws:iam::598854603683:policy/service-role/AWSLambdaBasicExecutionRole-ab7e8739-85e9-430e-8d31-654016b2d465"
+      MaxSessionDuration: 3600
+      RoleName: "post-signup-handler-role-6u1zal15"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action: "sts:AssumeRole"
+          Effect: "Allow"
+          Principal:
+            Service: "lambda.amazonaws.com"
+
+  PostSignupHandlerCognitoInvokePermission:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Lambda::Permission"
+    DeletionPolicy: "Delete"
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+        - "PostSignupHandlerLambda"
+        - "Arn"
+      Action: "lambda:InvokeFunction"
+      SourceArn: "arn:aws:cognito-idp:us-east-1:598854603683:userpool/us-east-1_ACYhVKPRs"
+      Principal: "cognito-idp.amazonaws.com"

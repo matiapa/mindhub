@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+  # ------------------------------------------------
+
+  UserPicturesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: user-pictures-bucket
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+            - "*"
+          AllowedMethods:
+            - GET
+            - PUT
+          AllowedOrigins:
+            - "*"
+
+  UserPicturesPublicPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::S3::BucketPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      Bucket: "user-pictures-bucket"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Resource: "arn:aws:s3:::user-pictures-bucket/*"
+          Action: "s3:GetObject"
+          Effect: "Allow"
+          Principal: "*"
+
+  # ------------------------------------------------
+
+  ProviderFilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: provider-files-bucket
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue:
+              !GetAtt ProviderFileUploadedQueue.Arn
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - BucketKeyEnabled: true
+          ServerSideEncryptionByDefault:
+            SSEAlgorithm: "AES256"
+
+  ProviderFileUploadedQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    DependsOn:
+      - ProviderFileUploadedQueue
+    Properties:
+      Queues:
+        - !Ref ProviderFileUploadedQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - SQS:SendMessage
+            Resource:
+              !GetAtt ProviderFileUploadedQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn:
+                  !GetAtt ProviderFilesBucket.Arn
+
+  # ------------------------------------------------
+
+  ClientAppBucket:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: "Delete"
+    Properties:
+      WebsiteConfiguration:
+        IndexDocument: "index.html"
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: false
+        IgnorePublicAcls: false
+        BlockPublicPolicy: false
+        BlockPublicAcls: false
+      BucketName: "mindhub-user-client-app"
+
+  ClientAppPublicPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::S3::BucketPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      Bucket:
+        Ref: "ClientAppBucket"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Resource: "arn:aws:s3:::mindhub-user-client-app/*"
+          Action: "s3:GetObject"
+          Effect: "Allow"
+          Principal: "*"
+          Sid: "PublicReadGetObject"
+
+  # ------------------------------------------------
+
+  MailBucket:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: "Delete"
+    Properties:
+      BucketName: "mindhub-mails"
+
+  MailBucketSESPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::S3::BucketPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      Bucket:
+        Ref: "MailBucket"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Condition:
+            StringEquals:
+              AWS:SourceAccount: "598854603683"
+            StringLike:
+              AWS:SourceArn: "arn:aws:ses:*"
+          Resource: "arn:aws:s3:::mindhub-mails/*"
+          Action: "s3:PutObject"
+          Effect: "Allow"
+          Principal:
+            Service: "ses.amazonaws.com"
+          Sid: "AllowSESPuts-1716657432127"
+
+  # ------------------------------------------------
+
+  EnvFilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: mindhub-env-files-bucket
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - BucketKeyEnabled: true
+          ServerSideEncryptionByDefault:
+            SSEAlgorithm: "AES256"

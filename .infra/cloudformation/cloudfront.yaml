@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  UserClientDistribution:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::CloudFront::Distribution"
+    DeletionPolicy: "Delete"
+    Properties:
+      DistributionConfig:
+        Origins:
+        - ConnectionTimeout: 10
+          OriginAccessControlId: ""
+          ConnectionAttempts: 3
+          OriginCustomHeaders: []
+          DomainName: "mindhub-user-client-app.s3-website-us-east-1.amazonaws.com"
+          OriginShield:
+            Enabled: false
+          OriginPath: ""
+          Id: "mindhub-user-client-app.s3-website-us-east-1.amazonaws.com"
+          CustomOriginConfig:
+            OriginKeepaliveTimeout: 5
+            OriginReadTimeout: 30
+            OriginSSLProtocols:
+            - "SSLv3"
+            - "TLSv1"
+            - "TLSv1.1"
+            - "TLSv1.2"
+            HTTPSPort: 443
+            HTTPPort: 80
+            OriginProtocolPolicy: "http-only"
+        
+        ViewerCertificate:
+          MinimumProtocolVersion: "TLSv1.2_2021"
+          SslSupportMethod: "sni-only"
+          CloudFrontDefaultCertificate: false
+          AcmCertificateArn: "arn:aws:acm:us-east-1:598854603683:certificate/a7aa0a2b-2374-4b77-8406-6edaa8f82f30"
+        
+        PriceClass: "PriceClass_All"
+        
+        DefaultCacheBehavior:
+          Compress: true
+          TrustedKeyGroups: []
+          FunctionAssociations: []
+          AllowedMethods:
+          - "HEAD"
+          - "GET"
+          CachedMethods:
+          - "HEAD"
+          - "GET"
+          LambdaFunctionAssociations: []
+          SmoothStreaming: false
+          TargetOriginId: "mindhub-user-client-app.s3-website-us-east-1.amazonaws.com"
+          ViewerProtocolPolicy: "redirect-to-https"
+          CachePolicyId:
+            Ref: "CloudFrontCachePolicy00658327eaf89d4faba63d7e88639e58f600W7bnw"
+          TrustedSigners: []
+          FieldLevelEncryptionId: ""
+        
+        Staging: false
+        CustomErrorResponses: []
+        ContinuousDeploymentPolicyId: ""
+        OriginGroups:
+          Quantity: 0
+          Items: []
+        Enabled: true
+        Aliases:
+        - "app.mindhub.ar"
+        IPV6Enabled: true
+        WebACLId: ""
+        HttpVersion: "http2"
+        Restrictions:
+          GeoRestriction:
+            Locations: []
+            RestrictionType: "none"
+        CacheBehaviors: []

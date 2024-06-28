@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+  NotificationsEmailIdentity:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::SES::EmailIdentity"
+    DeletionPolicy: "Delete"
+    Properties:
+      DkimAttributes:
+        SigningEnabled: true
+      FeedbackAttributes:
+        EmailForwardingEnabled: true
+      EmailIdentity: "notifications@mindhub.ar"
+      DkimSigningAttributes:
+        NextSigningKeyLength: "RSA_2048_BIT"
+      MailFromAttributes:
+        BehaviorOnMxFailure: "USE_DEFAULT_VALUE"
+
+  DomainIdentity:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::SES::EmailIdentity"
+    DeletionPolicy: "Delete"
+    Properties:
+      DkimAttributes:
+        SigningEnabled: true
+      FeedbackAttributes:
+        EmailForwardingEnabled: true
+      EmailIdentity: "mindhub.ar"
+      DkimSigningAttributes:
+        NextSigningKeyLength: "RSA_2048_BIT"
+      MailFromAttributes:
+        BehaviorOnMxFailure: "USE_DEFAULT_VALUE"

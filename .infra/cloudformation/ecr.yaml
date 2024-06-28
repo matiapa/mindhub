@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  NginxRepository:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::ECR::PublicRepository"
+    DeletionPolicy: "Delete"
+    Properties:
+      RepositoryName: "nginx"
+
+  ApiRepository:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::ECR::PublicRepository"
+    DeletionPolicy: "Delete"
+    Properties:
+      RepositoryName: "mindhub-api"
+
+  ProvidersRepository:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::ECR::PublicRepository"
+    DeletionPolicy: "Delete"
+    Properties:
+      RepositoryName: "mindhub-providers-sync"
+
+  APRRepository:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::ECR::PublicRepository"
+    DeletionPolicy: "Delete"
+    Properties:
+      RepositoryName: "mindhub-apr"
+  
+  FRSRepository:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::ECR::PublicRepository"
+    DeletionPolicy: "Delete"
+    Properties:
+      RepositoryName: "mindhub-frs"
+
+  ChatbotRepository:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::ECR::PublicRepository"
+    DeletionPolicy: "Delete"
+    Properties:
+      RepositoryName: "mindhub-chatbot"
