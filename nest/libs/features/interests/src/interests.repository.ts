@@ -71,7 +71,9 @@ export class InterestsRepository extends BaseMongooseRepository<Interest> {
     }));
   }
 
-  public async remove(filter: FilterQuery<Interest>): Promise<DeleteResult> {
+  public async deleteMany(
+    filter: FilterQuery<Interest>,
+  ): Promise<DeleteResult> {
     return super.deleteMany(filter);
   }
 }

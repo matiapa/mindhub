@@ -26,6 +26,25 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 /**
  * 
  * @export
+ * @interface CategoryInterestsScore
+ */
+export interface CategoryInterestsScore {
+    /**
+     * 
+     * @type {number}
+     * @memberof CategoryInterestsScore
+     */
+    'artist': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof CategoryInterestsScore
+     */
+    'track': number;
+}
+/**
+ * 
+ * @export
  * @interface CreateInterestDto
  */
 export interface CreateInterestDto {
@@ -87,6 +106,31 @@ export interface FriendshipDto {
      * @memberof FriendshipDto
      */
     'score': RecommendationScore;
+}
+/**
+ * 
+ * @export
+ * @interface FriendshipScore
+ */
+export interface FriendshipScore {
+    /**
+     * 
+     * @type {number}
+     * @memberof FriendshipScore
+     */
+    'score': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FriendshipScore
+     */
+    'by_ratings': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FriendshipScore
+     */
+    'by_personality': number;
 }
 /**
  * 
@@ -336,6 +380,25 @@ export interface HealthControllerCheck503Response {
      * @memberof HealthControllerCheck503Response
      */
     'details'?: { [key: string]: HealthControllerCheck200ResponseInfoValue; };
+}
+/**
+ * 
+ * @export
+ * @interface InterestsScore
+ */
+export interface InterestsScore {
+    /**
+     * 
+     * @type {number}
+     * @memberof InterestsScore
+     */
+    'score': number;
+    /**
+     * 
+     * @type {CategoryInterestsScore}
+     * @memberof InterestsScore
+     */
+    'category': CategoryInterestsScore;
 }
 /**
  * 
@@ -626,16 +689,16 @@ export interface RecommendationScore {
     'global': number;
     /**
      * 
-     * @type {object}
+     * @type {FriendshipScore}
      * @memberof RecommendationScore
      */
-    'friendship': object;
+    'friendship': FriendshipScore;
     /**
      * 
-     * @type {object}
+     * @type {InterestsScore}
      * @memberof RecommendationScore
      */
-    'interests': object;
+    'interests': InterestsScore;
 }
 /**
  * 
@@ -2035,6 +2098,44 @@ export const ProvidersApiAxiosParamCreator = function (configuration?: Configura
         },
         /**
          * 
+         * @summary Delete a connected provider
+         * @param {string} providerName 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        connectionsControllerDeleteConnection: async (providerName: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'providerName' is not null or undefined
+            assertParamExists('connectionsControllerDeleteConnection', 'providerName', providerName)
+            const localVarPath = `/providers/{providerName}`
+                .replace(`{${"providerName"}}`, encodeURIComponent(String(providerName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get the connected providers
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2146,6 +2247,19 @@ export const ProvidersApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Delete a connected provider
+         * @param {string} providerName 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async connectionsControllerDeleteConnection(providerName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.connectionsControllerDeleteConnection(providerName, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProvidersApi.connectionsControllerDeleteConnection']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Get the connected providers
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2204,6 +2318,16 @@ export const ProvidersApiFactory = function (configuration?: Configuration, base
         },
         /**
          * 
+         * @summary Delete a connected provider
+         * @param {string} providerName 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        connectionsControllerDeleteConnection(providerName: string, options?: any): AxiosPromise<void> {
+            return localVarFp.connectionsControllerDeleteConnection(providerName, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get the connected providers
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2256,6 +2380,18 @@ export class ProvidersApi extends BaseAPI {
      */
     public authControllerRedeemCode(providerName: string, state: string, code: string, error: string, options?: RawAxiosRequestConfig) {
         return ProvidersApiFp(this.configuration).authControllerRedeemCode(providerName, state, code, error, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Delete a connected provider
+     * @param {string} providerName 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProvidersApi
+     */
+    public connectionsControllerDeleteConnection(providerName: string, options?: RawAxiosRequestConfig) {
+        return ProvidersApiFp(this.configuration).connectionsControllerDeleteConnection(providerName, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

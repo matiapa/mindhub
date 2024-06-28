@@ -118,8 +118,6 @@
 
         const res = await interestsApi.interestsControllerGetOwn((page - 1) * itemsPerPage, itemsPerPage, this.search);
 
-        console.log('Interests', res.data.interests)
-
         this.totalInterests = res.data.total;
 
         this.interests = res.data.interests;

@@ -395,10 +395,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetProviderConnsResDto'
-      tags:
+      tags: &ref_10
         - Providers
-      security:
+      security: &ref_11
         - bearer: []
+  /providers/{providerName}:
+    delete:
+      operationId: ConnectionsController_deleteConnection
+      summary: Delete a connected provider
+      parameters:
+        - name: providerName
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+      security: *ref_11
   /providers/{providerName}/login:
     get:
       operationId: AuthController_login
@@ -416,7 +431,7 @@ paths:
             application/json:
               schema:
                 type: string
-      tags: &ref_10
+      tags: &ref_12
         - Providers
       security:
         - bearer: []
@@ -448,7 +463,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
+      tags: *ref_12
   /providers/{providerName}/fileUploadUrl:
     get:
       operationId: FileController_getFileUploadUrl
@@ -484,9 +499,9 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_11
+      tags: &ref_13
         - Rates
-      security: &ref_12
+      security: &ref_14
         - bearer: []
     get:
       operationId: RatesController_getGivenRates
@@ -499,8 +514,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetGivenRatesResDto'
-      tags: *ref_11
-      security: *ref_12
+      tags: *ref_13
+      security: *ref_14
   /messages:
     post:
       operationId: MessagesController_postMessage
@@ -515,9 +530,9 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_13
+      tags: &ref_15
         - Messages
-      security: &ref_14
+      security: &ref_16
         - bearer: []
     get:
       operationId: MessagesController_getMessages
@@ -535,8 +550,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetMessagesResDto'
-      tags: *ref_13
-      security: *ref_14
+      tags: *ref_15
+      security: *ref_16
   /health:
     get:
       operationId: HealthController_check
@@ -554,8 +569,8 @@ paths:
                     example: ok
                   info:
                     type: object
-                    example: &ref_15
-                      database: &ref_16
+                    example: &ref_17
+                      database: &ref_18
                         status: up
                     additionalProperties:
                       type: object
@@ -578,7 +593,7 @@ paths:
                     nullable: true
                   details:
                     type: object
-                    example: *ref_15
+                    example: *ref_17
                     additionalProperties:
                       type: object
                       properties:
@@ -598,7 +613,7 @@ paths:
                     example: error
                   info:
                     type: object
-                    example: *ref_15
+                    example: *ref_17
                     additionalProperties:
                       type: object
                       properties:
@@ -610,7 +625,7 @@ paths:
                   error:
                     type: object
                     example:
-                      redis: &ref_17
+                      redis: &ref_19
                         status: down
                         message: Could not connect
                     additionalProperties:
@@ -624,8 +639,8 @@ paths:
                   details:
                     type: object
                     example:
-                      database: *ref_16
-                      redis: *ref_17
+                      database: *ref_18
+                      redis: *ref_19
                     additionalProperties:
                       type: object
                       properties:
@@ -820,15 +835,48 @@ components:
           type: string
       required:
         - target
+    FriendshipScore:
+      type: object
+      properties:
+        score:
+          type: number
+        by_ratings:
+          type: number
+        by_personality:
+          type: number
+      required:
+        - score
+        - by_ratings
+        - by_personality
+    CategoryInterestsScore:
+      type: object
+      properties:
+        artist:
+          type: number
+        track:
+          type: number
+      required:
+        - artist
+        - track
+    InterestsScore:
+      type: object
+      properties:
+        score:
+          type: number
+        category:
+          $ref: '#/components/schemas/CategoryInterestsScore'
+      required:
+        - score
+        - category
     RecommendationScore:
       type: object
       properties:
         global:
           type: number
         friendship:
-          type: object
+          $ref: '#/components/schemas/FriendshipScore'
         interests:
-          type: object
+          $ref: '#/components/schemas/InterestsScore'
       required:
         - global
         - friendship

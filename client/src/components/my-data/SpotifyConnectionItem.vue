@@ -34,6 +34,13 @@
 
         <template v-else-if="state == 'finished'">
           <p>¡Conexión finalizada! Se han extraído y procesado {{ connection?.lastProcessed?.summary?.interests }} intereses.</p>
+
+          <v-btn @click="removeConnection" color="error" variant="text" class="mt-6">Desconectar</v-btn>
+        </template>
+
+        <template v-else-if="state == 'removingConnection'">
+          <p>Desconectando proveedor...</p>
+          <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
         
         <template v-else-if="state == 'failed'">
@@ -49,7 +56,7 @@
     </v-card>
   </v-dialog>
 
-  <v-snackbar :timeout="5000" v-model="snackbar.enabled" color="red">
+  <v-snackbar :timeout="5000" v-model="snackbar.enabled" :color="snackbar.color">
     {{ snackbar.text }}
   </v-snackbar>
 </template>
@@ -67,6 +74,7 @@ enum ConnectionState {
   ProcessingData = 'processingData',
   Finished = 'finished',
   Failed = 'failed',
+  RemovingConnection = 'removingConnection',
 }
 
 export default {
@@ -83,6 +91,7 @@ export default {
       snackbar: {
         enabled: false,
         text: '',
+        color: 'primary',
       },
     }
   },
@@ -95,8 +104,14 @@ export default {
       const twitterConnection = res.data.connections.find((c: any) => c.provider === 'twitter');
 
       // Spotify will only be enabled after connecting Twitter because currently
-      // recommendations cannot be generated without text data
-      this.enabled = twitterConnection?.lastProcessed?.success || false;
+      // recommendations cannot be generated without text data. The button must
+      // be enabled too if Spofity is already connected so that it can be disconnected
+      // then even if Twitter is disconnected first.
+      if (this.connection?.lastProcessed?.success) {
+        this.enabled = true;
+      } else {
+        this.enabled = twitterConnection?.lastProcessed?.success || false;
+      }
     },
 
     async openLoginPage() {
@@ -110,6 +125,28 @@ export default {
       window.open(res.data, '_blank')!.focus();
 
       this.state = ConnectionState.WaitingAuth; 
+    },
+
+    async removeConnection() {
+      try {
+        this.state = ConnectionState.RemovingConnection;
+        await providersApi.connectionsControllerDeleteConnection("spotify");
+        this.connection = undefined;
+        this.state = ConnectionState.Initial;
+        this.displayMessage('Proveedor desconectado exitosamente')
+      } catch (error) {
+        this.displayMessage('Error al desconectar', error)
+        this.state = ConnectionState.Finished;
+      }
+    },
+
+    displayMessage(message: string, error?: any) {
+      if (error) console.error(error);
+      this.snackbar = {
+        enabled: true,
+        text: message,
+        color: error ? 'error' : 'primary',
+      };
     },
 
     getButtonLabel() {

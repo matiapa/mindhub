@@ -69,6 +69,6 @@ export class TextsController {
     @Param('id') id: string,
     @AuthUser() user: PrincipalData,
   ): Promise<void> {
-    return this.textsService.remove(id, user.id);
+    return this.textsService.delete(id, user.id);
   }
 }

@@ -1,15 +1,42 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 
+export class CategoryInterestsScore {
+  @Prop({ required: true })
+  artist: number;
+
+  @Prop({ required: true })
+  track: number;
+}
+
+export class InterestsScore {
+  @Prop({ required: true })
+  score: number;
+
+  @Prop({ type: CategoryInterestsScore, required: true, _id: false })
+  category: CategoryInterestsScore;
+}
+
+export class FriendshipScore {
+  @Prop({ required: true })
+  score: number;
+
+  @Prop({ required: true })
+  by_ratings: number;
+
+  @Prop({ required: true })
+  by_personality: number;
+}
+
 export class RecommendationScore {
   @Prop({ required: true })
   global: number;
 
-  @Prop({ type: Object, required: true, _id: false })
-  friendship: object;
+  @Prop({ type: FriendshipScore, required: true, _id: false })
+  friendship: FriendshipScore;
 
-  @Prop({ type: Object, required: true, _id: false })
-  interests: object;
+  @Prop({ type: InterestsScore, required: true, _id: false })
+  interests: InterestsScore;
 }
 
 class Reviewed {
@@ -17,7 +44,7 @@ class Reviewed {
   accepted: boolean;
 
   @Prop({ required: true })
-  date: string;
+  date: Date;
 }
 
 @Schema({ timestamps: true })

@@ -86,6 +86,6 @@ export class InterestsController {
     @Param('id') id: string,
     @AuthUser() user: PrincipalData,
   ): Promise<void> {
-    return this.interestsService.remove(id, user.id);
+    return this.interestsService.delete(id, user.id);
   }
 }

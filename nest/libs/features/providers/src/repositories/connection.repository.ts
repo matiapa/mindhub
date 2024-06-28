@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, QueryOptions, Model } from 'mongoose';
-import { BaseMongooseRepository, UpdateResult } from '@Provider/mongodb';
+import {
+  BaseMongooseRepository,
+  DeleteResult,
+  UpdateResult,
+} from '@Provider/mongodb';
 import { ProviderConnection } from '../entities/connection.entity';
 
 @Injectable()
@@ -31,5 +35,12 @@ export class ProvidersConnRepository extends BaseMongooseRepository<ProviderConn
     filter: FilterQuery<ProviderConnection>,
   ): Promise<ProviderConnection[]> {
     return super.getMany(filter);
+  }
+
+  async deleteOne(
+    filter: FilterQuery<ProviderConnection>,
+    options?: QueryOptions<ProviderConnection>,
+  ): Promise<DeleteResult> {
+    return super.deleteOne(filter, options);
   }
 }

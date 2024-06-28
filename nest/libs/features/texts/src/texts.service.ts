@@ -6,6 +6,7 @@ import {
   GetUserTextsResDto,
 } from './dtos/get-user-texts.dto';
 import { QueueService } from '@Provider/queue';
+import { ProviderEnum } from '@Feature/providers';
 
 @Injectable()
 export class TextsService {
@@ -57,7 +58,14 @@ export class TextsService {
     };
   }
 
-  async remove(_id: string, userId: string): Promise<void> {
-    await this.textsRepo.remove({ _id, userId });
+  async delete(_id: string, userId: string): Promise<void> {
+    await this.textsRepo.deleteMany({ _id, userId });
+  }
+
+  async deleteByProvider(
+    provider: ProviderEnum,
+    userId: string,
+  ): Promise<void> {
+    await this.textsRepo.deleteMany({ provider, userId });
   }
 }

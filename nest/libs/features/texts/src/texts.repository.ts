@@ -46,7 +46,7 @@ export class TextsRepository extends BaseMongooseRepository<Text> {
     return super.getPaginated(paginated, filter);
   }
 
-  public async remove(filter: FilterQuery<Text>): Promise<DeleteResult> {
+  public async deleteMany(filter: FilterQuery<Text>): Promise<DeleteResult> {
     return super.deleteMany(filter);
   }
 }

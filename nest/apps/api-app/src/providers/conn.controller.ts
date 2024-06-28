@@ -1,3 +1,4 @@
+import { ProviderEnum } from '@Feature/providers';
 import { GetProviderConnsResDto } from '@Feature/providers/dtos/get-connections.dto';
 import { ProvidersConnService } from '@Feature/providers/services/conn.service';
 import {
@@ -5,8 +6,8 @@ import {
   AuthUser,
 } from '@Provider/authentication/authentication.guard';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Providers')
 @ApiBearerAuth()
@@ -23,5 +24,17 @@ export class ConnectionsController {
     @AuthUser() user: PrincipalData,
   ): Promise<GetProviderConnsResDto> {
     return this.connService.getConnections(user.id);
+  }
+
+  @Delete('/:providerName')
+  @ApiOperation({
+    summary: 'Delete a connected provider',
+  })
+  @UseGuards(AuthGuard)
+  async deleteConnection(
+    @Param('providerName') providerName: ProviderEnum,
+    @AuthUser() user: PrincipalData,
+  ): Promise<void> {
+    await this.connService.deleteConnection(providerName, user.id);
   }
 }

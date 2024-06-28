@@ -36,6 +36,13 @@
 
         <template v-else-if="state == 'finished'">
           <p>¡Conexión finalizada! Se han extraído y procesado {{ connection?.lastProcessed?.summary?.texts }} textos.</p>
+
+          <v-btn @click="removeConnection" color="error" variant="text" class="mt-6">Desconectar</v-btn>
+        </template>
+
+        <template v-else-if="state == 'removingConnection'">
+          <p>Desconectando proveedor...</p>
+          <v-progress-linear class="my-6" indeterminate></v-progress-linear>
         </template>
         
         <template v-else-if="state == 'failed'">
@@ -69,6 +76,7 @@ enum ConnectionState {
   ProcessingFile = 'processingFile',
   Finished = 'finished',
   Failed = 'failed',
+  RemovingConnection = 'removingConnection',
 }
 
 export default {
@@ -127,15 +135,28 @@ export default {
 
         this.state = ConnectionState.ProcessingFile;
       } catch (error) {
-        this.logError(error, 'Error al subir el archivo')
+        this.displayMessage('Error al subir el archivo', error)
         this.state = ConnectionState.Initial;
       } finally {
         this.selectedFile = null;
       }
     },
 
-    logError(error: any, message: string) {
-      console.error(error);
+    async removeConnection() {
+      try {
+        this.state = ConnectionState.RemovingConnection;
+        await providersApi.connectionsControllerDeleteConnection("twitter");
+        this.connection = undefined;
+        this.state = ConnectionState.Initial;
+        this.displayMessage('Proveedor desconectado exitosamente')
+      } catch (error) {
+        this.displayMessage('Error al desconectar', error)
+        this.state = ConnectionState.Finished;
+      }
+    },
+
+    displayMessage(message: string, error?: any) {
+      if (error) console.error(error);
       this.snackbar = {
         enabled: true,
         text: message,

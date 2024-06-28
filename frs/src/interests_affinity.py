@@ -3,12 +3,12 @@ from db import interests, preferences
 
 INTEREST_AFFINITY_GROWTH_RATE = 1
 
-INTEREST_SCORE_BY_RELEVANCE = {
+INTEREST_RELEVANCE_WEIGHTS = {
     'normal': 1,
     'favorite': 2,
 }
 
-CATEGORY_RELEVANCE_WEIGHTS = {
+RESOURCE_TYPE_RELEVANCE_WEIGHTS = {
     'low': 0.5,
     'normal': 1,
     'high': 2,
@@ -55,8 +55,8 @@ def interest_affinity(user, potentials):
             relevance_a = shared_interest['relevances'][0]['relevance']
             relevance_b = shared_interest['relevances'][1]['relevance']
 
-            score_a = INTEREST_SCORE_BY_RELEVANCE[relevance_a]
-            score_b = INTEREST_SCORE_BY_RELEVANCE[relevance_b]
+            score_a = INTEREST_RELEVANCE_WEIGHTS[relevance_a]
+            score_b = INTEREST_RELEVANCE_WEIGHTS[relevance_b]
             common_score = (score_a + score_b) / 2
 
             resource_type = shared_interest['resource']['type']
@@ -69,9 +69,9 @@ def interest_affinity(user, potentials):
         # considering the resource type relevance of the user
 
         affinity_score = \
-            CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['artist']] * category_affinities['artist'] \
-            + CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['track']] * category_affinities['track']
-        affinity_score /= CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['artist']] + CATEGORY_RELEVANCE_WEIGHTS[user_type_relevances['track']]
+            RESOURCE_TYPE_RELEVANCE_WEIGHTS[user_type_relevances['artist']] * category_affinities['artist'] \
+            + RESOURCE_TYPE_RELEVANCE_WEIGHTS[user_type_relevances['track']] * category_affinities['track']
+        affinity_score /= RESOURCE_TYPE_RELEVANCE_WEIGHTS[user_type_relevances['artist']] + RESOURCE_TYPE_RELEVANCE_WEIGHTS[user_type_relevances['track']]
 
         affinities.append({
             'category': category_affinities,

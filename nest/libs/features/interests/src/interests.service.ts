@@ -7,6 +7,7 @@ import {
   GetUserInterestsResDto,
 } from './dtos/get-user-interests.dto';
 import { QueueService } from '@Provider/queue';
+import { ProviderEnum } from '@Feature/providers';
 
 @Injectable()
 export class InterestsService {
@@ -73,7 +74,14 @@ export class InterestsService {
     };
   }
 
-  async remove(_id: string, userId: string): Promise<void> {
-    await this.interestsRepo.remove({ _id, userId });
+  async delete(_id: string, userId: string): Promise<void> {
+    await this.interestsRepo.deleteMany({ _id, userId });
+  }
+
+  async deleteByProvider(
+    provider: ProviderEnum,
+    userId: string,
+  ): Promise<void> {
+    await this.interestsRepo.deleteMany({ provider, userId });
   }
 }
