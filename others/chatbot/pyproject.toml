@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "Chatbot"
+version = "0.1.0"
+description = "Chabot Service"
+authors = ["Matías Apablaza <mapablaza@itba.edu.ar>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9, <3.12"
+pymongo = "^4.5.0"
+python-dotenv = "^1.0.0"
+openai = "^1.35.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

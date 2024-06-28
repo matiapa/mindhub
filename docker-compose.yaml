@@ -9,8 +9,8 @@ services:
     links:
       - api
     volumes:
-      - ./nginx/certs/privkey.pem:/etc/nginx/privkey.pem
-      - ./nginx/certs/fullchain.pem:/etc/nginx/fullchain.pem
+      - ./others/nginx/certs/privkey.pem:/etc/nginx/privkey.pem
+      - ./others/nginx/certs/fullchain.pem:/etc/nginx/fullchain.pem
 
   api:
     image: public.ecr.aws/s3y9y4j4/mindhub-api:latest
@@ -35,3 +35,11 @@ services:
     tty: true
     env_file:
       - ./apr/.env
+
+  chatbot:
+    image: public.ecr.aws/s3y9y4j4/mindhub-chatbot:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./others/chatbot/.env
+  
