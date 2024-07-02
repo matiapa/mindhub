@@ -1,3 +1,6 @@
-.vscode/
+.vscode/*
 node_modules/
 dist/
+
+!.vscode/build_sdk.sh
+!.vscode/launch.json

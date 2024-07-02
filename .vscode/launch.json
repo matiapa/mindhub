@@ -1,0 +1,77 @@
+{
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "restart": true,
+      "autoAttachChildProcesses": true,
+      "cwd": "${workspaceFolder}/client"
+    },
+
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start user API",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "api-app", "--", "--inspect-brk"],
+      "console": "integratedTerminal",
+      "restart": true,
+      "autoAttachChildProcesses": true,
+      "cwd": "${workspaceFolder}/nest"
+    },
+
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start providers sync",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start",
+        "providers-sync-app",
+        "--",
+        "--inspect-brk"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "autoAttachChildProcesses": true,
+      "cwd": "${workspaceFolder}/nest"
+    },
+
+    {
+      "name": "Start APR",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/apr/src/main.py",
+      "console": "integratedTerminal",
+      "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
+      "cwd": "${workspaceFolder}/apr"
+    },
+
+    {
+      "name": "Start FRS",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/frs/src/main.py",
+      "console": "integratedTerminal",
+      "python": "/home/matiapa/.cache/pypoetry/virtualenvs/frs-opLQXE9--py3.10/bin/python",
+      "cwd": "${workspaceFolder}/frs"
+    },
+
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start E2E test",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test", "--", "--inspect-brk"],
+      "console": "integratedTerminal",
+      "restart": true,
+      "autoAttachChildProcesses": true,
+      "cwd": "${workspaceFolder}/others/e2e-test"
+    },
+  ]
+}

@@ -4,10 +4,10 @@ import { MongooseModuleOptions } from '@nestjs/mongoose';
 export const createMongooseOptions = (
   config: MongoConfig,
 ): MongooseModuleOptions => {
-  const { connection: uri, ...options } = config;
+  const { connection: connection, dbName: dbName, ...options } = config;
 
   return {
-    uri,
+    uri: `${connection}/${dbName}`,
     ...options,
   };
 };

@@ -1,5 +1,7 @@
-.vscode/
+.vscode/*
 __pycache__/
 datasets/
 
 .env
+
+!.vscode/launch.json

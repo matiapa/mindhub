@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:      
+  # --------------------------- SQS ---------------------------
+
+  ProviderFileUploadedQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-file-uploaded-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      VisibilityTimeout: 30
+
+  ProviderSyncRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-sync-requests-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt ProviderSyncRequestsDLTQueue.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  ProviderSyncRequestsDLTQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: provider-sync-requests-dlt-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+
+  PersonalityRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: personality-requests-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt PersonalityRequestDLTQueue.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  PersonalityRequestDLTQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: personality-requests-dlt-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+
+  RecommendationRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: recommendation-requests-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt RecommendationRequestDLTQueue.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+
+  RecommendationRequestDLTQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: recommendation-requests-dlt-queue-test
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+
+  # --------------------------- S3 ---------------------------
+
+  UserPicturesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: user-pictures-bucket-test
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+            - "*"
+          AllowedMethods:
+            - GET
+            - PUT
+          AllowedOrigins:
+            - "*"
+
+  UserPicturesPublicPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    DependsOn:
+      - UserPicturesBucket
+    Properties:
+      Bucket:
+        - !Ref UserPicturesBucket
+      PolicyDocument:
+        Statement:
+        - Resource: "arn:aws:s3:::user-pictures-bucket-test/*"
+          Action: "s3:GetObject"
+          Effect: "Allow"
+          Principal: "*"
+
+  ProviderFilesBucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+      - ProviderFileUploadedQueue
+    Properties:
+      BucketName: provider-files-bucket-test
+      # TODO: This notification configuration must be created after ProviderFileUploadedQueuePolicy
+      # otherwise it will fail due to lack of permissions
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue:
+              !GetAtt ProviderFileUploadedQueue.Arn
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - BucketKeyEnabled: true
+          ServerSideEncryptionByDefault:
+            SSEAlgorithm: "AES256"
+
+  ProviderFileUploadedQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    DependsOn:
+      - ProviderFileUploadedQueue
+      - ProviderFilesBucket
+    Properties:
+      Queues:
+        - !Ref ProviderFileUploadedQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - SQS:SendMessage
+            Resource:
+              !GetAtt ProviderFileUploadedQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn:
+                  !GetAtt ProviderFilesBucket.Arn
+
+# Outputs:
+#   ProviderFilesBucketName:
+#     Value: !Ref ProviderFilesBucket
+#   ProviderFileUploadedQueueArn:
+#     Value: !GetAtt ProviderFileUploadedQueue.Arn

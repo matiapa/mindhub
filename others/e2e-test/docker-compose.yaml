@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+
+  api:
+    image: apps-api:latest
+    ports:
+      - 3000:3000
+    env_file:
+      - ./envs/nest.env
+
+  providers-sync:
+    image: apps-providers-sync:latest
+    env_file:
+      - ./envs/nest.env
+
+  frs:
+    image: apps-frs:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./envs/frs.env
+
+  apr:
+    image: apps-apr:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./envs/apr.env
