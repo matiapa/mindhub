@@ -76,7 +76,7 @@
 </template>
 
 <script lang="ts">
-  import { InterestsApiFactory } from '@/libs/user-api-sdk';
+  import { InterestsApiFactory } from 'user-api-sdk';
   import { type Interest } from '@/types/resources.interface';
 
   let interestsApi: ReturnType<typeof InterestsApiFactory>;

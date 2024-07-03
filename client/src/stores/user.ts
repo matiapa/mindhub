@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { UsersApiFactory, type GetOwnUserResDto } from '@/libs/user-api-sdk'
+import { UsersApiFactory, type GetOwnUserResDto } from 'user-api-sdk'
 
 export const useUserStore = defineStore('data', () => {
   const ownUser = ref<GetOwnUserResDto | null>(null)

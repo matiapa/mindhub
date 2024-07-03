@@ -1,4 +1,4 @@
-import type { UserInterestDto, UserTextDto } from "@/libs/user-api-sdk";
+import type { UserInterestDto, UserTextDto } from "user-api-sdk";
 
 export interface Text extends UserTextDto {}
 

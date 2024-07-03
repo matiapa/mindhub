@@ -9,6 +9,12 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+class ConnectionDto {
+  @IsDate()
+  @IsNotEmpty()
+  date: Date;
+}
+
 class ProcessingSummaryDto {
   @IsNumber()
   @IsOptional()
@@ -43,13 +49,15 @@ class ProviderConnectionDto {
   @IsNotEmpty()
   provider: string;
 
-  oauth?: {
-    date: Date;
-  };
+  @Type(() => ConnectionDto)
+  @ValidateNested()
+  @IsOptional()
+  oauth?: ConnectionDto;
 
-  file?: {
-    date: Date;
-  };
+  @Type(() => ConnectionDto)
+  @ValidateNested()
+  @IsOptional()
+  file?: ConnectionDto;
 
   @Type(() => LastProcessedDto)
   @ValidateNested()

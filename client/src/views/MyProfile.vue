@@ -90,7 +90,7 @@
 </template>
 
 <script lang="ts">
-import { UsersApiFactory } from '@/libs/user-api-sdk/api';
+import { UsersApiFactory } from 'user-api-sdk/api';
 import axios from 'axios';
 import { useUserStore } from '@/stores/user';
 import _avatar from "@/assets/avatar.png"

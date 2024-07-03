@@ -35,7 +35,7 @@
   import MyInterestsTable from '@/components/my-data/MyInterestsTable.vue'
   import MyTextsTable from '@/components/my-data/MyTextsTable.vue'
   import PersonalityCard from '@/components/PersonalityCard.vue'
-  import { UsersApiFactory } from '@/libs/user-api-sdk';
+  import { UsersApiFactory } from 'user-api-sdk';
 
   let usersApi: ReturnType<typeof UsersApiFactory>;
 

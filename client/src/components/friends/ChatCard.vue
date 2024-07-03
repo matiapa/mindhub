@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts">
-import { InterestsApiFactory, MessagesApiFactory } from '@/libs/user-api-sdk';
+import { InterestsApiFactory, MessagesApiFactory } from 'user-api-sdk';
 import type { PropType } from 'vue';
 import type User from '@/types/user.interface';
 
@@ -204,4 +204,4 @@ export default {
   width: 30%;
 }
 </style>
-  @/libs/user-api-sdk
+  user-api-sdk

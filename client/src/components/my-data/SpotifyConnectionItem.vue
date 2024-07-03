@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { ProvidersApiFactory } from '@/libs/user-api-sdk';
+import { ProvidersApiFactory } from 'user-api-sdk';
 import type ProviderConnection from '@/types/provider.interface';
 
 let providersApi: ReturnType<typeof ProvidersApiFactory>;

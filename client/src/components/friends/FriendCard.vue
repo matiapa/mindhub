@@ -37,7 +37,7 @@
 <script lang="ts">
 import ProfilePreviewCard from '@/components/profile/ProfilePreviewCard.vue'
 import ChatCard from '@/components/friends/ChatCard.vue'
-import { RatesApiFactory } from '@/libs/user-api-sdk';
+import { RatesApiFactory } from 'user-api-sdk';
 import type User from '@/types/user.interface';
 import type { PropType } from 'vue';
 
@@ -127,4 +127,4 @@ export default {
   justify-content: center;
   align-items: center;
 }
-</style>@/libs/user-api-sdk
+</style>user-api-sdk

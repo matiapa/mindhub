@@ -74,11 +74,11 @@
 <script setup lang="ts">
 import type User from '@/types/user.interface'
 import RecommendationCard from '@/components/recommendations/RecommendationCard.vue'
-import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum } from '@/libs/user-api-sdk/api'
+import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum } from 'user-api-sdk/api'
 </script>
 
 <script lang="ts">
-import { ProvidersApiFactory } from '@/libs/user-api-sdk';
+import { ProvidersApiFactory } from 'user-api-sdk';
 
 import type ProviderConnection from '@/types/provider.interface';
 

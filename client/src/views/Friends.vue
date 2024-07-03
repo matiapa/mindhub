@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import type User from '@/types/user.interface'
 import FriendCard from '@/components/friends/FriendCard.vue'
-import { FriendshipsApiFactory, FriendshipsControllerGetFriendshipsTypeEnum } from '@/libs/user-api-sdk/api'
+import { FriendshipsApiFactory, FriendshipsControllerGetFriendshipsTypeEnum } from 'user-api-sdk/api'
 </script>
 
 <script lang="ts">
@@ -176,4 +176,4 @@ export default {
     this.loadData()
   },
 }
-</script>@/libs/user-api-sdk/api
+</script>user-api-sdk/api

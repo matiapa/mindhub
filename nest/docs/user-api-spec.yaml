@@ -1051,6 +1051,14 @@ components:
         - texts
         - count
         - total
+    ConnectionDto:
+      type: object
+      properties:
+        date:
+          format: date-time
+          type: string
+      required:
+        - date
     ProcessingSummaryDto:
       type: object
       properties:
@@ -1079,23 +1087,13 @@ components:
         provider:
           type: string
         oauth:
-          type: object
-          properties:
-            date:
-              format: date-time
-              type: string
+          $ref: '#/components/schemas/ConnectionDto'
         file:
-          type: object
-          properties:
-            date:
-              format: date-time
-              type: string
+          $ref: '#/components/schemas/ConnectionDto'
         lastProcessed:
           $ref: '#/components/schemas/LastProcessedDto'
       required:
         - provider
-        - oauth
-        - file
     GetProviderConnsResDto:
       type: object
       properties:

@@ -165,7 +165,7 @@
 
 <script lang="ts">
 import PersonalityCard from '@/components/PersonalityCard.vue'
-import { UsersApiFactory } from '@/libs/user-api-sdk';
+import { UsersApiFactory } from 'user-api-sdk';
 import type User from '@/types/user.interface';
 import type { PropType } from 'vue';
 
@@ -273,4 +273,4 @@ export default {
   height: 100%; /* adjust as needed */
 }
 </style>
-@/libs/user-api-sdk
+user-api-sdk

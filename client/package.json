@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "user-api-sdk": "file:../nest/apps/api-app/user-api-sdk",
     "aws-sdk": "^2.1576.0",
     "axios": "^1.4.0",
     "jwt-decode": "^4.0.0",

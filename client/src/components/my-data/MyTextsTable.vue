@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts">
-  import { TextsApiFactory } from '@/libs/user-api-sdk';
+  import { TextsApiFactory } from 'user-api-sdk';
   import { type Text } from '@/types/resources.interface';
 
   let textsApi: ReturnType<typeof TextsApiFactory>;
