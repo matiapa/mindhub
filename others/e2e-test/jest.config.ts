@@ -7,6 +7,7 @@ export default {
     // setupFiles: ['<rootDir>/src/support/test-setup.ts'],
     testEnvironment: 'node',
     testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
+    verbose: true,
     // transform: {
     //   '^.+\\.[tj]s$': [
     //     'ts-jest',

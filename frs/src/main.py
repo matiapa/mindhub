@@ -1,10 +1,10 @@
+import config
+config.load()
+
 import boto3
 import json
 import os
 from global_affinity import generate_recommendations
-from dotenv import load_dotenv
-
-load_dotenv()
 
 sqs = boto3.resource('sqs')
 queue = sqs.get_queue_by_name(QueueName=os.environ.get("RECOMMENDATIONS_QUEUE_NAME"))

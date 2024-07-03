@@ -49,6 +49,9 @@ export class UsersService {
       decoded = jwt.verify(
         dto.token,
         process.env.COGNITO_SIGNUP_HANDLER_SECRET_KEY,
+        {
+          ignoreExpiration: true,
+        },
       );
     } catch (err) {
       throw new UnauthorizedException('Invalid token');

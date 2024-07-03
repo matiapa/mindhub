@@ -15,51 +15,21 @@ Resources:
     Properties: 
       QueueName: provider-sync-requests-queue-test
       ReceiveMessageWaitTimeSeconds: 20 # Long polling
-      RedrivePolicy:
-        deadLetterTargetArn:
-          !GetAtt ProviderSyncRequestsDLTQueue.Arn
-        maxReceiveCount: 5
       VisibilityTimeout: 30
-
-  ProviderSyncRequestsDLTQueue:
-    Type: AWS::SQS::Queue
-    Properties: 
-      QueueName: provider-sync-requests-dlt-queue-test
-      ReceiveMessageWaitTimeSeconds: 20 # Long polling
 
   PersonalityRequestQueue:
     Type: AWS::SQS::Queue
     Properties: 
       QueueName: personality-requests-queue-test
       ReceiveMessageWaitTimeSeconds: 20 # Long polling
-      RedrivePolicy:
-        deadLetterTargetArn:
-          !GetAtt PersonalityRequestDLTQueue.Arn
-        maxReceiveCount: 5
       VisibilityTimeout: 30
-
-  PersonalityRequestDLTQueue:
-    Type: AWS::SQS::Queue
-    Properties: 
-      QueueName: personality-requests-dlt-queue-test
-      ReceiveMessageWaitTimeSeconds: 20 # Long polling
 
   RecommendationRequestQueue:
     Type: AWS::SQS::Queue
     Properties: 
       QueueName: recommendation-requests-queue-test
       ReceiveMessageWaitTimeSeconds: 20 # Long polling
-      RedrivePolicy:
-        deadLetterTargetArn:
-          !GetAtt RecommendationRequestDLTQueue.Arn
-        maxReceiveCount: 5
       VisibilityTimeout: 30
-
-  RecommendationRequestDLTQueue:
-    Type: AWS::SQS::Queue
-    Properties: 
-      QueueName: recommendation-requests-dlt-queue-test
-      ReceiveMessageWaitTimeSeconds: 20 # Long polling
 
   # --------------------------- S3 ---------------------------
 
@@ -67,6 +37,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: user-pictures-bucket-test
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false
       CorsConfiguration:
         CorsRules:
         - AllowedHeaders:
@@ -82,8 +54,7 @@ Resources:
     DependsOn:
       - UserPicturesBucket
     Properties:
-      Bucket:
-        - !Ref UserPicturesBucket
+      Bucket: !Ref UserPicturesBucket
       PolicyDocument:
         Statement:
         - Resource: "arn:aws:s3:::user-pictures-bucket-test/*"
@@ -131,9 +102,3 @@ Resources:
               ArnLike:
                 aws:SourceArn:
                   !GetAtt ProviderFilesBucket.Arn
-
-# Outputs:
-#   ProviderFilesBucketName:
-#     Value: !Ref ProviderFilesBucket
-#   ProviderFileUploadedQueueArn:
-#     Value: !GetAtt ProviderFileUploadedQueue.Arn

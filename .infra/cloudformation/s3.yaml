@@ -8,6 +8,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: user-pictures-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false
       CorsConfiguration:
         CorsRules:
         - AllowedHeaders:

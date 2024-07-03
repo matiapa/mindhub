@@ -30,6 +30,7 @@ WORKDIR /app
 
 COPY --chown=python:python --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY --chown=python:python src src
+COPY --chown=python:python envs envs
 
 USER python
 

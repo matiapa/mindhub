@@ -1,3 +1,6 @@
+import config
+config.load()
+
 import sys
 sys.path.append(".")
 
@@ -8,9 +11,6 @@ from db import texts_repo, bigfive_repo
 import boto3
 import json
 import os
-import dotenv
-
-dotenv.load_dotenv()
 
 sqs = boto3.resource('sqs')
 personality_queue = sqs.get_queue_by_name(QueueName=os.environ.get("PERSONALITY_QUEUE_NAME"))

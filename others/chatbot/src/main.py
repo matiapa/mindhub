@@ -1,12 +1,12 @@
+import config
+config.load()
+
 from datetime import datetime, timezone
 import pprint
 import time
 from openai import OpenAI
 from db import users, messages, personalities
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Create the OpenAI client
 

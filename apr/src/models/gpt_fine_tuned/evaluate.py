@@ -4,9 +4,6 @@ import json
 from sklearn.metrics import mean_squared_error
 import numpy as np
 import os
-import dotenv
-
-dotenv.load_dotenv()
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_SECRET_KEY"),

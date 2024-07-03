@@ -3,9 +3,6 @@ from openai import OpenAI
 import re
 import string
 import os
-import dotenv
-
-dotenv.load_dotenv()
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_SECRET_KEY"),

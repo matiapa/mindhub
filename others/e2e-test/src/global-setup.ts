@@ -46,11 +46,10 @@ module.exports = async function () {
 
   const ps = spawn('docker', ['compose', 'up']);
   globalThis.serverProcess = ps;
+  process.env.E2E_API_URI = "localhost:3000"
 
   waitForLoadLine(ps, 'Application is running');
   */
-
-  process.env.E2E_API_URI = "localhost:3000"
 
   console.log('\nInitiating tests...\n');
 };

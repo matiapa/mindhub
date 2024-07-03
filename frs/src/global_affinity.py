@@ -41,8 +41,10 @@ def generate_recommendations(user):
     
     # Potentials are all the users which have a personality vector and the user has not reviewed yet
     potentials = users.distinct('_id', {
-        '_id': {'$nin': reviewed_ids + [user]},
-        '_id': {'$in': with_personality_ids}
+        "$and": [
+            { '_id': {'$nin': reviewed_ids + [user]} },
+            { '_id': {'$in': with_personality_ids} },
+        ]
     })
 
     user_recommendations = global_affinity(user, potentials)
