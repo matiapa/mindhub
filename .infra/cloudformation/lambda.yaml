@@ -15,7 +15,7 @@ Resources:
           Ref: "LambdaFunction00postsignuphandler00ISCQACodeS3BucketOneOfZ0b1Z"
         S3Key:
           Ref: "LambdaFunction00postsignuphandler00ISCQACodeS3KeyOneOfjWxHP"
-      Timeout: 3
+      Timeout: 30
       Environment:
         Variables:
           JWT_SIGNING_SECRET_KEY: "3kYKUVAG59xA6eDlcfcZGt8rTBZ5oJ9LULU8fNRmf54="

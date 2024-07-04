@@ -16,6 +16,7 @@
             <!-- This hidden tabs are placed to trick the tabs component, because if they are removed, -->
             <!-- when a path that is not on the tabs is navigated, the last active tab remains highlighted -->
             <v-tab to="/profile" v-show="false"></v-tab>
+            <v-tab to="/unconfirmed_account" v-show="false"></v-tab>
           </v-tabs>
 
           <v-spacer></v-spacer>

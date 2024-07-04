@@ -21,7 +21,7 @@
         </v-row>
     </div>
 
-    <v-snackbar :timeout="2000" v-model="snackbar.enabled">
+    <v-snackbar :timeout="5000" v-model="snackbar.enabled">
         {{ snackbar.text }}
     </v-snackbar>
 </template>
@@ -29,7 +29,6 @@
 <script lang="ts">
 import { signInWithCode } from '@/libs/cognito';
 import _image from "@/assets/person-light.png"
-import { useUserStore } from '@/stores/user';
 
 export default {
     data: () => ({
@@ -51,6 +50,18 @@ export default {
     },
 
     async mounted() {
+        const error = new URL(window.location.href).searchParams.get('error');
+        if (error) {
+            const error_desc = new URL(window.location.href).searchParams.get('error_description');
+            console.error('Cognito redirected with an error', {
+                error, error_desc
+            });
+
+            this.state = 'signed_out';
+            this.snackbar.text = 'Ups! Algo salió mal, por favor volvé a intentarlo'
+            this.snackbar.enabled = true
+        }
+
         const code = new URL(window.location.href).searchParams.get('code');
         if (code) {
             this.state = 'exchanging_code'
@@ -60,34 +71,19 @@ export default {
 
                 await signInWithCode(code);
 
-                console.log('Fetching own user')
-
-                const userStore = useUserStore()
-
-                await userStore.fetchOwnUser()
-
                 // This is to remove the code query param from the URL, since it came as a query param
                 // and we are using hash history mode, it wont be removed when moving to another route
                 window.history.replaceState({}, document.title, window.location.pathname);
 
                 this.$router.push('/explore');
             } catch (error) {
-                console.error(error);
+                console.error('Failed to exchange code for token',error);
 
                 this.state = 'signed_out';
-                this.snackbar.text = 'Error logging in. Please try again.'
+                this.snackbar.text = 'Ups! Algo salió mal, por favor volvé a intentarlo'
                 this.snackbar.enabled = true
             }
             return;
-        }
-
-        const error = new URL(window.location.href).searchParams.get('error');
-        if (error == 'unconfirmed_account') {
-            console.log('Unconfirmed user account')
-
-            this.state = 'signed_out'
-            this.snackbar.text = 'Aún no has confirmado tu cuenta'
-            this.snackbar.enabled = true
         }
     },
 }

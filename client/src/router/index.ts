@@ -7,12 +7,18 @@ import { useUserStore } from '@/stores/user';
 const routes = [
   {
     path: '/',
-    name: 'Welcome',
-    component: () => import('@/views/Welcome.vue'),
+    name: 'SignIn',
+    component: () => import('@/views/pre-auth/SignIn.vue'),
     meta: {
-      title: 'MindHub',
-      requiresAuth: false,
-      requiresProfileCompletion: false,
+      title: 'Iniciar sesión | MindHub',
+    }
+  },
+  {
+    path: '/unconfirmed_account',
+    name: 'UnconfirmedAccount',
+    component: () => import('@/views/pre-auth/UnconfirmedAccount.vue'),
+    meta: {
+      title: 'Confirmá tu cuenta | MindHub',
     }
   },
   {
@@ -20,8 +26,6 @@ const routes = [
     component: () => import('@/views/Explore.vue'),
     meta: {
       title: 'Explorar | MindHub',
-      requiresAuth: true,
-      requiresProfileCompletion: true,
     }
   },
   {
@@ -29,8 +33,6 @@ const routes = [
     component: () => import('@/views/Friends.vue'),
     meta: {
       title: 'Amigos | MindHub',
-      requiresAuth: true,
-      requiresProfileCompletion: true,
     }
   },
   {
@@ -38,8 +40,6 @@ const routes = [
     component: () => import('@/views/MyData.vue'),
     meta: {
       title: 'Tus Datos | MindHub',
-      requiresAuth: true,
-      requiresProfileCompletion: true,
     }
   },
   {
@@ -47,8 +47,6 @@ const routes = [
     component: () => import('@/views/MyProfile.vue'),
     meta: {
       title: 'Tu Perfil | MindHub',
-      requiresAuth: true,
-      requiresProfileCompletion: false,
     }
   },
 ]
@@ -62,7 +60,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   document.title = to.meta.title as string;
 
-  // console.debug(document.title)
+  console.debug(document.title)
 
   // -------- If goes to signin and it authenticated redirect to explore --------
   
@@ -75,59 +73,68 @@ router.beforeEach(async (to, from, next) => {
 
   // -------- Validate that user is authenticated --------
 
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  if (!requiresAuth) {
+  if (to.path === '/') {
     next();
     return;
   }
 
-  // console.debug('Validating authentication')
+  console.debug('Validating authentication')
 
   const idToken = localStorage.getItem('id_token');
   if (!idToken) {
-    console.log('There is no ID token')
+    console.debug('There is no ID token, going to lign')
+    localStorage.clear();
     next({ path: '/' });
     return;
   }
 
   const decodedIdToken = jwtDecode(idToken);
   if (Date.now() > decodedIdToken.exp! * 1000) {
-    console.log(`The ID token expired on ${new Date(decodedIdToken.exp! * 1000).toISOString()}`);
+    console.debug(`The ID token expired on ${new Date(decodedIdToken.exp! * 1000).toISOString()}`);
 
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
-      console.log('There is no refresh token');
+      console.debug('There is no refresh token, going to login');
+      localStorage.clear();
       next({ path: '/' });
       return;
     }
 
     try {
+      console.debug('Refreshing token available, exchanging...')
       await signInWithRefreshToken(refreshToken);
-      console.log('ID token refreshed')
+
+      console.debug('ID token refreshed, going to explore')
+      next('/explore');
     } catch (error) {
-      console.error('Failed to refresh ID token', error);
+      console.error('Failed to refresh ID token, goint to login', error);
+      localStorage.clear();
       next({ path: '/' });
       return;
     }
   }
 
-  // -------- Validate that user is confirmed (exists on DB) --------
+  // -------- Validate that user is confirmed --------
 
-  // console.debug('Validating account confirmation')
+  if (to.path === '/unconfirmed_account') {
+    next();
+    return;
+  }
+
+  console.debug('Validating account confirmation')
+
+  /* Account is confirmed when post confirmation trigger has been executed
+    and the document exists on the DB. Therefore unconfirmaction can happen either
+    because of no email confirmation or due to a delay in trigger execution. */
 
   let ownUser;
   try {
     ownUser = await useUserStore().fetchOwnUser();
   } catch (error: any) {
-    /* TODO: This happens when post confirmation trigger has not been executed
-     this can happen either because of no confirmation or due to a delay.
-     See if we can improve the handling of this situation */
+   
     if (error instanceof AxiosError && error.response?.status == 404) {
-      console.log('The user has not confirmed its account');
-      /* TODO: We use browser redirect because when using normal redirect the mounted
-       hook of the component is not executed, this should also be fixed */
-      window.location.href = import.meta.env.VITE_APP_URL + '/?error=unconfirmed_account';
-      // next({ path: '/', query: { error: 'unconfirmed_account' }});
+      console.debug('The user has not confirmed its account');
+      next({ path: '/unconfirmed_account' });
       return;
     } else {
       throw error;
@@ -136,21 +143,22 @@ router.beforeEach(async (to, from, next) => {
 
   // -------- Validate that the user profile is completed --------
 
-  const requiresProfileCompletion = to.matched.some(record => record.meta.requiresProfileCompletion);
-  if (!requiresProfileCompletion) {
+  if (to.path === '/profile') {
     next();
     return;
   }
 
-  // console.debug('Validating profile completion')
+  console.debug('Validating profile completion')
 
   if (!ownUser.profile.completed && !localStorage.getItem('profile_completed')) {
-    console.log('The user has not completed the profile');
+    console.debug('The user has not completed the profile');
     next({ path: '/profile', query: {firstCompletion: "true"}});
     return;
   }
 
   // -------- Everything is ok, proceed --------
+
+  console.debug(`Everything ok, proceeding to ${to.path}`)
 
   next();
 });
