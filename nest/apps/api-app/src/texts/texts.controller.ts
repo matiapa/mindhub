@@ -1,7 +1,5 @@
 import {
   ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -25,8 +23,8 @@ import {
   GetUserTextsReqDto,
   GetUserTextsResDto,
 } from '@Feature/texts/dtos/get-user-texts.dto';
-import { ProviderEnum } from '@Feature/providers';
-import { CreateTextDto } from '@Feature/texts/dtos/create-text.dto';
+import { CreateManualTextDto } from '@Feature/texts/dtos/create-text.dto';
+import { Text } from '@Feature/texts';
 
 @ApiTags('Texts')
 @ApiBearerAuth()
@@ -38,18 +36,16 @@ export class TextsController {
   @ApiOperation({ summary: 'Post a new text' })
   @UseGuards(AuthGuard)
   async create(
-    @Body() dto: CreateTextDto,
+    @Body() dto: CreateManualTextDto,
     @AuthUser() user: PrincipalData,
-  ): Promise<void> {
-    return this.textsService.upsertMany([
+  ): Promise<Text> {
+    return this.textsService.upsertManual(
       {
-        userId: user.id,
-        provider: ProviderEnum.USER,
         rawText: dto.rawText,
         language: dto.language,
-        date: new Date(),
       },
-    ], user.id);
+      user.id
+    );
   }
 
   @Get('/')

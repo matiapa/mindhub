@@ -23,14 +23,14 @@ import {
   InterestsService,
   GetSharedInterestsResDto,
   GetSharedInterestsReqDto,
-  CreateInterestDto,
+  Interest,
+  CreateManualInterestDto,
 } from '@Feature/interests';
 import {
   GetUserInterestsReqDto,
   GetUserInterestsResDto,
 } from '@Feature/interests/dtos/get-user-interests.dto';
 import { PrincipalData } from '@Provider/authentication/authentication.types';
-import { ProviderEnum } from '@Feature/providers';
 
 @ApiTags('Interests')
 @ApiBearerAuth()
@@ -42,18 +42,10 @@ export class InterestsController {
   @ApiOperation({ summary: 'Create an interest relationship' })
   @UseGuards(AuthGuard)
   async create(
-    @Body() dto: CreateInterestDto,
+    @Body() dto: CreateManualInterestDto,
     @AuthUser() user: PrincipalData,
-  ): Promise<void> {
-    return this.interestsService.upsertMany([
-      {
-        userId: user.id,
-        relevance: dto.relevance,
-        provider: ProviderEnum.USER,
-        resource: dto.resource,
-        date: new Date(),
-      },
-    ], user.id);
+  ): Promise<Interest> {
+    return this.interestsService.upsertManual(dto, user.id);
   }
 
   @Get('/shared')

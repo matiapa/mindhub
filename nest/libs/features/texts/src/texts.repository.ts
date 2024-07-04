@@ -7,7 +7,6 @@ import {
 } from '@Provider/mongodb';
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import _ from 'lodash';
 import { TextsConfig } from './texts.config';
 import { ConfigService } from '@nestjs/config';
 
@@ -24,15 +23,7 @@ export class TextsRepository extends BaseMongooseRepository<Text> {
   }
 
   public async upsertMany(texts: Text[]): Promise<void> {
-    /** This ID override is needed so that the same text is
-     * not inserted twice in the database, note that the ID has
-     * coded both the userId and the text content.
-     */
-    const textsWithIds = texts.map((t) => {
-      const _id = this.hashObjectId(`${t.userId}|${t.rawText}`);
-      return _.assign(t, { _id });
-    });
-    await super.upsertMany(textsWithIds);
+    await super.upsertMany(texts);
   }
 
   public count(filter?: FilterQuery<Text>): Promise<number> {
@@ -40,7 +31,7 @@ export class TextsRepository extends BaseMongooseRepository<Text> {
   }
 
   public getPaginated(
-    paginated: IPaginatedParams<Text>,
+    paginated: IPaginatedParams<Omit<Text, '_id'>>,
     filter?: FilterQuery<Text>,
   ): Promise<Text[]> {
     return super.getPaginated(paginated, filter);

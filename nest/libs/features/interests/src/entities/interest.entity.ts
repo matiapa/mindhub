@@ -2,6 +2,7 @@ import { ProviderEnum } from '@Feature/providers';
 import { ResourceType } from '../enums/resource-type.enum';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
+import { Types } from 'mongoose';
 
 export enum InterestRelevance {
   NORMAL = 'normal',
@@ -21,6 +22,9 @@ export class Resource {
 
 @Schema({ timestamps: true })
 export class Interest extends BaseMongooseEntity {
+  @Prop({ type: Types.ObjectId, required: true })
+  _id?: Types.ObjectId;
+
   @Prop({ required: true })
   userId: string;
 

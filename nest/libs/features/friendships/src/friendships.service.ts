@@ -97,6 +97,14 @@ export class FriendshipsService {
     }
   }
 
+  async cancelProposal(proposerId: string, targetId: string): Promise<void> {
+    await this.friendshipsRepo.remove({
+      proposer: proposerId,
+      target: targetId,
+      status: FriendshipStatus.PENDING,
+    });
+  }
+
   async getFriendships(
     ofUserId: string,
     type: FriendshipType,

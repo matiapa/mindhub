@@ -15,6 +15,8 @@
         hide-details
         variant="solo-filled"
       ></v-text-field>
+
+      <v-btn variant="text" prepend-icon="mdi-plus" class="ml-3" color="blue" @click="newText.showDialog=true">Agregar texto</v-btn>
     </v-card-title>
 
     <v-divider></v-divider>
@@ -39,7 +41,7 @@
       <template v-slot:item.language="{ item }">
         <div class="text-start">
           <v-chip
-            :text="item.language"
+            :text="getLanguageTitle(item.language)"
             class="text-uppercase"
             label
             size="small"
@@ -51,6 +53,7 @@
         <div class="text-start">
           <v-chip
             :text="item.provider"
+            :color="presentation.colors.providers[item.provider as 'twitter' | 'user']"
             class="text-uppercase"
             label
             size="small"
@@ -83,6 +86,30 @@
     </v-card>
   </v-dialog>
 
+  <v-dialog v-model="newText.showDialog" max-width="50%">
+    <v-card>
+        <v-card-item>
+            <v-card-title>Agregar un nuevo texto</v-card-title>
+        </v-card-item>
+
+        <v-card-text>
+            <v-form ref="form" v-model="newText.valid">
+              <v-textarea v-model="newText.rawText" label="Texto"></v-textarea>
+
+              <v-select label="Idioma" v-model="newText.language" :items="presentation.languages"
+                item-title="title" item-value="value"></v-select>
+
+              <v-btn v-if="!newText.saving" @click="postNewText" :disabled="!newText.valid">Guardar</v-btn>
+              <v-progress-circular v-else indeterminate color="white"></v-progress-circular>
+            </v-form>
+        </v-card-text>
+
+        <!-- <v-card-actions>
+          <v-btn prepend-icon="mdi-account-plus" @click="send" class="mx-3 my-3">Enviar solicitud</v-btn>
+        </v-card-actions> -->
+    </v-card>
+  </v-dialog>
+
   <v-snackbar :timeout="2000" v-model="snackbar.enabled">
     {{ snackbar.text }}
   </v-snackbar>
@@ -110,6 +137,10 @@
               user: 'purple',
             }
           },
+          languages: [
+            { title: 'Español', value: 'es'},
+            { title: 'Inglés', value: 'en'},
+          ],
         },
         search: '',
         loading: false,
@@ -118,6 +149,13 @@
         totalTexts: 0,
         displayedText: '',
         showDialog: false,
+        newText: {
+          rawText: '',
+          language: 'es' as 'es' | 'en',
+          valid: false,
+          showDialog: false,
+          saving: false,
+        },
         snackbar: {
           enabled: false,
           text: ''
@@ -161,10 +199,44 @@
         await this.getTexts({ page: 1, itemsPerPage: this.textsPerPage });
       },
 
+      getLanguageTitle(language: string) {
+        return this.presentation.languages.find(l => l.value === language)?.title;
+      },
+
       displayFullText(fullText: string) {
         this.displayedText = fullText;
         this.showDialog = true;
-      }
+      },
+
+      async postNewText() {
+        try {
+          this.newText.saving = true;
+
+          const res = await textsApi.textsControllerCreate({
+            rawText: this.newText.rawText,
+            language: this.newText.language,
+          });
+
+          console.log("Created text", res);
+
+          this.newText.saving = false;
+          this.texts.unshift({
+            _id: res.data._id! as any as string,
+            provider: res.data.provider,
+            rawText: res.data.rawText,
+            language: res.data.language,
+            date: res.data.date!
+          });
+
+          this.newText.saving = false;
+          this.newText.showDialog = false;
+        } catch (e) {
+          console.log(e);
+          this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
+          this.snackbar.enabled = true
+          this.newText.saving = false;
+        }
+      },
     },
 
     computed: {

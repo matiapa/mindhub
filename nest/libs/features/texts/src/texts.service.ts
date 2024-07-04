@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Text } from './entities/text.entity';
 import { TextsRepository } from './texts.repository';
 import {
   GetUserTextsReqDto,
@@ -7,6 +6,13 @@ import {
 } from './dtos/get-user-texts.dto';
 import { QueueService } from '@Provider/queue';
 import { ProviderEnum } from '@Feature/providers';
+import {
+  CreateManualTextDto,
+  CreateProviderTextDto,
+} from './dtos/create-text.dto';
+import { hashObjectId } from 'libs/utils';
+import { Text } from './entities/text.entity';
+import { ObjectId } from 'bson';
 
 @Injectable()
 export class TextsService {
@@ -15,8 +21,51 @@ export class TextsService {
     private readonly queueService: QueueService,
   ) {}
 
-  async upsertMany(texts: Text[], userId: string): Promise<void> {
-    await this.textsRepo.upsertMany(texts);
+  async upsertManual(dto: CreateManualTextDto, userId: string): Promise<Text> {
+    // Hash the userId and text to create a unique textId
+    // so that the same text is not inserted twice in the database
+    const interestId = hashObjectId(`${userId}|${dto.rawText}`);
+
+    const text = {
+      _id: interestId,
+      userId,
+      provider: ProviderEnum.USER,
+      rawText: dto.rawText,
+      language: dto.language,
+      date: new Date()
+    };
+
+    await this.textsRepo.upsertMany([text]);
+
+    // TODO: Enable once APR handles request throttling
+    // await this.queueService.sendMessage(
+    //   process.env.PERSONALITY_REQUESTS_QUEUE_URL,
+    //   { userId },
+    // );
+
+    return text;
+  }
+
+  async upsertProvider(
+    texts: CreateProviderTextDto[],
+    userId: string,
+  ): Promise<void> {
+    const textsWithIds = texts.map((t) => {
+      // Hash the userId and text to create a unique textId
+      // so that the same text is not inserted twice in the database
+      const textId = hashObjectId(`${userId}|${t.rawText}`)
+
+      return {
+        _id: textId,
+        userId,
+        provider: t.provider,
+        rawText: t.rawText,
+        language: t.language,
+        date: new Date(),
+      };
+    });
+
+    await this.textsRepo.upsertMany(textsWithIds);
 
     await this.queueService.sendMessage(
       process.env.PERSONALITY_REQUESTS_QUEUE_URL,
@@ -47,7 +96,7 @@ export class TextsService {
 
     return {
       texts: texts.map((t) => ({
-        _id: t['_id'],
+        _id: t['_id'].toString(),
         provider: t.provider,
         rawText: t.rawText,
         language: t.language,
@@ -59,7 +108,7 @@ export class TextsService {
   }
 
   async delete(_id: string, userId: string): Promise<void> {
-    await this.textsRepo.deleteMany({ _id, userId });
+    await this.textsRepo.deleteMany({ _id: new ObjectId(_id), userId });
   }
 
   async deleteByProvider(

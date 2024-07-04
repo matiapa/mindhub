@@ -58,7 +58,7 @@
     </v-card>
   </v-dialog>
 
-  <v-snackbar :timeout="5000" v-model="snackbar.enabled" color="red">
+  <v-snackbar :timeout="5000" v-model="snackbar.enabled" :color="snackbar.color">
     {{ snackbar.text }}
   </v-snackbar>
 </template>
@@ -80,7 +80,7 @@ enum ConnectionState {
 }
 
 export default {
-  emits: ['new-connection'],
+  emits: ['new-connection', 'removed-connection'],
   
   data() {
     return {
@@ -92,6 +92,7 @@ export default {
       snackbar: {
         enabled: false,
         text: '',
+        color: 'primary',
       },
     }
   },
@@ -148,7 +149,9 @@ export default {
         await providersApi.connectionsControllerDeleteConnection("twitter");
         this.connection = undefined;
         this.state = ConnectionState.Initial;
-        this.displayMessage('Proveedor desconectado exitosamente')
+        this.displayMessage('Proveedor desconectado exitosamente');
+
+        this.$emit('removed-connection');
       } catch (error) {
         this.displayMessage('Error al desconectar', error)
         this.state = ConnectionState.Finished;
@@ -160,6 +163,7 @@ export default {
       this.snackbar = {
         enabled: true,
         text: message,
+        color: error ? 'error' : 'primary',
       };
     },
 

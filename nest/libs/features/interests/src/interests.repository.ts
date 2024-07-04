@@ -6,7 +6,7 @@ import {
 } from '@Provider/mongodb';
 import { Interest } from './entities/interest.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, InsertManyOptions, Model } from 'mongoose';
 import { SharedInterestDto } from './dtos';
 import _ from 'lodash';
 import { ConfigService } from '@nestjs/config';
@@ -25,15 +25,7 @@ export class InterestsRepository extends BaseMongooseRepository<Interest> {
   }
 
   public async upsertMany(interests: Interest[]): Promise<void> {
-    /** This ID override is needed so that the same interest is
-     * not inserted twice in the database, note that the ID has
-     * coded both the userId and the resourceId.
-     */
-    const interestsWithIds = interests.map((i) => {
-      const _id = this.hashObjectId(`${i.userId}|${i.resource.id}`);
-      return _.assign(i, { _id });
-    });
-    await super.upsertMany(interestsWithIds);
+    await super.upsertMany(interests);
   }
 
   public count(filter?: FilterQuery<Interest>): Promise<number> {
@@ -41,7 +33,7 @@ export class InterestsRepository extends BaseMongooseRepository<Interest> {
   }
 
   public getPaginated(
-    paginated: IPaginatedParams<Interest>,
+    paginated: IPaginatedParams<Omit<Interest, "_id">>,
     filter?: FilterQuery<Interest>,
   ): Promise<Interest[]> {
     return super.getPaginated(paginated, filter);

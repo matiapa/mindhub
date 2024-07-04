@@ -1,7 +1,8 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 import { Text } from '../entities/text.entity';
+import { ProviderEnum } from '@Feature/providers';
 
-export class CreateTextDto implements Pick<Text, 'rawText' | 'language'> {
+export class CreateManualTextDto implements Pick<Text, 'rawText' | 'language'> {
   @IsString()
   @IsNotEmpty()
   rawText: string;
@@ -9,4 +10,10 @@ export class CreateTextDto implements Pick<Text, 'rawText' | 'language'> {
   @IsString()
   @IsNotEmpty()
   language: string; // ISO 639-1 code
+}
+
+export class CreateProviderTextDto extends CreateManualTextDto {
+  @IsEnum(ProviderEnum)
+  @IsNotEmpty()
+  provider: ProviderEnum;
 }

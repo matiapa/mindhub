@@ -2,7 +2,7 @@
   <v-container class="d-flex justify-center">
     <v-row>
       <v-col cols="3">
-        <MyAccountsList @new-connection="newConnection"/>
+        <MyAccountsList @new-connection="newConnection" @removed-connection="removedConnection"/>
       </v-col>
 
       <v-col cols="6">
@@ -77,6 +77,11 @@
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
         this.refreshingPersonality = false;
+      },
+
+      async removedConnection() {
+        (this.$refs.myInterestsTable as InstanceType<typeof MyInterestsTable>).loadInterests();
+        (this.$refs.myTextsTable as InstanceType<typeof MyTextsTable>).loadTexts();
       },
     },
 

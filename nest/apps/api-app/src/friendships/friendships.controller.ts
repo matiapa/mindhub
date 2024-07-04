@@ -8,6 +8,7 @@ import {
   Put,
   Param,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 
 import {
@@ -29,7 +30,7 @@ import { PrincipalData } from '@Provider/authentication/authentication.types';
 export class FriendshipsController {
   constructor(private readonly friendshipsService: FriendshipsService) {}
 
-  @Post()
+  @Post('/proposal')
   @ApiOperation({ summary: 'Send a friendship request' })
   @UseGuards(AuthGuard)
   proposeFriendship(
@@ -37,6 +38,16 @@ export class FriendshipsController {
     @AuthUser() user: PrincipalData,
   ): Promise<void> {
     return this.friendshipsService.proposeFriendship(user.id, dto.target);
+  }
+
+  @Delete('/proposal/:targetId')
+  @ApiOperation({ summary: 'Cancel a friendship request' })
+  @UseGuards(AuthGuard)
+  cancelProposal(
+    @Param('targetId') targetId: string,
+    @AuthUser() user: PrincipalData,
+  ): Promise<void> {
+    return this.friendshipsService.cancelProposal(user.id, targetId);
   }
 
   @Get()
@@ -57,7 +68,7 @@ export class FriendshipsController {
     );
   }
 
-  @Put('/:proposerId')
+  @Put('/request/:proposerId')
   @ApiOperation({ summary: 'Accept or reject a friendship request' })
   @UseGuards(AuthGuard)
   reviewRequest(

@@ -108,7 +108,7 @@ paths:
                 $ref: '#/components/schemas/SharedUserInfo'
       tags: *ref_0
       security: *ref_1
-  /friendships:
+  /friendships/proposal:
     post:
       operationId: FriendshipsController_proposeFriendship
       summary: Send a friendship request
@@ -126,6 +126,22 @@ paths:
         - Friendships
       security: &ref_3
         - bearer: []
+  /friendships/proposal/{targetId}:
+    delete:
+      operationId: FriendshipsController_cancelProposal
+      summary: Cancel a friendship request
+      parameters:
+        - name: targetId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_2
+      security: *ref_3
+  /friendships:
     get:
       operationId: FriendshipsController_getFriendships
       summary: Get friendships, either accepted ones, or sent/received requests
@@ -155,7 +171,7 @@ paths:
                 $ref: '#/components/schemas/GetFriendshipsResDto'
       tags: *ref_2
       security: *ref_3
-  /friendships/{proposerId}:
+  /friendships/request/{proposerId}:
     put:
       operationId: FriendshipsController_reviewRequest
       summary: Accept or reject a friendship request
@@ -249,10 +265,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateInterestDto'
+              $ref: '#/components/schemas/CreateManualInterestDto'
       responses:
         '201':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interest'
       tags: &ref_6
         - Interests
       security: &ref_7
@@ -332,10 +352,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTextDto'
+              $ref: '#/components/schemas/CreateManualTextDto'
       responses:
         '201':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Text'
       tags: &ref_8
         - Texts
       security: &ref_9
@@ -939,7 +963,20 @@ components:
           type: boolean
       required:
         - accept
-    CreateInterestDto:
+    CreateManualResourceDto:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - track
+            - artist
+      required:
+        - name
+        - type
+    CreateManualInterestDto:
       type: object
       properties:
         relevance:
@@ -948,8 +985,55 @@ components:
             - normal
             - favorite
         resource:
-          $ref: '#/components/schemas/ResourceDto'
+          $ref: '#/components/schemas/CreateManualResourceDto'
       required:
+        - relevance
+        - resource
+    ObjectId:
+      type: object
+      properties: {}
+    Resource:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - track
+            - artist
+      required:
+        - id
+        - name
+        - type
+    Interest:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        userId:
+          type: string
+        provider:
+          type: string
+          enum:
+            - spotify
+            - twitter
+            - user
+        relevance:
+          type: string
+          enum:
+            - normal
+            - favorite
+        resource:
+          $ref: '#/components/schemas/Resource'
+        date:
+          format: date-time
+          type: string
+      required:
+        - userId
+        - provider
         - relevance
         - resource
     GetSharedInterestsResDto:
@@ -1003,7 +1087,7 @@ components:
         - interests
         - count
         - total
-    CreateTextDto:
+    CreateManualTextDto:
       type: object
       properties:
         rawText:
@@ -1011,6 +1095,31 @@ components:
         language:
           type: string
       required:
+        - rawText
+        - language
+    Text:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        userId:
+          type: string
+        provider:
+          type: string
+          enum:
+            - spotify
+            - twitter
+            - user
+        rawText:
+          type: string
+        language:
+          type: string
+        date:
+          format: date-time
+          type: string
+      required:
+        - userId
+        - provider
         - rawText
         - language
     UserTextDto:

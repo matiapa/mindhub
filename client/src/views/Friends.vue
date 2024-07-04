@@ -9,7 +9,11 @@
             <v-expansion-panel title="Recibidas">
               <v-expansion-panel-text>
                 <v-list v-if="friendships.recieved.length">
-                  <v-list-item v-for="(friendship, index) in friendships.recieved" :key="friendship.user._id">
+                  <v-list-item v-for="(friendship, index) in friendships.recieved" :key="friendship.user._id" @click="openRequestProfile(friendship)">
+                    <template v-slot:prepend>
+                      <v-icon>mdi-account-arrow-left</v-icon>
+                    </template>
+
                     <v-list-item-title>{{ friendship.user.profile.name }}</v-list-item-title>
 
                     <template v-slot:append>
@@ -25,8 +29,16 @@
             <v-expansion-panel title="Enviadas">
               <v-expansion-panel-text>
                 <v-list v-if="friendships.sent.length">
-                  <v-list-item v-for="friendship in friendships.sent" :key="friendship.user._id">
+                  <v-list-item v-for="(friendship, index) in friendships.sent" :key="friendship.user._id" @click="openRequestProfile(friendship)">
+                    <template v-slot:prepend>
+                      <v-icon>mdi-account-arrow-right</v-icon>
+                    </template>
+
                     <v-list-item-title>{{ friendship.user.profile.name }}</v-list-item-title>
+
+                    <template v-slot:append>
+                      <v-btn icon="mdi-close" variant="text" @click="cancelFriendProposal(index)"></v-btn>
+                    </template>
                   </v-list-item>
                 </v-list>
                 <p v-else>No has enviado solicitudes aún</p>
@@ -62,6 +74,10 @@
     </v-row>
   </v-container>
 
+  <v-dialog v-model="showRequestProfileDialog" max-width="50%">
+    <ProfileDetailCard :user="requestUser" />
+  </v-dialog>
+
   <v-snackbar :timeout="2000" v-model="snackbar.enabled">
     {{ snackbar.text }}
   </v-snackbar>
@@ -79,6 +95,7 @@
 <script setup lang="ts">
 import type User from '@/types/user.interface'
 import FriendCard from '@/components/friends/FriendCard.vue'
+import ProfileDetailCard from '@/components/profile/ProfileDetailCard.vue'
 import { FriendshipsApiFactory, FriendshipsControllerGetFriendshipsTypeEnum } from 'user-api-sdk/api'
 </script>
 
@@ -94,6 +111,7 @@ let friendsApi: ReturnType<typeof FriendshipsApiFactory>;
 export default {
   compononents: {
     FriendCard,
+    ProfileDetailCard,
   },
 
   data: () => ({
@@ -108,6 +126,8 @@ export default {
       sent: [] as User[]
     },
     priority: 'compatibility' as Priority,
+    showRequestProfileDialog: false,
+    requestUser: {} as User,
   }),
 
   methods: {
@@ -161,6 +181,27 @@ export default {
         this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
         this.snackbar.enabled = true
       }
+    },
+
+    async cancelFriendProposal(index: number) {
+      const proposal = this.friendships.sent[index]
+      this.friendships.sent.splice(index, 1)
+
+      try {
+        await friendsApi.friendshipsControllerCancelProposal(proposal.user._id)
+        // await new Promise((resolve, reject) => setTimeout(reject, 2000))
+      } catch (e) {
+        this.friendships.sent.splice(index, 0, proposal)
+
+        console.error(e)
+        this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
+        this.snackbar.enabled = true
+      }
+    },
+
+    async openRequestProfile(user: User) {
+      this.requestUser = user
+      this.showRequestProfileDialog = true
     },
   },
 

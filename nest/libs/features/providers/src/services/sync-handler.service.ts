@@ -107,11 +107,11 @@ export class ProvidersSyncHandlerService {
     }
 
     if (result.interests) {
-      await this.interestsService.upsertMany(result.interests, request.userId);
+      await this.interestsService.upsertProvider(result.interests, request.userId);
     }
 
     if (result.texts) {
-      await this.textsService.upsertMany(result.texts, request.userId);
+      await this.textsService.upsertProvider(result.texts, request.userId);
     }
 
     return result;

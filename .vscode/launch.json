@@ -28,7 +28,7 @@
       "request": "launch",
       "name": "Start user API",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "api-app", "--", "--inspect-brk"],
+      "runtimeArgs": ["run", "start", "api-app", "--", "--inspect-brk", "--preserve-symlinks"],
       "console": "integratedTerminal",
       "restart": true,
       "autoAttachChildProcesses": true,

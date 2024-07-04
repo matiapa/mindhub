@@ -78,7 +78,7 @@ enum ConnectionState {
 }
 
 export default {
-  emits: ['new-connection'],
+  emits: ['new-connection', 'removed-connection'],
 
   data() {
     return {
@@ -133,7 +133,9 @@ export default {
         await providersApi.connectionsControllerDeleteConnection("spotify");
         this.connection = undefined;
         this.state = ConnectionState.Initial;
-        this.displayMessage('Proveedor desconectado exitosamente')
+        this.displayMessage('Proveedor desconectado exitosamente');
+
+        this.$emit('removed-connection');
       } catch (error) {
         this.displayMessage('Error al desconectar', error)
         this.state = ConnectionState.Finished;

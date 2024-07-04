@@ -15,6 +15,8 @@
         hide-details
         variant="solo-filled"
       ></v-text-field>
+
+      <v-btn variant="text" prepend-icon="mdi-plus" class="ml-3" color="blue" @click="newInterest.showDialog=true">Agregar interés</v-btn>
     </v-card-title>
 
     <v-divider></v-divider>
@@ -70,13 +72,39 @@
     </v-data-table-server>
   </v-card>
 
+  <v-dialog v-model="newInterest.showDialog" max-width="50%">
+    <v-card>
+        <v-card-item>
+            <v-card-title>Agregar un nuevo interés</v-card-title>
+        </v-card-item>
+
+        <v-card-text>
+            <v-form ref="form" v-model="newInterest.valid">
+              <v-text-field v-model="newInterest.name" :label="` Título ${getResurceTypeNomination()}`"></v-text-field>
+
+              <v-select label="Tipo" v-model="newInterest.resourceType" :items="presentation.resourceTypes"
+                item-title="title" item-value="value"></v-select>
+
+              <v-checkbox label="Marcar como favorito" v-model="newInterest.favorite"></v-checkbox>
+
+              <v-btn v-if="!newInterest.saving" @click="postNewInterest" :disabled="!newInterest.valid">Guardar</v-btn>
+              <v-progress-circular v-else indeterminate color="white"></v-progress-circular>
+            </v-form>
+        </v-card-text>
+
+        <!-- <v-card-actions>
+          <v-btn prepend-icon="mdi-account-plus" @click="send" class="mx-3 my-3">Enviar solicitud</v-btn>
+        </v-card-actions> -->
+    </v-card>
+  </v-dialog>
+
   <v-snackbar :timeout="2000" v-model="snackbar.enabled">
     {{ snackbar.text }}
   </v-snackbar>
 </template>
 
 <script lang="ts">
-  import { InterestsApiFactory } from 'user-api-sdk';
+  import { InterestsApiFactory, CreateManualInterestDtoRelevanceEnum } from 'user-api-sdk';
   import { type Interest } from '@/types/resources.interface';
 
   let interestsApi: ReturnType<typeof InterestsApiFactory>;
@@ -97,12 +125,24 @@
               user: 'purple',
             }
           },
+          resourceTypes: [
+            { title: 'Artista', value: 'artist', nomination: 'del artista'},
+            { title: 'Canción', value: 'track', nomination: 'de la canción'},
+          ],
         },
         search: '',
         loading: false,
         interests: [] as Interest[],
         interestsPerPage: 5,
         totalInterests: 0,
+        newInterest: {
+          name: '',
+          resourceType: 'track' as 'track' | 'artist',
+          favorite: true,
+          valid: false,
+          showDialog: false,
+          saving: false,
+        },
         snackbar: {
           enabled: false,
           text: ''
@@ -155,7 +195,44 @@
           this.snackbar.enabled = true
         }
       },
+
+      async postNewInterest() {
+        try {
+          this.newInterest.saving = true;
+
+          const res = await interestsApi.interestsControllerCreate({
+            relevance: this.newInterest.favorite ? CreateManualInterestDtoRelevanceEnum.Favorite : CreateManualInterestDtoRelevanceEnum.Normal,
+            resource: {
+              name: this.newInterest.name,
+              type: this.newInterest.resourceType,
+            }
+          });
+
+          this.newInterest.saving = false;
+
+          this.interests.unshift({
+            _id: res.data._id! as any as string,
+            provider: res.data.provider,
+            relevance: res.data.relevance,
+            resource: res.data.resource,
+            date: res.data.date!
+          });
+
+          this.newInterest.saving = false;
+          this.newInterest.showDialog = false;
+        } catch (e) {
+          console.log(e);
+          this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
+          this.snackbar.enabled = true
+          this.newInterest.saving = false;
+        }
+      },
+
+      getResurceTypeNomination() {
+        return this.presentation.resourceTypes.find(t => t.value === this.newInterest.resourceType)?.nomination || 'del recurso';
+      }
     },
+
     created() {
       const idToken = localStorage.getItem('id_token')!;
 
