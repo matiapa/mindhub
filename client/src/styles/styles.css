@@ -1,0 +1,28 @@
+.dialog-responsive {
+  max-width: 100%;
+}
+
+@media (min-width: 600px) {
+  .dialog-responsive {
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 960px) {
+  .dialog-responsive {
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 600px) {
+  .datatable-hiddable-col {
+    display: none;
+  }
+}
+
+.floating-card {
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 0;
+  z-index: 100; /* Adjust if necessary */
+}

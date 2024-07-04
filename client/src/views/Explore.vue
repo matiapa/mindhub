@@ -1,8 +1,8 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="2">
-        <v-card class="floating-card" rounded="lg">
+      <v-col cols="12" md="12" lg="2" class="floating-card">
+        <v-card rounded="lg">
           <v-card-text>
             <h2 class="text-h6 mb-2">
               Ordernar por
@@ -19,9 +19,9 @@
         </v-card>
       </v-col>
 
-      <v-col cols="10">
+      <v-col cols="12" md="12" lg="10">
           <v-row v-if="recommendations.length">
-            <v-col v-for="(recommendation, index) in recommendations" :key="recommendation.user._id" cols="4">
+            <v-col v-for="(recommendation, index) in recommendations" :key="recommendation.user._id" cols="12" md="6" lg="4">
               <RecommendationCard :user="recommendation" @accept="acceptRecommendation(index)" @reject="rejectRecommendation(index)"></RecommendationCard>
             </v-col>
           </v-row>
@@ -62,26 +62,15 @@
   </v-snackbar>
 </template>
 
-<style scoped>
-.floating-card {
-  position: fixed;
-  top: 20;
-  width: 14%;
-  box-sizing: border-box;
-}
-</style>
-
 <script setup lang="ts">
 import type User from '@/types/user.interface'
 import RecommendationCard from '@/components/recommendations/RecommendationCard.vue'
-import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum } from 'user-api-sdk/api'
+import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum, UsersApiFactory, ProvidersApiFactory } from 'user-api-sdk/api'
+import type ProviderConnection from '@/types/provider.interface';
+import '@/styles/styles.css';
 </script>
 
 <script lang="ts">
-import { ProvidersApiFactory } from 'user-api-sdk';
-
-import type ProviderConnection from '@/types/provider.interface';
-
 let providersApi: ReturnType<typeof ProvidersApiFactory>;
 
 enum SortBy {
@@ -101,6 +90,8 @@ const sortMap = {
   nearest: RecommendationsControllerGetRecommendationsPriorityEnum.Distance,
   activity: RecommendationsControllerGetRecommendationsPriorityEnum.Activity,
 }
+
+let usersApi: ReturnType<typeof UsersApiFactory>;
 
 export default {
   compononents: {
@@ -202,6 +193,47 @@ export default {
       if (entry.isIntersecting && !this.loading) {
         this.loadRecommendations();
       }
+    },
+
+    async updateLastConnection() {
+      if (navigator.geolocation) {
+        console.log('Getting location')
+
+        navigator.geolocation.getCurrentPosition(this.handleLocationSuccess, this.handleLocationError);
+      } else {
+        console.log('Geolocation is not supported by this browser.');
+        this.snackbar.text = "No pudimos obtener tu ubicación, no se mostrarán usuarios cercanos.";
+        this.snackbar.enabled = true;
+
+        await usersApi.usersControllerUpdateLastConnection({})
+      }
+    },
+
+    async handleLocationSuccess(position: GeolocationPosition) {
+      console.log('Got location', position);
+
+      await usersApi.usersControllerUpdateLastConnection({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      })
+    },
+
+    async handleLocationError(error: GeolocationPositionError) {
+      console.log('Error getting location', error.code, error.message)
+
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          this.snackbar.text = "No podremos mostrarte usuarios cercanos si no nos das permiso para acceder a tu ubicación.";
+          this.snackbar.enabled = true;
+          break;
+        case error.POSITION_UNAVAILABLE:
+        case error.TIMEOUT:
+          this.snackbar.text = "No pudimos obtener tu ubicación, no se mostrarán usuarios cercanos.";
+          this.snackbar.enabled = true;
+          break;
+      }
+      
+      await usersApi.usersControllerUpdateLastConnection({})
     }
   },
 
@@ -237,6 +269,12 @@ export default {
       isJsonMime: () => true,
     })
 
+    usersApi = UsersApiFactory({
+      basePath: import.meta.env.VITE_API_URL,
+      accessToken: () => idToken,
+      isJsonMime: () => true,
+    });
+
     this.loadData()
   },
 
@@ -248,6 +286,8 @@ export default {
       };
     this.observer = new IntersectionObserver(this.handleIntersect, options);
     this.observer.observe(this.$refs.loadMore as any);
+
+    this.updateLastConnection();
   },
 
   unmounted() {

@@ -13,7 +13,7 @@
     </template>
   </v-list-item>
 
-  <v-dialog v-model="showDialog" max-width="50%" persistent>
+  <v-dialog v-model="showDialog" class="dialog-responsive" persistent>
     <v-card>
       <v-card-title>Conexion a Spotify</v-card-title>
       <v-card-text>  
@@ -64,6 +64,7 @@
 <script lang="ts">
 import { ProvidersApiFactory } from 'user-api-sdk';
 import type ProviderConnection from '@/types/provider.interface';
+import '@/styles/styles.css';
 
 let providersApi: ReturnType<typeof ProvidersApiFactory>;
 let interval: any;

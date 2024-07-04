@@ -3,7 +3,7 @@
       
       <v-app-bar class="px-3 bg-primary" flat density="compact">
         <template v-if="$route.path != '/'">
-          <v-avatar size="32">
+          <v-avatar class="hidden-sm-and-down" size="32">
             <v-img :src="image" />
           </v-avatar>
 
@@ -21,11 +21,11 @@
 
           <v-spacer></v-spacer>
 
-          <v-avatar class="hidden-sm-and-down mr-8" color="grey-darken-1" size="32">
+          <v-avatar class="mr-8" color="grey-darken-1" size="32">
             <v-btn icon="mdi-brightness-6" @click="toggleTheme" />
           </v-avatar>
 
-          <v-avatar class="hidden-sm-and-down mr-2" color="grey-darken-1" size="32">
+          <v-avatar class="mr-2" color="grey-darken-1" size="32">
             <v-menu offset-y>
               <template v-slot:activator="{ props }">
                 <v-btn icon="mdi-account" label="Perfil" v-bind="props" />

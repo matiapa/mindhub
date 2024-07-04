@@ -12,13 +12,13 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "user-api-sdk": "file:../nest/apps/api-app/user-api-sdk",
     "aws-sdk": "^2.1576.0",
     "axios": "^1.4.0",
     "jwt-decode": "^4.0.0",
     "pinia": "^2.1.7",
     "qs": "^6.12.0",
     "roboto-fontface": "*",
+    "user-api-sdk": "file:../nest/apps/api-app/user-api-sdk",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
     "vuetify": "^3.6.10",
@@ -29,7 +29,7 @@
     "@mdi/font": "^7.4.47",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^20.14.5",
+    "@types/node": "^20.14.9",
     "@types/qs": "^6.9.15",
     "@types/webfontloader": "^1.6.35",
     "@vitejs/plugin-vue": "^5.0.5",

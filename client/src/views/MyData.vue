@@ -1,11 +1,11 @@
 <template>
   <v-container class="d-flex justify-center">
     <v-row>
-      <v-col cols="3">
+      <v-col cols="12" md="3">
         <MyAccountsList @new-connection="newConnection" @removed-connection="removedConnection"/>
       </v-col>
 
-      <v-col cols="6">
+      <v-col cols="12" md="6">
         <v-card class="pa-3">
           <MyInterestsTable ref="myInterestsTable"/>
           
@@ -15,7 +15,7 @@
         </v-card>
       </v-col>
 
-      <v-col cols="3">
+      <v-col cols="12" md="3">
         <PersonalityCard v-if="ownPersonality" title="Tu Personalidad" :personality="ownPersonality"/>
 
         <v-card v-else class="pa-3">

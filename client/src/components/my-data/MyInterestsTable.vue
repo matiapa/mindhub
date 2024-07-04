@@ -1,22 +1,26 @@
 <template>
   <v-card flat class="px-3">
     <v-card-title class="d-flex align-center pe-2">
-      Tus intereses
-
-      <v-spacer></v-spacer>
-
-      <v-text-field
-        v-model="search"
-        prepend-inner-icon="mdi-magnify"
-        density="compact"
-        label="Buscar"
-        single-line
-        flat
-        hide-details
-        variant="solo-filled"
-      ></v-text-field>
-
-      <v-btn variant="text" prepend-icon="mdi-plus" class="ml-3" color="blue" @click="newInterest.showDialog=true">Agregar interés</v-btn>
+      <v-row>
+        <v-col cols="6" md="4">
+          Tus intereses
+        </v-col>
+        <v-col cols="6" md="5">
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            label="Buscar"
+            single-line
+            flat
+            hide-details
+            variant="solo-filled"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" md="3">
+          <v-btn variant="text" prepend-icon="mdi-plus" class="ml-3" color="blue" @click="newInterest.showDialog=true">Agregar interés</v-btn>
+        </v-col>
+      </v-row>
     </v-card-title>
 
     <v-divider></v-divider>
@@ -31,6 +35,12 @@
       item-value="name"
       @update:options="getInterests"
     >
+      <template v-slot:header.provider="{ column }">
+        <p class="datatable-hiddable-col">
+          {{ column.title }}
+        </p>
+      </template>
+
       <template v-slot:item.name="{ item }">
         <div class="text-start">
           {{ item.resource.name }}
@@ -49,7 +59,7 @@
       </template>
 
       <template v-slot:item.provider="{ item }">
-        <div class="text-start">
+        <div class="text-start datatable-hiddable-col">
           <v-chip
             :color="presentation.colors.providers[item.provider as 'spotify' | 'user']"
             :text="item.provider"
@@ -72,7 +82,7 @@
     </v-data-table-server>
   </v-card>
 
-  <v-dialog v-model="newInterest.showDialog" max-width="50%">
+  <v-dialog v-model="newInterest.showDialog" class="dialog-responsive">
     <v-card>
         <v-card-item>
             <v-card-title>Agregar un nuevo interés</v-card-title>
@@ -106,6 +116,7 @@
 <script lang="ts">
   import { InterestsApiFactory, CreateManualInterestDtoRelevanceEnum } from 'user-api-sdk';
   import { type Interest } from '@/types/resources.interface';
+  import '@/styles/styles.css';
 
   let interestsApi: ReturnType<typeof InterestsApiFactory>;
 

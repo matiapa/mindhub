@@ -1,9 +1,9 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="2">
-        <v-card class="floating-card" rounded="lg" >
-          <v-card-title>Solicitudes de amistad</v-card-title>
+      <v-col cols="12" md="12" lg="2">
+        <v-card rounded="lg" >
+          <v-card-title>Solicitudes</v-card-title>
 
           <v-expansion-panels class="mt-2" min-height="268" variant="accordion" elevation="0">
             <v-expansion-panel title="Recibidas">
@@ -49,9 +49,9 @@
         </v-card>
       </v-col>
 
-      <v-col cols="10">
+      <v-col cols="12" md="12" lg="10">
         <v-row v-if="!loading && friendships.established.length">
-          <v-col v-for="(friendship) in friendships.established" :key="friendship.user._id" cols="4">
+          <v-col v-for="(friendship) in friendships.established" :key="friendship.user._id" cols="12" md="6" lg="4">
             <FriendCard :user="friendship"></FriendCard>
           </v-col>
         </v-row>
@@ -83,20 +83,12 @@
   </v-snackbar>
 </template>
 
-<style scoped>
-.floating-card {
-  position: fixed;
-  top: 20;
-  width: 14%;
-  box-sizing: border-box;
-}
-</style>
-
 <script setup lang="ts">
 import type User from '@/types/user.interface'
 import FriendCard from '@/components/friends/FriendCard.vue'
 import ProfileDetailCard from '@/components/profile/ProfileDetailCard.vue'
 import { FriendshipsApiFactory, FriendshipsControllerGetFriendshipsTypeEnum } from 'user-api-sdk/api'
+import '@/styles/styles.css';
 </script>
 
 <script lang="ts">

@@ -1,5 +1,5 @@
 <template>
-    <v-card class="mx-auto my-12" max-width="474">
+    <v-card class="mx-auto">
         <div class="media" @click="showDialog = true">
             <v-avatar class="mt-8 mb-8" size="150">
                 <v-img :src="getPictureUrl(user.user._id)" contain>
@@ -77,7 +77,13 @@
         </v-card-actions>
     </v-card>
 
-    <v-dialog v-model="showDialog" max-width="50%">
+    
+    <!-- <v-row justify="center">
+        <v-col cols="12" md="6">
+            
+        </v-col>
+    </v-row> -->
+    <v-dialog v-model="showDialog" class="dialog-responsive">
         <ProfileDetailCard :user="user" />
     </v-dialog>
 </template>
@@ -87,6 +93,7 @@ import ProfileDetailCard from '@/components/profile/ProfileDetailCard.vue'
 import type User from '@/types/user.interface'
 import type { PropType } from 'vue';
 import _avatar from "@/assets/avatar.png"
+import '@/styles/styles.css';
 
 export default {
     components: {

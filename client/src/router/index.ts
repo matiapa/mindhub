@@ -48,7 +48,7 @@ const routes = [
     meta: {
       title: 'Tu Perfil | MindHub',
     }
-  },
+  }
 ]
 
 const router = createRouter({
@@ -58,22 +58,19 @@ const router = createRouter({
 
 
 router.beforeEach(async (to, from, next) => {
-  document.title = to.meta.title as string;
+  console.debug(`Navigating to ${to.path} from ${from.path}`)
 
-  console.debug(document.title)
-
-  // -------- If goes to signin and it authenticated redirect to explore --------
-  
-  if (to.path === '/') {
-    const idToken = localStorage.getItem('id_token');
-    if (idToken) {
-        next('/explore');
-    }
-  }
+  document.title = to.meta.title as string ?? 'MindHub';
 
   // -------- Validate that user is authenticated --------
 
   if (to.path === '/') {
+    // If goes to signin and it is authenticated redirect to explore
+    const idToken = localStorage.getItem('id_token');
+    if (idToken) {
+        next('/explore');
+    }
+
     next();
     return;
   }
@@ -82,7 +79,7 @@ router.beforeEach(async (to, from, next) => {
 
   const idToken = localStorage.getItem('id_token');
   if (!idToken) {
-    console.debug('There is no ID token, going to lign')
+    console.debug('There is no ID token, going to login')
     localStorage.clear();
     next({ path: '/' });
     return;

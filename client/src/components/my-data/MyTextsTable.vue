@@ -1,22 +1,26 @@
 <template>
   <v-card flat class="px-3">
     <v-card-title class="d-flex align-center pe-2">
-      Tus textos
-
-      <v-spacer></v-spacer>
-
-      <v-text-field
-        v-model="search"
-        prepend-inner-icon="mdi-magnify"
-        density="compact"
-        label="Buscar"
-        single-line
-        flat
-        hide-details
-        variant="solo-filled"
-      ></v-text-field>
-
-      <v-btn variant="text" prepend-icon="mdi-plus" class="ml-3" color="blue" @click="newText.showDialog=true">Agregar texto</v-btn>
+      <v-row>
+        <v-col cols="6" md="4">
+          Tus textos
+        </v-col>
+        <v-col cols="6" md="5">
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            label="Buscar"
+            single-line
+            flat
+            hide-details
+            variant="solo-filled"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" md="3">
+          <v-btn variant="text" prepend-icon="mdi-plus" class="ml-3" color="blue" @click="newText.showDialog=true">Agregar texto</v-btn>
+        </v-col>
+      </v-row>     
     </v-card-title>
 
     <v-divider></v-divider>
@@ -31,6 +35,17 @@
       item-value="name"
       @update:options="getTexts"
     >
+      <template v-slot:header.language="{ column }">
+        <p class="datatable-hiddable-col">
+          {{ column.title }}
+        </p>
+      </template>
+
+      <template v-slot:header.provider="{ column }">
+        <p class="datatable-hiddable-col">
+          {{ column.title }}
+        </p>
+      </template>
 
       <template v-slot:item.text="{ item }">
         <div class="text-start">
@@ -39,7 +54,7 @@
       </template>
 
       <template v-slot:item.language="{ item }">
-        <div class="text-start">
+        <div class="text-start datatable-hiddable-col">
           <v-chip
             :text="getLanguageTitle(item.language)"
             class="text-uppercase"
@@ -50,7 +65,7 @@
       </template>
 
       <template v-slot:item.provider="{ item }">
-        <div class="text-start">
+        <div class="text-start datatable-hiddable-col">
           <v-chip
             :text="item.provider"
             :color="presentation.colors.providers[item.provider as 'twitter' | 'user']"
@@ -73,7 +88,7 @@
     </v-data-table-server>
   </v-card>
 
-  <v-dialog v-model="showDialog" max-width="50%">
+  <v-dialog v-model="showDialog" class="dialog-responsive">
     <v-card>
       <v-card-text>  
         {{ displayedText }}
@@ -86,7 +101,7 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="newText.showDialog" max-width="50%">
+  <v-dialog v-model="newText.showDialog" class="dialog-responsive">
     <v-card>
         <v-card-item>
             <v-card-title>Agregar un nuevo texto</v-card-title>
@@ -118,6 +133,7 @@
 <script lang="ts">
   import { TextsApiFactory } from 'user-api-sdk';
   import { type Text } from '@/types/resources.interface';
+  import '@/styles/styles.css';
 
   let textsApi: ReturnType<typeof TextsApiFactory>;
 
