@@ -60,6 +60,8 @@
   <v-snackbar :timeout="2000" v-model="snackbar.enabled">
     {{ snackbar.text }}
   </v-snackbar>
+
+  <PWAPrompt/>
 </template>
 
 <script setup lang="ts">
@@ -67,6 +69,7 @@ import type User from '@/types/user.interface'
 import RecommendationCard from '@/components/recommendations/RecommendationCard.vue'
 import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum, UsersApiFactory, ProvidersApiFactory } from 'user-api-sdk/api'
 import type ProviderConnection from '@/types/provider.interface';
+import PWAPrompt from '@/components/PWAPrompt.vue';
 import '@/styles/styles.css';
 </script>
 
@@ -96,6 +99,7 @@ let usersApi: ReturnType<typeof UsersApiFactory>;
 export default {
   compononents: {
     RecommendationCard,
+    PWAPrompt,
   },
 
   data: () => ({
