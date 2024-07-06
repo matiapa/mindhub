@@ -1,14 +1,14 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="12" md="12" lg="2">
+      <v-col cols="12" md="12" lg="3">
         <v-card rounded="lg" >
-          <v-card-title>Solicitudes</v-card-title>
+          <v-card-title>Solicitudes de amistad</v-card-title>
 
           <v-expansion-panels class="mt-2" min-height="268" variant="accordion" elevation="0">
             <v-expansion-panel title="Recibidas">
               <v-expansion-panel-text>
-                <v-list v-if="friendships.recieved.length">
+                <v-list v-if="friendships.recieved.length" lines="one">
                   <v-list-item v-for="(friendship, index) in friendships.recieved" :key="friendship.user._id" @click="openRequestProfile(friendship)">
                     <template v-slot:prepend>
                       <v-icon>mdi-account-arrow-left</v-icon>
@@ -17,8 +17,10 @@
                     <v-list-item-title>{{ friendship.user.profile.name }}</v-list-item-title>
 
                     <template v-slot:append>
-                      <v-btn icon="mdi-check" variant="text" @click="acceptFriendRequest(index)"></v-btn>
-                      <v-btn icon="mdi-close" variant="text" @click="rejectFriendRequest(index)"></v-btn>
+                      <v-list-item-action start>
+                        <v-btn icon="mdi-check" variant="text" @click="acceptFriendRequest(index)"></v-btn>
+                        <v-btn icon="mdi-close" variant="text" @click="rejectFriendRequest(index)"></v-btn>
+                      </v-list-item-action>
                     </template>
                   </v-list-item>
                 </v-list>
@@ -49,7 +51,7 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="12" lg="10">
+      <v-col cols="12" md="12" lg="9">
         <v-row v-if="!loading && friendships.established.length">
           <v-col v-for="(friendship) in friendships.established" :key="friendship.user._id" cols="12" md="6" lg="4">
             <FriendCard :user="friendship"></FriendCard>
@@ -143,7 +145,7 @@ export default {
 
     async acceptFriendRequest(index: number) {
       const request = this.friendships.recieved[index]
-      this.friendships.established.push(request)
+      this.friendships.established.unshift(request)
       this.friendships.recieved.splice(index, 1) 
 
       try {

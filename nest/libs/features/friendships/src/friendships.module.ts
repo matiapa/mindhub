@@ -6,6 +6,7 @@ import { UsersModule } from 'libs/features/users/src';
 import { Friendship, FriendshipSchema } from './entities';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RecommendationsModule } from '@Feature/recommendations';
+import { NotificationsModule } from '@Feature/notifications';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RecommendationsModule } from '@Feature/recommendations';
     ]),
     UsersModule,
     MailingModule,
+    NotificationsModule,
   ],
   providers: [FriendshipsService, FriendshipsRepository],
   exports: [FriendshipsService],

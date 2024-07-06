@@ -6,7 +6,7 @@ import {
   GetRecommendationsReqDto,
   GetRecommendationsResDto,
 } from './dtos/get-recommendations.dto';
-import { SharedUserInfoConfig, UsersService } from '@Feature/users';
+import { SharedUserInfo, SharedUserInfoConfig, UsersService } from '@Feature/users';
 import { RecommendationPriority } from './enums/recommendation-priority.enum';
 
 @Injectable()
@@ -23,9 +23,10 @@ export class RecommendationsService {
     targetUserId: string,
     userInfoConfig: SharedUserInfoConfig,
   ): Promise<GetRecommendationsResDto> {
-    /* TODO: We dont sort nor paginate the recommendations on database level
-     because we may need to sort them based on user info that is not stored
-     in that collection, like distance or activity. See if we can improve this */
+    /* TODO: When dont apply pagination on the database query because when
+      sorting by distance or activity we must do it after the query, since
+      that information is not available. See if we can improve this */
+
     const recommendations = await this.recommendationRepo.getMany({
       targetUserId,
       reviewed: { $exists: false },
@@ -43,14 +44,16 @@ export class RecommendationsService {
       score: r.score,
     }));
 
+    const compare = (a: SharedUserInfo, b: SharedUserInfo, untieValue: number) => (
+      a.isFake && !b.isFake ? 1 : !a.isFake && b.isFake ? -1 : untieValue
+    )
+
     if (dto.priority === RecommendationPriority.AFFINITY)
-      recommendationsWithUser.sort((a, b) => b.score.global - a.score.global);
+      recommendationsWithUser.sort((a, b) => compare(a.user, b.user, b.score.global - a.score.global));
     else if (dto.priority === RecommendationPriority.DISTANCE)
-      recommendationsWithUser.sort((a, b) => a.user.distance - b.user.distance);
+      recommendationsWithUser.sort((a, b) => compare(a.user, b.user, a.user.distance - b.user.distance));
     else if (dto.priority === RecommendationPriority.ACTIVITY)
-      recommendationsWithUser.sort(
-        (a, b) => a.user.inactiveHours - b.user.inactiveHours,
-      );
+      recommendationsWithUser.sort((a, b) => compare(a.user, b.user, a.user.inactiveHours - b.user.inactiveHours));
 
     recommendationsWithUser = recommendationsWithUser.splice(
       dto.offset,
@@ -80,7 +83,7 @@ export class RecommendationsService {
     dto: ReviewRecommendationReqDto,
     sendFriendship: boolean = true,
   ): Promise<void> {
-    await this.recommendationRepo.updateOne(
+    const result = await this.recommendationRepo.updateOne(
       { targetUserId, recommendedUserId },
       {
         reviewed: {

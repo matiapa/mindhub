@@ -26,6 +26,7 @@ export default interface User {
         n: number;
       };
       rating?: number;
+      isFake: boolean;
     };
     score: {
       global: number;

@@ -12,6 +12,7 @@ import { createMongooseOptions } from '@Provider/mongodb/mongoose-config';
 import { HealthModule } from 'libs/features/healthcheck/health.module';
 import { ApiRatesModule } from './rates/rates.module';
 import { ApiMessagesModule } from './messages/messages.module';
+import { ApiNotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ApiMessagesModule } from './messages/messages.module';
     ApiProvidersModule,
     ApiRatesModule,
     ApiMessagesModule,
+    ApiNotificationsModule,
     HealthModule,
   ],
 })

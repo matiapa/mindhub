@@ -144,7 +144,7 @@
           headers: [
             { title: 'Texto', key: 'text' },
             { title: 'Idioma', key: 'language' },
-            { title: 'Provedor', key: 'provider' },
+            { title: 'Proveedor', key: 'provider' },
             { title: 'Acciones', key: 'actions' },
           ],
           colors: {

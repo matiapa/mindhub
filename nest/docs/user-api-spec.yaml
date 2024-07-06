@@ -576,6 +576,37 @@ paths:
                 $ref: '#/components/schemas/GetMessagesResDto'
       tags: *ref_15
       security: *ref_16
+  /notifications:
+    put:
+      operationId: NotificationsController_markSeen
+      summary: Mak notifications as seen
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkNotificationsSeen'
+      responses:
+        '200':
+          description: ''
+      tags: &ref_17
+        - Notifications
+      security: &ref_18
+        - bearer: []
+    get:
+      operationId: NotificationsController_getNotifications
+      summary: Get notifications
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotificationsResDto'
+      tags: *ref_17
+      security: *ref_18
   /health:
     get:
       operationId: HealthController_check
@@ -593,8 +624,8 @@ paths:
                     example: ok
                   info:
                     type: object
-                    example: &ref_17
-                      database: &ref_18
+                    example: &ref_19
+                      database: &ref_20
                         status: up
                     additionalProperties:
                       type: object
@@ -617,7 +648,7 @@ paths:
                     nullable: true
                   details:
                     type: object
-                    example: *ref_17
+                    example: *ref_19
                     additionalProperties:
                       type: object
                       properties:
@@ -637,7 +668,7 @@ paths:
                     example: error
                   info:
                     type: object
-                    example: *ref_17
+                    example: *ref_19
                     additionalProperties:
                       type: object
                       properties:
@@ -649,7 +680,7 @@ paths:
                   error:
                     type: object
                     example:
-                      redis: &ref_19
+                      redis: &ref_21
                         status: down
                         message: Could not connect
                     additionalProperties:
@@ -663,8 +694,8 @@ paths:
                   details:
                     type: object
                     example:
-                      database: *ref_18
-                      redis: *ref_19
+                      database: *ref_20
+                      redis: *ref_21
                     additionalProperties:
                       type: object
                       properties:
@@ -848,10 +879,13 @@ components:
           $ref: '#/components/schemas/UserPersonalityDto'
         rating:
           type: number
+        isFake:
+          type: boolean
       required:
         - _id
         - profile
         - inactiveHours
+        - isFake
     ProposeFriendshipDto:
       type: object
       properties:
@@ -1274,3 +1308,46 @@ components:
             $ref: '#/components/schemas/MessageDto'
       required:
         - messages
+    MarkNotificationsSeen:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+      required:
+        - ids
+    NotificationDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        targetUserId:
+          type: string
+        type:
+          type: string
+          enum:
+            - new_message
+            - new_friendship_request
+            - accepted_friendship_proposal
+            - other
+        payload:
+          type: object
+        date:
+          format: date-time
+          type: string
+      required:
+        - _id
+        - targetUserId
+        - type
+        - payload
+        - date
+    GetNotificationsResDto:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationDto'
+      required:
+        - notifications

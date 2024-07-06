@@ -17,10 +17,40 @@
                 <v-card-title>{{ userData.user.profile.name }}</v-card-title>
 
                 <div class="mt-2">
-                    <v-chip>{{ presentation.genderIcons[userData.user.profile.gender as "man" | "woman" | "other"] }}</v-chip>
-                    <v-chip class="ml-2">{{ userData.user.profile.age }} y</v-chip>
-                    <v-chip class="ml-2">{{ userData.user.distance }} km</v-chip>
-                    <v-chip class="ml-2">Activo hace {{ userData.user.inactiveHours }} hs</v-chip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props">{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
+                        </template>
+                        <span>Género</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" class="ml-2">{{ user.user.profile.age }} años</v-chip>
+                        </template>
+                        <span>Edad</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" class="ml-2" v-if="user.user.distance">{{ user.user.distance }} km</v-chip>
+                        </template>
+                        <span>Distancia</span>
+                    </v-tooltip>
+                    
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" class="ml-2">{{ inactiveHoursText(user.user.inactiveHours) }}</v-chip>
+                        </template>
+                        <span>Activo hace</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" v-if="user.user.isFake" class="ml-2">🤖</v-chip>
+                        </template>
+                        <span>El usuario es un bot</span>
+                    </v-tooltip>                
                 </div>
             </v-card-item>
 
@@ -130,7 +160,7 @@
 
         <v-card-title>Intereses comunes</v-card-title>
 
-        <div>
+        <div class="mb-6">
             <div class="px-4" v-if="userData.user.sharedInterests">
                 <v-expansion-panels>
                     <v-expansion-panel v-for="category in presentation.interestCategories" :key="category.key">
@@ -227,14 +257,27 @@ export default {
         sharedInterests(category: string) {
             return this.userData.user.sharedInterests.filter((i: any) => i.resource.type === category)
         },
+
         getPictureUrl(userId: string) {
             return `${import.meta.env.VITE_USER_PICTURES_BUCKET_URL}/${userId}`;
         },
+
         getResourceUrl(resourceId: string, resourceType: string) {
             if (resourceType === 'artist') {
                 return `https://open.spotify.com/artist/${resourceId}`;
             } else if (resourceType === 'track') {
                 return `https://open.spotify.com/track/${resourceId}`;
+            }
+        },
+
+        inactiveHoursText(inactiveHours: number) {
+            if (inactiveHours < 1) {
+                return '< 1 hs';
+            } else if (inactiveHours < 24) {
+                return `${inactiveHours} hs`;
+            } else {
+                const days = Math.floor(inactiveHours / 24);
+                return `${days} ${days > 1 ? "días" : "día"}`;
             }
         }
     },

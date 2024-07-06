@@ -9,13 +9,13 @@
         </v-card>
 
         <v-card v-else-if="state == 'create'" class="mx-auto" max-width="600">
-            <v-card-title class="headline">Crea tu perfil</v-card-title>
+            <v-card-title class="headline">Creá tu perfil</v-card-title>
 
-            <v-card-subtitle>Por favor, completa tus datos para finalizar la creacion de tu cuenta</v-card-subtitle>
+            <v-card-subtitle>Por favor, completá tus datos para finalizar la creación de tu cuenta</v-card-subtitle>
 
             <v-card-text>
                 <v-form ref="form">
-                    <v-select label="Genero" v-model="gender" :items="presentation.genders" item-title="title"
+                    <v-select label="Género" v-model="gender" :items="presentation.genders" item-title="title"
                         item-value="value"></v-select>
 
                     <v-menu v-model="showDatePicker" :close-on-content-click="false">
@@ -26,7 +26,7 @@
                         <v-date-picker v-model="birthday" no-title @input="showDatePicker = false"></v-date-picker>
                     </v-menu>
 
-                    <v-textarea label="Biografia" v-model="biography"></v-textarea>
+                    <v-textarea label="Biografía" v-model="biography"></v-textarea>
 
                     <v-btn v-if="!saving" @click="save">Continuar</v-btn>
                     <v-progress-circular v-else indeterminate color="white"></v-progress-circular>
@@ -35,8 +35,8 @@
         </v-card>
 
         <v-card v-else-if="state == 'edit'" class="mx-auto" max-width="600">
-            <v-card-title v-if="firstCompletion" class="headline">Completa tu perfil</v-card-title>
-            <v-card-title v-else class="headline">Edita tu perfil</v-card-title>
+            <v-card-title v-if="firstCompletion" class="headline">Completá tu perfil</v-card-title>
+            <v-card-title v-else class="headline">Editá tu perfil</v-card-title>
 
             <v-card-text>
                 <v-form ref="form">
@@ -55,7 +55,7 @@
 
                     <v-text-field label="Nombre" :model-value="name" readonly></v-text-field>
 
-                    <v-select label="Genero" v-model="gender" :items="presentation.genders" item-title="title"
+                    <v-select label="Género" v-model="gender" :items="presentation.genders" item-title="title"
                         item-value="value"></v-select>
 
                     <v-menu v-model="showDatePicker" :close-on-content-click="false">
@@ -67,7 +67,7 @@
                         <v-date-picker v-model="birthday" no-title @input="showDatePicker = false"></v-date-picker>
                     </v-menu>
 
-                    <v-textarea label="Biografia" v-model="biography"></v-textarea>
+                    <v-textarea label="Biografía" v-model="biography"></v-textarea>
 
                     <v-btn v-if="!saving" @click="save">Guardar</v-btn>
                     <v-progress-circular v-else indeterminate color="white"></v-progress-circular>

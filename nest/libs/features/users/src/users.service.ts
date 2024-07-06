@@ -66,6 +66,7 @@ export class UsersService {
           name: decoded['name'],
           completed: false,
         } as any,
+        isFake: false,
       },
       { upsert: true },
     );
@@ -98,11 +99,13 @@ export class UsersService {
       { _id: userId },
       {
         lastConnection: {
-          location: {
-            type: 'Point',
-            // Longitude goes firtst on GeoJSON format
-            coordinates: [dto.longitude, dto.latitude],
-          },
+          ...(dto.latitude && dto.longitude && {
+            location: {
+              type: 'Point',
+              // Longitude goes firtst on GeoJSON format
+              coordinates: [dto.longitude, dto.latitude],
+            }
+          }),
           date: new Date(),
         },
       },
@@ -240,6 +243,7 @@ export class UsersService {
       sharedInterests,
       personality,
       rating,
+      isFake: user.isFake,
     };
   }
 
@@ -273,13 +277,15 @@ export class UsersService {
       });
 
       distances = users.map((user) => {
-        if (user.lastConnection?.location) {
-          if (authenticatedUser.lastConnection?.location) {
+        const userLocation = user.lastConnection?.location?.coordinates;
+        const authUserLocation = authenticatedUser.lastConnection?.location?.coordinates;
+        if (userLocation && userLocation[0] && userLocation[1]) {
+          if (authUserLocation && authUserLocation[0] && authUserLocation[1]) {
             return getDistanceInKm(
-              user.lastConnection.location.coordinates[1],
-              user.lastConnection.location.coordinates[0],
-              authenticatedUser.lastConnection.location.coordinates[1],
-              authenticatedUser.lastConnection.location.coordinates[0],
+              userLocation[1],
+              userLocation[0],
+              authUserLocation[1],
+              authUserLocation[0],
             );
           }
         }
@@ -345,6 +351,7 @@ export class UsersService {
       sharedInterests: sharedInterests?.[i],
       personality: personalities?.[i],
       rating: ratings?.[i],
+      isFake: user.isFake,
     }));
   }
 }

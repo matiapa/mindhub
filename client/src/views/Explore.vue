@@ -11,7 +11,7 @@
             <v-chip-group v-model="sortBy" column>
               <v-chip value="compatibility">Similaridad</v-chip>
 
-              <v-chip value="nearest">Cercania</v-chip>
+              <v-chip value="nearest">Cercanía</v-chip>
 
               <v-chip value="activity">Actividad</v-chip>
             </v-chip-group>
@@ -62,6 +62,8 @@
   </v-snackbar>
 
   <PWAPrompt/>
+
+  <NotificationHandler/>
 </template>
 
 <script setup lang="ts">
@@ -70,6 +72,7 @@ import RecommendationCard from '@/components/recommendations/RecommendationCard.
 import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum, UsersApiFactory, ProvidersApiFactory } from 'user-api-sdk/api'
 import type ProviderConnection from '@/types/provider.interface';
 import PWAPrompt from '@/components/PWAPrompt.vue';
+import NotificationHandler from '@/components/NotificationHandler.vue';
 import '@/styles/styles.css';
 </script>
 
@@ -100,6 +103,7 @@ export default {
   compononents: {
     RecommendationCard,
     PWAPrompt,
+    NotificationHandler,
   },
 
   data: () => ({
@@ -200,6 +204,12 @@ export default {
     },
 
     async updateLastConnection() {
+      // In some browsers the getCurrentPosition method doesn't trigger the error callback
+      // so we need to update the connection first and then if location is available
+      // update it again with that information
+
+      await usersApi.usersControllerUpdateLastConnection({})
+
       if (navigator.geolocation) {
         console.log('Getting location')
 
@@ -236,8 +246,6 @@ export default {
           this.snackbar.enabled = true;
           break;
       }
-      
-      await usersApi.usersControllerUpdateLastConnection({})
     }
   },
 

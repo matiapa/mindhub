@@ -6,10 +6,10 @@
 
     <v-dialog v-model="showRateDialog" max-width="50%" persistent>
         <v-card>
-            <v-card-title>Califica a {{ user.user.profile.name }}</v-card-title>
+            <v-card-title>Calificá a {{ user.user.profile.name }}</v-card-title>
 
             <v-card-text v-if="!saving">
-                <p>Por favor, califica a esta persona para mejorar nuestras recomendaciones</p>
+                <p>Por favor, calificá a esta persona para mejorar tus recomendaciones</p>
                 <v-rating v-model="rating" color="amber" class="mt-4"></v-rating>
             </v-card-text>
 

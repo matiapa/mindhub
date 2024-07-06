@@ -13,11 +13,41 @@
         <v-card-item>
             <v-card-title>{{ user.user.profile.name }}</v-card-title>
 
-            <div class="mt-2">
-                <v-chip>{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
-                <v-chip class="ml-2">{{ user.user.profile.age }} y</v-chip>
-                <v-chip class="ml-2">{{ user.user.distance }} km</v-chip>
-                <v-chip class="ml-2">Activo hace {{ user.user.inactiveHours }} hs</v-chip>
+            <div class="mt-2">          
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ props }">
+                        <v-chip v-bind="props">{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
+                    </template>
+                    <span>Género</span>
+                </v-tooltip>
+
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ props }">
+                        <v-chip v-bind="props" class="ml-2">{{ user.user.profile.age }} años</v-chip>
+                    </template>
+                    <span>Edad</span>
+                </v-tooltip>
+
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ props }">
+                        <v-chip v-bind="props" class="ml-2" v-if="user.user.distance">{{ user.user.distance }} km</v-chip>
+                    </template>
+                    <span>Distancia</span>
+                </v-tooltip>
+                
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ props }">
+                        <v-chip v-bind="props" class="ml-2">{{ inactiveHoursText(user.user.inactiveHours) }}</v-chip>
+                    </template>
+                    <span>Activo hace</span>
+                </v-tooltip>
+
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ props }">
+                        <v-chip v-bind="props" v-if="user.user.isFake" class="ml-2">🤖</v-chip>
+                    </template>
+                    <span>El usuario es un bot</span>
+                </v-tooltip>                
             </div>
         </v-card-item>
 
@@ -77,12 +107,6 @@
         </v-card-actions>
     </v-card>
 
-    
-    <!-- <v-row justify="center">
-        <v-col cols="12" md="6">
-            
-        </v-col>
-    </v-row> -->
     <v-dialog v-model="showDialog" class="dialog-responsive">
         <ProfileDetailCard :user="user" />
     </v-dialog>
@@ -124,6 +148,18 @@ export default {
     methods: {
         getPictureUrl(userId: string) {
             return `${import.meta.env.VITE_USER_PICTURES_BUCKET_URL}/${userId}`;
+        },
+
+        inactiveHoursText(inactiveHours: number) {
+            if (inactiveHours < 1) {
+                const minutes = Math.floor(inactiveHours * 60);
+                return `${minutes} ${minutes != 1 ? "minutos" : "minuto"}`;
+            } else if (inactiveHours < 24) {
+                return `${inactiveHours} hs`;
+            } else {
+                const days = Math.floor(inactiveHours / 24);
+                return `${days} ${days != 1 ? "días" : "día"}`;
+            }
         }
     },
 }

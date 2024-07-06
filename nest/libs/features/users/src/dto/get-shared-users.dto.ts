@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -78,6 +79,10 @@ export class SharedUserInfo {
   @IsNumber()
   @IsOptional()
   rating?: number;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  isFake: boolean;
 }
 
 export class GetSharedUserResDto extends SharedUserInfo {}

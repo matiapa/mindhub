@@ -13,6 +13,8 @@ import { FriendshipType, GetFriendshipsResDto } from './dtos';
 import { ConfigService } from '@nestjs/config';
 import { FriendshipsConfig } from './friendships.config';
 import { RecommendationsService } from '@Feature/recommendations';
+import { NotificationsService } from '@Feature/notifications';
+import { NotificationType } from '@Feature/notifications/entities/notification.entity';
 
 @Injectable()
 export class FriendshipsService {
@@ -24,6 +26,7 @@ export class FriendshipsService {
     private readonly recommendationService: RecommendationsService,
     private readonly usersService: UsersService,
     private readonly mailingService: MailingService,
+    private readonly notificationService: NotificationsService,
     private readonly configService: ConfigService,
   ) {
     this.config = this.configService.get<FriendshipsConfig>('friendships')!;
@@ -85,11 +88,19 @@ export class FriendshipsService {
         destination: {
           toAddresses: [targetUser.email],
         },
-        subject: `${authenticatedUser?.profile?.name} te envió una solicitud de amistad`,
+        subject: `${authenticatedUser?.profile?.name ?? 'Un usuario'} te envió una solicitud de amistad`,
         body: {
           html:
             `<p>¡Hola ${targetUser?.profile.name}! Recibiste una solicitud de amistad de ${authenticatedUser?.profile?.name}</p>` +
             `<p>Para aceptarla, ingresa a tu cuenta de <a href="${this.config.frontendFriendsUrl}">MindHub</a></p>`,
+        },
+      });
+
+      await this.notificationService.createNotification({
+        targetUserId: targetId,
+        type: NotificationType.NEW_FRIENDSHIP_REQUEST,
+        payload: {
+          counterpartyName: authenticatedUser?.profile?.name ?? '',
         },
       });
     } catch (error) {
@@ -170,6 +181,8 @@ export class FriendshipsService {
       ),
     );
 
+    users.sort((a, b) => a.isFake && !b.isFake ? 1 : !a.isFake && b.isFake ? -1 : 0)
+
     return {
       friends: counterpartiesIds.map((id, i) => ({
         user: users[i],
@@ -215,6 +228,17 @@ export class FriendshipsService {
         { accept: true },
         false,
       );
+
+      // Notify the proposer about the acceptance of the request
+
+      const targetUser = await this.usersService.getUserEntity(targetId);
+      await this.notificationService.createNotification({
+        targetUserId: proposerId,
+        type: NotificationType.ACCEPTED_FRIENDSHIP_PROPOSAL,
+        payload: {
+          counterpartyName: targetUser?.profile?.name ?? '',
+        },
+      });
     }
   }
 }

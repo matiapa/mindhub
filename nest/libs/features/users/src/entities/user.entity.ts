@@ -53,6 +53,9 @@ export class User extends BaseMongooseEntity {
 
   @Prop({ required: false, _id: false })
   lastConnection?: LastConnection;
+
+  @Prop({ required: true })
+  isFake: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -83,6 +83,12 @@
       "@Feature/messages/*": [
         "libs/features/messages/src/*"
       ],
+      "@Feature/notifications": [
+        "libs/features/notifications/src"
+      ],
+      "@Feature/notifications/*": [
+        "libs/features/notifications/src/*"
+      ],
       "@Feature/healthcheck": [
         "libs/features/healthcheck/src"
       ],

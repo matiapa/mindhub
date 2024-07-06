@@ -58,7 +58,7 @@ const router = createRouter({
 
 
 router.beforeEach(async (to, from, next) => {
-  console.debug(`Navigating to ${to.path} from ${from.path}`)
+  // console.debug(`Navigating to ${to.path} from ${from.path}`)
 
   document.title = to.meta.title as string ?? 'MindHub';
 
@@ -75,7 +75,7 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  console.debug('Validating authentication')
+  // console.debug('Validating authentication')
 
   const idToken = localStorage.getItem('id_token');
   if (!idToken) {
@@ -118,7 +118,7 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  console.debug('Validating account confirmation')
+  // console.debug('Validating account confirmation')
 
   /* Account is confirmed when post confirmation trigger has been executed
     and the document exists on the DB. Therefore unconfirmaction can happen either
@@ -145,7 +145,7 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  console.debug('Validating profile completion')
+  // console.debug('Validating profile completion')
 
   if (!ownUser.profile.completed && !localStorage.getItem('profile_completed')) {
     console.debug('The user has not completed the profile');
@@ -155,7 +155,7 @@ router.beforeEach(async (to, from, next) => {
 
   // -------- Everything is ok, proceed --------
 
-  console.debug(`Everything ok, proceeding to ${to.path}`)
+  // console.debug(`Everything ok, proceeding to ${to.path}`)
 
   next();
 });
