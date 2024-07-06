@@ -20,6 +20,9 @@ export class Personality extends BaseMongooseEntity {
 
   @Prop({ required: true })
   n: number;
+
+  @Prop({ required: true })
+  generatedAt: Date;
 }
 
 export const PersonalitySchema = SchemaFactory.createForClass(Personality);

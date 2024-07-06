@@ -854,12 +854,16 @@ components:
           type: number
         'n':
           type: number
+        generatedAt:
+          format: date-time
+          type: string
       required:
         - o
         - c
         - e
         - a
         - 'n'
+        - generatedAt
     SharedUserInfo:
       type: object
       properties:
@@ -972,9 +976,13 @@ components:
           $ref: '#/components/schemas/SharedUserInfo'
         score:
           $ref: '#/components/schemas/RecommendationScore'
+        generatedAt:
+          format: date-time
+          type: string
       required:
         - user
         - score
+        - generatedAt
     GetRecommendationsResDto:
       type: object
       properties:

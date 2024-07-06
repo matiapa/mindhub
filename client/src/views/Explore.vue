@@ -17,6 +17,12 @@
             </v-chip-group>
           </v-card-text>
         </v-card>
+
+        <v-card rounded="lg" v-if="generationDate" class="mt-6">
+          <v-card-text>
+            Actualizadas el {{ generationDate.toLocaleString("es-ES", {hour12: false}) }}
+          </v-card-text>
+        </v-card>
       </v-col>
 
       <v-col cols="12" md="12" lg="10">
@@ -110,6 +116,7 @@ export default {
     sortBy: 'compatibility' as SortBy,
     loading: true,
     recommendations: [] as User[],
+    generationDate: null as Date | null,
     page: 0,
     connectedProviders: [] as ProviderConnection[],
     observer: null as IntersectionObserver | null,
@@ -131,7 +138,11 @@ export default {
         this.page * recommendationsPerScroll,
         recommendationsPerScroll
       );
-      this.recommendations.push(...res.data.recommendations as any as User[]);
+
+      if (res.data.recommendations.length > 0) {
+        this.recommendations.push(...res.data.recommendations as any as User[]);
+        this.generationDate = new Date(res.data.recommendations[0].generatedAt);
+      }
 
       this.page += 1;
 

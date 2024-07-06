@@ -42,6 +42,7 @@ export class RecommendationsService {
     let recommendationsWithUser = recommendations.map((r, i) => ({
       user: users[i],
       score: r.score,
+      generatedAt: r.generatedAt,
     }));
 
     const compare = (a: SharedUserInfo, b: SharedUserInfo, untieValue: number) => (

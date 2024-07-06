@@ -18,6 +18,7 @@ export class PersonalitiesService {
       e: personality.e,
       a: personality.a,
       n: personality.n,
+      generatedAt: personality.generatedAt,
     };
   }
 
@@ -35,6 +36,7 @@ export class PersonalitiesService {
       e: personality.e,
       a: personality.a,
       n: personality.n,
+      generatedAt: personality.generatedAt,
     }));
   }
 }

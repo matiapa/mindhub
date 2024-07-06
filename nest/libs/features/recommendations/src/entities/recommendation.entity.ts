@@ -60,6 +60,9 @@ export class Recommendation extends BaseMongooseEntity {
 
   @Prop({ required: false, _id: false })
   reviewed?: Reviewed;
+
+  @Prop({ required: true })
+  generatedAt: Date;
 }
 
 export const RecommendationSchema =

@@ -74,6 +74,16 @@
     },
 
     {
+      "name": "Start chatbot",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/others/chatbot/src/main.py",
+      "console": "integratedTerminal",
+      "python": "/home/matiapa/.cache/pypoetry/virtualenvs/chatbot-zsljnlHO-py3.10/bin/python",
+      "cwd": "${workspaceFolder}/others/chatbot"
+    },
+
+    {
       "type": "node",
       "request": "launch",
       "name": "Start E2E test",

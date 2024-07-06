@@ -1,6 +1,7 @@
 from db import users, recommendations, bigfive
 from friendship_affinity import friendship_affinity
 from interests_affinity import interest_affinity
+from datetime import datetime
 
 FRIENDSHIP_AFFINITY_WEIGHT = 0.7
 INTERESTS_AFFINITY_WEIGHT = 0.3
@@ -48,6 +49,9 @@ def generate_recommendations(user):
     })
 
     user_recommendations = global_affinity(user, potentials)
+
+    for recommendation in user_recommendations:
+        recommendation['generatedAt'] = datetime.now()
 
     recommendations.delete_many({'targetUserId': user})
     recommendations.insert_many(user_recommendations)

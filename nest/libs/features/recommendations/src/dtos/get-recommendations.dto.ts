@@ -4,6 +4,7 @@ import {
   IsArray,
   IsEnum,
   IsOptional,
+  IsDate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -30,6 +31,10 @@ export class RecommendationDto
   @Type(() => RecommendationScore)
   @ValidateNested()
   score: RecommendationScore;
+
+  @IsDate()
+  @IsNotEmpty()
+  generatedAt: Date;
 }
 
 export class GetRecommendationsReqDto extends PaginatedReqDto {

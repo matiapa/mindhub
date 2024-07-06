@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Personality } from '../entities/personality.entity';
 
 export class UserPersonalityDto implements Omit<Personality, 'userId'> {
@@ -25,6 +25,10 @@ export class UserPersonalityDto implements Omit<Personality, 'userId'> {
   @IsNumber()
   @IsNotEmpty()
   n: number;
+
+  @IsDate()
+  @IsNotEmpty()
+  generatedAt: Date;
 }
 
 export class GetUserPersonalityDto extends UserPersonalityDto {}

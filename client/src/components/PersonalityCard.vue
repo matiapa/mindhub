@@ -1,6 +1,7 @@
 <template>
   <v-card class="pa-3" :flat="flat">
     <v-card-title v-if="title">{{ title }}</v-card-title>
+
     <v-list>
       <v-list-item
         v-for="trait in presentation.personality.bigFive"
@@ -27,6 +28,10 @@
         </template>
       </v-list-item>
     </v-list>
+
+    <v-card-text>
+      Actualizada el {{ new Date(personality.generatedAt).toLocaleString("es-ES", {hour12: false}) }}
+    </v-card-text>
   </v-card>
 </template>
 

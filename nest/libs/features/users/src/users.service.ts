@@ -323,6 +323,7 @@ export class UsersService {
           e: personality?.e,
           a: personality?.a,
           n: personality?.n,
+          generatedAt: personality?.generatedAt,
         };
       });
     }

@@ -36,6 +36,7 @@
 
         <template v-else-if="state == 'finished'">
           <p>¡Conexión finalizada! Se han extraído y procesado {{ connection?.lastProcessed?.summary?.texts }} textos.</p>
+          <p class="mt-6">Actualizado el {{ new Date(connection!.lastProcessed!.date).toLocaleString("es-ES", {hour12: false}) }}</p>
 
           <v-btn @click="removeConnection" color="error" variant="text" class="mt-6">Desconectar</v-btn>
         </template>
