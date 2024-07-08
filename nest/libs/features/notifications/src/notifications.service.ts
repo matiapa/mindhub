@@ -78,15 +78,19 @@ export class NotificationsService {
       
       const webSub = subscription.webPushSubscription;
 
-      const res = await webpush.sendNotification(
-        webSub,
-        JSON.stringify({ eventType: dto.eventType, eventPayload: dto.eventPayload })
-      );
-      
-      if (res.statusCode == 201) {
-        // console.log(`Notification sent to ${webSub.endpoint}`);
-      } else {
-        console.error(`Failed to send notification to ${webSub.endpoint} with status code ${res.statusCode}`);
+      try {
+        await webpush.sendNotification(
+          webSub,
+          JSON.stringify({ eventType: dto.eventType, eventPayload: dto.eventPayload })
+        );
+      } catch (e) {
+        if (e.statusCode === 410) {
+          // console.log(`Deleting expired subscription: ${webSub.endpoint}`)
+          await this.notificationSubscriptionsRepo.deleteOne({ _id: subscription ._id });
+        } else {
+          console.error(`Failed to send notification to ${webSub.endpoint}`, e);
+        }
+        continue
       }
     }
   }

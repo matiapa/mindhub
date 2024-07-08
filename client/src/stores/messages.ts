@@ -35,7 +35,7 @@ export const useMessageStore = defineStore('messageStore', {
       navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
         const { eventType, eventPayload } = event.data;
 
-        // console.log('Message from service worker:', { type, payload });
+        // console.log('Message from service worker:', { eventType, eventPayload });
 
         if (eventType !== 'new_chat_message')
           return;

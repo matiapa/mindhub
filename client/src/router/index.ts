@@ -10,7 +10,7 @@ const routes = [
     name: 'SignIn',
     component: () => import('@/views/pre-auth/SignIn.vue'),
     meta: {
-      title: 'Iniciar sesión | MindHub',
+      title: 'Iniciar sesión',
     }
   },
   {
@@ -18,7 +18,7 @@ const routes = [
     name: 'UnconfirmedAccount',
     component: () => import('@/views/pre-auth/UnconfirmedAccount.vue'),
     meta: {
-      title: 'Confirmá tu cuenta | MindHub',
+      title: 'Confirmá tu cuenta',
     }
   },
 
@@ -26,14 +26,14 @@ const routes = [
     path: '/explore',
     component: () => import('@/views/Explore.vue'),
     meta: {
-      title: 'Explorar | MindHub',
+      title: 'Explorar',
     }
   },
   {
     path: '/explore/:userId/profile',
     component: () => import('@/views/Explore.vue'),
     meta: {
-      title: 'Explorar | MindHub',
+      title: 'Explorar',
     }
   },
 
@@ -41,28 +41,28 @@ const routes = [
     path: '/friends',
     component: () => import('@/views/Friends.vue'),
     meta: {
-      title: 'Amigos | MindHub',
+      title: 'Amigos',
     }
   },
   {
     path: '/friends/:userId/profile',
     component: () => import('@/views/Friends.vue'),
     meta: {
-      title: 'Amigos | MindHub',
+      title: 'Amigos',
     }
   },
   {
     path: '/friends/:userId/chat',
     component: () => import('@/views/Friends.vue'),
     meta: {
-      title: 'Amigos | MindHub',
+      title: 'Amigos',
     }
   },
   {
     path: '/friends/:userId/rate',
     component: () => import('@/views/Friends.vue'),
     meta: {
-      title: 'Amigos | MindHub',
+      title: 'Amigos',
     }
   },
 
@@ -70,14 +70,14 @@ const routes = [
     path: '/data',
     component: () => import('@/views/MyData.vue'),
     meta: {
-      title: 'Tus Datos | MindHub',
+      title: 'Tus Datos',
     }
   },
   {
     path: '/profile',
     component: () => import('@/views/MyProfile.vue'),
     meta: {
-      title: 'Tu Perfil | MindHub',
+      title: 'Tu Perfil',
     }
   }
 ]
@@ -91,7 +91,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   // console.debug(`Navigating to ${to.path} from ${from.path}`)
 
-  document.title = to.meta.title as string ?? 'MindHub';
+  document.title = to.meta.title ? `${to.meta.title} | MindHub` : 'MindHub';
 
   // -------- Validate that user is authenticated --------
 

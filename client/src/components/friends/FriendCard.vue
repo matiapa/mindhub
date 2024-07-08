@@ -7,7 +7,7 @@
         <v-btn icon="mdi-star" @click="showRateDialog = true"/>
     </ProfilePreviewCard>
 
-    <v-dialog v-model="showRateDialog" max-width="50%" persistent>
+    <v-dialog v-model="showRateDialog" class="dialog-responsive" persistent>
         <v-card>
             <v-card-title>Calificá a {{ user.user.profile.name }}</v-card-title>
 
@@ -28,7 +28,7 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showChatDialog" max-width="50%">
+    <v-dialog v-model="showChatDialog" class="dialog-responsive">
         <ChatCard :user="user"/>
     </v-dialog>
 

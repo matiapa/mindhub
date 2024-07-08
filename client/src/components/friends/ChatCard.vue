@@ -12,7 +12,7 @@
             </div>
           </div>
           <div v-if="!loading && !messages.length" class="suggestion-container">
-            <v-card class="suggestion">
+            <v-card class="suggestion" v-if="suggestion">
               <v-card-title>
                 Sugerencia
               </v-card-title>
@@ -20,6 +20,7 @@
                 {{ suggestion }}
               </v-card-text>
             </v-card>
+            <div v-else style="height: 400px"></div>
           </div>
           <div class="loading-container" v-if="loading">
             <v-progress-circular indeterminate color="primary"></v-progress-circular>
@@ -220,6 +221,14 @@ export default {
 .suggestion {
   background-color: #37474f;
   color: white;
-  width: 30%;
+  width: 80%;
+}
+
+@media (min-width: 600px) {
+  .suggestion {
+    background-color: #37474f;
+    color: white;
+    width: 30%;
+  }
 }
 </style>
