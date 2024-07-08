@@ -7,6 +7,7 @@ import time
 from openai import OpenAI
 from db import users, messages, personalities, friendships, notifications
 import os
+from utils import find_first, send_webpush_event
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -20,12 +21,8 @@ client = OpenAI(
 
 bot_users = list(users.find({'isFake': True}))
 bot_users_ids = [user['_id'] for user in bot_users]
-print(f'Bot users {bot_users_ids}\n')
 
 # ----------------------------------------------------------------------------------------------------------------
-
-def find_first(lst, predicate):
-    return next((element for element in lst if predicate(element)), None)
 
 def process_messages():
     new_messages = list(messages.find({
@@ -36,35 +33,52 @@ def process_messages():
     for message in new_messages:
         try:
             bot_id = message['receiver']
+            user_id = message['sender']
+
+            # ---------------------- Create the system message for GPT ----------------------
 
             bot_pers = personalities.find_one({'userId': bot_id})
             bot_pers = {"o": round(bot_pers['o']*5), "c": round(bot_pers['c']*5), "e": round(bot_pers['e']*5), "a": round(bot_pers['a']*5), "n": round(bot_pers['n']*5)}
 
-            bot_user = find_first(bot_users, lambda user: user['_id'] == bot_id)
+            system_message = {
+                "role": "system",
+                "content": os.getenv('GPT_SYSTEM_PROMPT').format(
+                    o=bot_pers['o'], c=bot_pers['c'], e=bot_pers['e'], a=bot_pers['a'], n=bot_pers['n']
+                )
+            }
+                            
+            gpt_messages = [system_message]
+                            
 
-            text = message['text'][:int(os.getenv('MAX_USER_MESSAGE_LENGTH'))]
+            # ---------------------- Create the user and assistant messages for GPT ----------------------
+
+            chat_messages = messages.find({
+                "$or": [
+                    {"sender": user_id, "receiver": bot_id},
+                    {"sender": bot_id, "receiver": user_id}
+                ]
+            }).sort("createdAt", 1)
+
+            chat_messages = list(map(lambda m: {
+                'role': 'user' if m['sender'] == user_id else 'assistant',
+                'content': m['text'][:int(os.getenv('MAX_USER_MESSAGE_LENGTH'))]
+            }, chat_messages))
+
+            gpt_messages += chat_messages
+
+            #  ---------------------- Process the message ----------------------
 
             print("Processing message")
             pprint.pprint({
-                'sender': message['sender'],
+                'sender': user_id,
                 'receiver': bot_id,
                 'personality': {"o": bot_pers['o'], "c": bot_pers['c'], "e": bot_pers['e'], "a": bot_pers['a'], "n": bot_pers['n']},
-                'text': text,
+                'text': chat_messages[-1]['content'],
                 'temperature': os.getenv('BOT_ANSWER_TEMPERATURE')
             })
 
             chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a human with the following Big Five traits (in a scale from 1 to 5): \n" \
-                            f"Openness: {bot_pers['o']} Conscientiousness: {bot_pers['c']}, Extraversion: {bot_pers['e']}, Agreeableness: {bot_pers['a']}, Neuroticism: {bot_pers['n']}",
-                    },
-                    {
-                        "role": "user",
-                        "content": text,
-                    }
-                ],
+                messages=gpt_messages,
                 model="gpt-3.5-turbo",
                 max_tokens=int(os.getenv('MAX_BOT_RESPONSE_LENGTH')),
                 temperature=float(os.getenv('BOT_ANSWER_TEMPERATURE')),
@@ -72,24 +86,31 @@ def process_messages():
 
             response = chat_completion.choices[0].message.content
 
-            messages.insert_one({
+            # ---------------------- Save the response and mark message as processed ----------------------
+
+            insert_result = messages.insert_one({
                 'sender': bot_id,
-                'receiver': message['sender'],
+                'receiver': user_id,
                 'text': response,
                 'createdAt': datetime.now(timezone.utc),
             })
 
             messages.update_one({'_id': message['_id']}, {'$set': {'processed': True}})
 
-            notifications.insert_one({
-                "targetUserId": message['sender'],
-                "type": "new_message",
-                "payload": {
+            # ---------------------- Notify the user about the message ----------------------
+
+            bot_user = find_first(bot_users, lambda user: user['_id'] == bot_id)
+
+            send_webpush_event(user_id, {
+                "eventType": "new_chat_message",
+                "eventPayload": {
+                    "_id": str(insert_result.inserted_id),
+                    "sender": bot_id,
                     "senderName": bot_user["profile"]["name"],
-                    "message": text,
-                },
-                "seen": False,
-                "date": datetime.now()
+                    "receiver": user_id,
+                    "text": response,
+                    "createdAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
             })
 
             print(f"Answered: {response}")
@@ -105,22 +126,7 @@ def process_friendship_requests():
 
     requests = list(friendships.find(find_filter))
 
-    for request in requests:
-        try:
-            bot_user = find_first(bot_users, lambda user: user['_id'] == request['target'])
-
-            notifications.insert_one({
-                "targetUserId": request['proposer'],
-                "type": "accepted_friendship_proposal",
-                "payload": {
-                    "counterpartyName": bot_user["profile"]["name"],
-                },
-                "seen": False,
-                "date": datetime.now()
-            })
-        except Exception as error:
-            print(f'Error: {error}')
-            continue
+    # ---------------------- Accept the requests ----------------------
 
     update_result = friendships.update_many(find_filter, {
         '$set': {'status': 'accepted'}
@@ -128,6 +134,37 @@ def process_friendship_requests():
 
     if update_result.modified_count > 0:
         print(f'Accepted {update_result.modified_count} friendship requests\n')
+
+    # ---------------------- Notify the users about the accepted requests ----------------------
+
+    for request in requests:
+        try:
+            user_id = request['proposer']
+            bot_id = request['target']
+            bot_user = find_first(bot_users, lambda user: user['_id'] == bot_id)
+
+            notification = {
+                "targetUserId": user_id,
+                "type": "accepted_friendship_proposal",
+                "payload": {
+                    "counterpartyId": bot_id,
+                    "counterpartyName": bot_user["profile"]["name"],
+                },
+                "seen": False,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+
+            notifications.insert_one(notification)
+            notification["_id"] = str(notification["_id"])
+
+            send_webpush_event(user_id, {
+                "eventType": "new_app_notification",
+                "eventPayload": notification
+            })
+
+        except Exception as error:
+            print(f'Error: {error}')
+            continue
 
 # ----------------------------------------------------------------------------------------------------------------
 
