@@ -32,7 +32,7 @@
             </v-col>
           </v-row>
 
-          <div ref="loadMore" class="load-more"></div>
+          <div ref="loadMore"></div>
 
           <v-row v-if="loading" align="center" justify="center">
             <v-col cols="auto">
@@ -66,10 +66,6 @@
   <v-snackbar :timeout="2000" v-model="snackbar.enabled">
     {{ snackbar.text }}
   </v-snackbar>
-
-  <PWAPrompt/>
-
-  <NotificationHandler/>
 </template>
 
 <script setup lang="ts">
@@ -77,8 +73,6 @@ import type User from '@/types/user.interface'
 import RecommendationCard from '@/components/recommendations/RecommendationCard.vue'
 import { RecommendationsApiFactory, RecommendationsControllerGetRecommendationsPriorityEnum, UsersApiFactory, ProvidersApiFactory } from 'user-api-sdk/api'
 import type ProviderConnection from '@/types/provider.interface';
-import PWAPrompt from '@/components/PWAPrompt.vue';
-import NotificationHandler from '@/components/NotificationHandler.vue';
 import '@/styles/styles.css';
 </script>
 
@@ -108,8 +102,6 @@ let usersApi: ReturnType<typeof UsersApiFactory>;
 export default {
   compononents: {
     RecommendationCard,
-    PWAPrompt,
-    NotificationHandler,
   },
 
   data: () => ({
@@ -130,7 +122,7 @@ export default {
     async loadRecommendations() {
       this.loading = true;
 
-      console.log('Getting recommendations', this.page * recommendationsPerScroll, recommendationsPerScroll)
+      // console.log('Getting recommendations', this.page * recommendationsPerScroll, recommendationsPerScroll)
 
       const res = await recommApi.recommendationsControllerGetRecommendations(
         ['distance'],
@@ -222,7 +214,7 @@ export default {
       await usersApi.usersControllerUpdateLastConnection({})
 
       if (navigator.geolocation) {
-        console.log('Getting location')
+        // console.log('Getting location')
 
         navigator.geolocation.getCurrentPosition(this.handleLocationSuccess, this.handleLocationError);
       } else {
@@ -235,7 +227,7 @@ export default {
     },
 
     async handleLocationSuccess(position: GeolocationPosition) {
-      console.log('Got location', position);
+      // console.log('Got location', position);
 
       await usersApi.usersControllerUpdateLastConnection({
         latitude: position.coords.latitude,

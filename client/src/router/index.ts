@@ -21,6 +21,7 @@ const routes = [
       title: 'Confirmá tu cuenta | MindHub',
     }
   },
+
   {
     path: '/explore',
     component: () => import('@/views/Explore.vue'),
@@ -29,12 +30,42 @@ const routes = [
     }
   },
   {
+    path: '/explore/:userId/profile',
+    component: () => import('@/views/Explore.vue'),
+    meta: {
+      title: 'Explorar | MindHub',
+    }
+  },
+
+  {
     path: '/friends',
     component: () => import('@/views/Friends.vue'),
     meta: {
       title: 'Amigos | MindHub',
     }
   },
+  {
+    path: '/friends/:userId/profile',
+    component: () => import('@/views/Friends.vue'),
+    meta: {
+      title: 'Amigos | MindHub',
+    }
+  },
+  {
+    path: '/friends/:userId/chat',
+    component: () => import('@/views/Friends.vue'),
+    meta: {
+      title: 'Amigos | MindHub',
+    }
+  },
+  {
+    path: '/friends/:userId/rate',
+    component: () => import('@/views/Friends.vue'),
+    meta: {
+      title: 'Amigos | MindHub',
+    }
+  },
+
   {
     path: '/data',
     component: () => import('@/views/MyData.vue'),

@@ -38,35 +38,40 @@ export class FriendshipsService {
     if (targetId === proposerId)
       throw new BadRequestException('Friendship target can be the proposer');
 
-    // Check that target user exists
+    // Check that target and proposer users exists
 
     const targetUser = await this.usersService.getUserEntity(targetId);
     if (!targetUser)
       throw new BadRequestException('Friendship target does not exist');
 
-    // Check that the request was not already sent
+    const proposerUser = await this.usersService.getUserEntity(proposerId)!;
+    if (!proposerUser)
+      throw new BadRequestException('Friendship proposer does not exist');
+
+    // Check that a request from proposer to target was not already sent
 
     const sentReq = await this.friendshipsRepo.getOne({
       proposer: proposerId,
       target: targetId,
     });
     if (sentReq) {
-      return;
+      throw new BadRequestException('The proposer has already sent a request');
     }
 
     // Check that there are no pending requests from the target
 
     const receivedReq = await this.friendshipsRepo.getOne({
-      proposer: proposerId,
-      target: targetId,
+      proposer: targetId,
+      target: proposerId,
     });
     if (receivedReq) {
       if (receivedReq.status === FriendshipStatus.ACCEPTED) {
+        // If there is one accepted then there is nothing else to do
         throw new BadRequestException('The users are already friends');
       } else if (receivedReq.status === FriendshipStatus.PENDING) {
-        throw new BadRequestException(
-          'A friendship request from this user has already been received',
-        );
+        // If ther request is pending, then we can accept it and return
+        await this.reviewRequest(proposerId, targetId, true);
+        return;
       }
     }
 
@@ -80,27 +85,30 @@ export class FriendshipsService {
 
     // Notify the target about the friendship request
 
-    const authenticatedUser = await this.usersService.getUserEntity(proposerId);
-
     try {
       await this.mailingService.sendEmail({
         source: this.config.friendshipRequestsSenderEmail,
         destination: {
           toAddresses: [targetUser.email],
         },
-        subject: `${authenticatedUser?.profile?.name ?? 'Un usuario'} te envió una solicitud de amistad`,
+        subject: `${proposerUser.profile.name} te envió una solicitud de amistad`,
         body: {
           html:
-            `<p>¡Hola ${targetUser?.profile.name}! Recibiste una solicitud de amistad de ${authenticatedUser?.profile?.name}</p>` +
-            `<p>Para aceptarla, ingresa a tu cuenta de <a href="${this.config.frontendFriendsUrl}">MindHub</a></p>`,
+            `<p>¡Hola ${targetUser.profile.name}! Recibiste una solicitud de amistad de ${proposerUser.profile.name}.</p>` +
+            `<p>Para aceptarla, ingresa a tu cuenta de <a href="${this.config.frontendFriendsUrl}">MindHub</a>.</p>`,
         },
       });
+    } catch (error) {
+      console.error(error);
+    }
 
-      await this.notificationService.createNotification({
+    try {
+      await this.notificationService.createAppNotification({
         targetUserId: targetId,
         type: NotificationType.NEW_FRIENDSHIP_REQUEST,
         payload: {
-          counterpartyName: authenticatedUser?.profile?.name ?? '',
+          counterpartyId: proposerId,
+          counterpartyName: proposerUser?.profile?.name ?? '',
         },
       });
     } catch (error) {
@@ -211,6 +219,14 @@ export class FriendshipsService {
         `This request has already been accepted or rejected`,
       );
 
+    const targetUser = await this.usersService.getUserEntity(targetId);
+    if (!targetUser)
+      throw new BadRequestException('Friendship target does not exist');
+
+    const proposerUser = await this.usersService.getUserEntity(proposerId);
+    if (!proposerUser)
+      throw new BadRequestException('Friendship proposer does not exist');
+  
     await this.friendshipsRepo.updateOne(
       {
         proposer: proposerId,
@@ -223,22 +239,43 @@ export class FriendshipsService {
 
     if (accept) {
       await this.recommendationService.reviewRecommendation(
-        proposerId,
         targetId,
+        proposerId,
         { accept: true },
         false,
       );
 
       // Notify the proposer about the acceptance of the request
 
-      const targetUser = await this.usersService.getUserEntity(targetId);
-      await this.notificationService.createNotification({
-        targetUserId: proposerId,
-        type: NotificationType.ACCEPTED_FRIENDSHIP_PROPOSAL,
-        payload: {
-          counterpartyName: targetUser?.profile?.name ?? '',
-        },
-      });
+      try {
+        await this.mailingService.sendEmail({
+          source: this.config.friendshipRequestsSenderEmail,
+          destination: {
+            toAddresses: [proposerUser.email],
+          },
+          subject: `${targetUser.profile.name} aceptó tu solicitud de amistad`,
+          body: {
+            html:
+              `<p>¡Hola ${proposerUser.profile.name}! ${targetUser.profile.name} aceptó tu solicitud de amistad.</p>` +
+              `<p>Ingresa a tu cuenta de <a href="${this.config.frontendFriendsUrl}">MindHub</a> para empezar a hablar.</p>`,
+          },
+        });
+      } catch (error) {
+        console.error(error);
+      }
+
+      try {
+        await this.notificationService.createAppNotification({
+          targetUserId: proposerId,
+          type: NotificationType.ACCEPTED_FRIENDSHIP_PROPOSAL,
+          payload: {
+            counterpartyId: targetId,
+            counterpartyName: targetUser?.profile?.name ?? '',
+          },
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 }

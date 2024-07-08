@@ -2,7 +2,7 @@
 node_modules/
 .env.local
 dist/
-_dist/
+certs/
 
 !.env
 !.vscode/launch.json

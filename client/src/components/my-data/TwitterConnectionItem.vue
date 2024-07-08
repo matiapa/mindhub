@@ -21,7 +21,7 @@
         <template v-if="state == 'initial'">
           Por el momento no es posible conectar tu cuenta de Twitter mediante login, pero puedes subir un archivo con tus datos.
           <v-file-input class="my-6" v-model="selectedFile" label="Archivo de datos" accept="application/zip"/>
-          <v-btn @click="uploadFile">Subir</v-btn>
+          <v-btn @click="uploadFile" :disabled="!selectedFile">Subir</v-btn>
         </template >
 
         <template v-else-if="state == 'uploadingFile'">
@@ -119,7 +119,7 @@ export default {
       };
 
       try {
-        console.log('Uploading file')
+        // console.log('Uploading file')
 
         this.state = ConnectionState.UploadingFile;
 
@@ -127,14 +127,14 @@ export default {
 
         const res = await providersApi.fileControllerGetFileUploadUrl('twitter');
         const uploadUrl = res.data;
-        console.log("Upload URL", uploadUrl)
+        // console.log("Upload URL", uploadUrl)
 
         const response = await fetch(uploadUrl, options);
         if (!response.ok) {
           throw new Error('Failed to upload file');
         }
 
-        console.log('File uploaded succesfully')
+        // console.log('File uploaded succesfully')
 
         this.state = ConnectionState.ProcessingFile;
       } catch (error) {
@@ -208,10 +208,10 @@ export default {
 
             this.$emit('new-connection');
 
-            console.log('Connection finished')
+            // console.log('Connection finished')
           } else {
             this.state = ConnectionState.Failed;
-            console.log('Connection failed')
+            console.error('Connection failed')
           }
 
           if(interval)

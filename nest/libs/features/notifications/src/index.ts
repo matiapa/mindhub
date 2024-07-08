@@ -1,4 +1,4 @@
-export * from './dtos/create-notification.dto';
+export * from './dtos/create-app-notification.dto';
 export * from './dtos/get-notifications.dto';
 export * from './dtos/mark-notifications-seen.dto';
 export { Notification } from './entities/notification.entity';

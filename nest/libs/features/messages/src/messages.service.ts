@@ -4,6 +4,7 @@ import { GetMessagesResDto } from './dtos/get-given-messages.dto';
 import { NotificationsService } from '@Feature/notifications';
 import { NotificationType } from '@Feature/notifications/entities/notification.entity';
 import { UsersService } from '@Feature/users';
+import { WebPushEventType } from '@Feature/notifications/dtos/send-webpush-event';
 
 @Injectable()
 export class MessagesService {
@@ -21,47 +22,71 @@ export class MessagesService {
     if (senderId === receiverId)
       throw new BadRequestException('Sender cannot be the same as receiver');
 
-    await this.messagesRepo.create({
+    const _id = await this.messagesRepo.create({
       sender: senderId,
       receiver: receiverId,
       text,
+      seen: false,
     });
 
-    // Notify the receiver about the acceptance of the request
+    // Notify the receiver about the new message
 
     const senderUser = await this.usersService.getUserEntity(senderId);
-    await this.notificationsService.createNotification({
+
+    await this.notificationsService.sendWebPushEvent({
       targetUserId: receiverId,
-      type: NotificationType.NEW_MESSAGE,
-      payload: {
+      eventType: WebPushEventType.NEW_CHAT_MESSAGE,
+      eventPayload: {
+        _id,
+        sender: senderId,
         senderName: senderUser?.profile?.name ?? '',
-        message: text,
+        receiver: receiverId,
+        text,
+        createdAt: new Date(),
       },
     });
   }
 
   async getMessages(
     userId: string,
-    counterpartyId: string,
+    counterpartyId?: string,
+    onlyNew: boolean = false,
   ): Promise<GetMessagesResDto> {
-    const res = await this.messagesRepo.getMany(
-      {
-        $or: [
-          { sender: userId, receiver: counterpartyId },
-          { sender: counterpartyId, receiver: userId },
-        ],
-      },
-      null,
-      null,
-      { sort: { createdAt: 'asc' } },
-    );
+    const filter: any = {
+      $or: [
+        {
+          sender: userId,
+          ...(counterpartyId && { receiver: counterpartyId }),
+          ...(onlyNew && { seen: false }),
+        },
+        {
+          receiver: userId,
+          ...(counterpartyId && { sender: counterpartyId }),
+          ...(onlyNew && { seen: false }),
+        },
+      ],
+    };
+
+    const res = await this.messagesRepo.getMany(filter, {
+      sort: { createdAt: 'asc' },
+    });
 
     return {
       messages: res.map((r) => ({
-        isOwn: r.sender === userId,
-        createdAt: r.createdAt,
+        _id: (r as any)._id.toString(),
+        sender: r.sender,
+        receiver: r.receiver,
         text: r.text,
+        seen: r.seen,
+        createdAt: r.createdAt,
       })),
     };
+  }
+
+  async markMessagesSeen(userId: string, messageIds: string[]): Promise<void> {
+    await this.messagesRepo.updateMany(
+      { _id: { $in: messageIds }, receiver: userId },
+      { seen: true },
+    );
   }
 }

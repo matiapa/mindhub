@@ -10,7 +10,7 @@ export async function signInWithCode(code: string) {
             client_id: `${import.meta.env.VITE_COGNITO_CLIENT_ID}`,
             grant_type: 'authorization_code',
             code,
-            redirect_uri: `${import.meta.env.VITE_APP_URL}`,
+            redirect_uri: `${window.location.origin}`,
         }),
         {
             headers: {

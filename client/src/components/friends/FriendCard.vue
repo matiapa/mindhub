@@ -1,6 +1,9 @@
 <template>
     <ProfilePreviewCard :user="user">
-        <v-btn icon="mdi-chat" @click="chat"/>
+        <v-badge color="error" dot offset-x="10" offset-y="10" :model-value="messageStore.newMessages.some(m => m.sender == user.user._id)">
+            <v-btn icon="mdi-chat" @click="showChatDialog = true"/>
+        </v-badge>
+
         <v-btn icon="mdi-star" @click="showRateDialog = true"/>
     </ProfilePreviewCard>
 
@@ -40,6 +43,7 @@ import ChatCard from '@/components/friends/ChatCard.vue'
 import { RatesApiFactory } from 'user-api-sdk';
 import type User from '@/types/user.interface';
 import type { PropType } from 'vue';
+import { useMessageStore } from '@/stores/messages';
 
 let ratesApi: ReturnType<typeof RatesApiFactory>;
 
@@ -66,6 +70,7 @@ export default {
                 enabled: false,
                 text: '',
             },
+            messageStore: useMessageStore()
         }
     },
 
@@ -100,10 +105,6 @@ export default {
             this.rating = this.user.user.rating;
             this.showRateDialog = false;
         },
-
-        chat () {
-            this.showChatDialog = true;
-        }
     },
 
     created() {
@@ -114,7 +115,45 @@ export default {
             accessToken: () => idToken,
             isJsonMime: () => true,
         });
+
+        if (this.$route.path.includes('chat') && this.$route.params.userId == this.user.user._id) {
+            this.showChatDialog = true;
+        }
+
+        if (this.$route.path.includes('rate') && this.$route.params.userId == this.user.user._id) {
+            this.showRateDialog = true;
+        }
     },
+
+    watch: {
+        $route(to, from) {
+            if (to.path.includes('chat') && to.params.userId == this.user.user._id) {
+                this.showChatDialog = true;
+            } else {
+                this.showChatDialog = false;
+            }
+
+            if (to.path.includes('rate') && to.params.userId == this.user.user._id) {
+                this.showRateDialog = true;
+            } else {
+                this.showRateDialog = false;
+            }
+        },
+        showChatDialog(val) {
+            if (val) {
+                this.$router.push(`/friends/${this.user.user._id}/chat`)
+            } else {
+                this.$router.push('/friends');
+            }
+        },
+        showRateDialog(val) {
+            if (val) {
+                this.$router.push(`/friends/${this.user.user._id}/rate`)
+            } else {
+                this.$router.push('/friends');
+            }
+        }
+    }
 }
 </script>
 

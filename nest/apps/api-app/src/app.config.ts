@@ -10,6 +10,7 @@ import { MongoConfig } from '@Provider/mongodb';
 import { InterestsConfig } from '@Feature/interests/interests.config';
 import { CorsConfig } from './config/cors.config';
 import { EnvConfig } from './config/env.config';
+import { NotificationsConfig } from '@Feature/notifications';
 
 class AppConfig {
   @Type()
@@ -47,6 +48,10 @@ class AppConfig {
   @Type(() => SpotifyConfig)
   @ValidateNested()
   spotify = new SpotifyConfig();
+
+  @Type(() => NotificationsConfig)
+  @ValidateNested()
+  notifications = new NotificationsConfig();
 
   @Type(() => MongoConfig)
   @ValidateNested()

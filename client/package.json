@@ -7,6 +7,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "build-only": "vite build",
     "dev": "vite",
+    "serve": "serve -s dist --ssl-cert certs/cert.pem --ssl-key certs/key.pem -p 8000",
     "preview": "vite preview",
     "type-check": "vue-tsc --build --force"
   },

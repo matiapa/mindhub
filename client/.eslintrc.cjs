@@ -6,9 +6,14 @@ module.exports = {
   'extends': [
     'plugin:vue/vue3-essential',
     'eslint:recommended',
-    '@vue/eslint-config-typescript'
+    '@vue/eslint-config-typescript',
   ],
   parserOptions: {
     ecmaVersion: 'latest'
-  }
+  },
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "serviceworker": true
+  },
 }

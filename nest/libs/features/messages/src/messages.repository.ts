@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Message } from './entities';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, QueryOptions, Model, ProjectionFields } from 'mongoose';
-import { BaseMongooseRepository } from '@Provider/mongodb';
-import { NestedKeyOf } from 'libs/utils/types/nested.type';
+import { FilterQuery, QueryOptions, Model, UpdateQuery } from 'mongoose';
+import { BaseMongooseRepository, UpdateResult } from '@Provider/mongodb';
 
 @Injectable()
 export class MessagesRepository extends BaseMongooseRepository<Message> {
@@ -11,16 +10,21 @@ export class MessagesRepository extends BaseMongooseRepository<Message> {
     super(model);
   }
 
-  public create(message: Message): Promise<void> {
-    return super.createOne(message);
+  public create(message: Message): Promise<string> {
+    return super.createOneAndGetId(message);
+  }
+
+  public updateMany(
+    filter: FilterQuery<Message>,
+    update: UpdateQuery<Message>,
+  ): Promise<UpdateResult> {
+    return super.updateMany(filter, update);
   }
 
   public async getMany(
     filter: FilterQuery<Message>,
-    populate?: NestedKeyOf<Message>[],
-    projection?: ProjectionFields<Message>,
     options?: QueryOptions<Message>,
   ): Promise<Message[]> {
-    return super.getMany(filter, populate, projection, options);
+    return super.getMany(filter, null, null, options);
   }
 }

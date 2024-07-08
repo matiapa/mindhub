@@ -165,7 +165,7 @@
       async getInterests({ page, itemsPerPage } : { page: number, itemsPerPage: number }) {
         this.loading = true;
 
-        console.log('Getting interests', page, itemsPerPage)
+        // console.log('Getting interests', page, itemsPerPage)
 
         const res = await interestsApi.interestsControllerGetOwn((page - 1) * itemsPerPage, itemsPerPage, this.search);
 
@@ -177,7 +177,7 @@
       },
 
       async loadInterests() {
-        console.log('Loading interests')
+        // console.log('Loading interests')
         await this.getInterests({ page: 1, itemsPerPage: this.interestsPerPage });
       },
 
@@ -229,8 +229,14 @@
             date: res.data.date!
           });
 
-          this.newInterest.saving = false;
-          this.newInterest.showDialog = false;
+          this.newInterest = {
+            name: '',
+            resourceType: 'track' as 'track' | 'artist',
+            favorite: true,
+            valid: false,
+            showDialog: false,
+            saving: false,
+          };
         } catch (e) {
           console.log(e);
           this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'

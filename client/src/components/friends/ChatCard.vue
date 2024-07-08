@@ -6,7 +6,7 @@
         <v-card-text>
           <div class="chat-container" v-if="!loading && messages.length">
             <div class="messages" ref="messages">
-              <div v-for="(message, index) in messages" :key="index" :class="['message', message.isOwn ? 'own' : 'counterparty']">
+              <div v-for="(message, index) in messages" :key="index" :class="['message', isOwn(message) ? 'own' : 'counterparty']">
                 {{ message.text }}
               </div>
             </div>
@@ -37,9 +37,14 @@
 import { InterestsApiFactory, MessagesApiFactory } from 'user-api-sdk';
 import type { PropType } from 'vue';
 import type User from '@/types/user.interface';
+import type Message from '@/types/message.interface';
+import { useMessageStore } from '@/stores/messages';
 
 let messagesApi: ReturnType<typeof MessagesApiFactory>;
 let interestsApi: ReturnType<typeof InterestsApiFactory>;
+const ownUserId = localStorage.getItem('uuid')!;
+
+let messageStore = useMessageStore();
 
 export default {
   props: {
@@ -53,15 +58,21 @@ export default {
   data() {
     return {
       loading: false,
-      messages: [] as any[],
+      messages: [] as Message[],
       newMessage: '',
       suggestion: '',
       interval: null as any,
     };
   },
 
+  computed: {
+    newMessages() {
+      return messageStore.newMessages;
+    }
+  },
+
   methods: {
-    async getMessagesInitially() {
+    async getAllMessages() {
       try {
         this.loading = true;
 
@@ -71,17 +82,12 @@ export default {
 
         await this.generateSuggestion();
 
-        this.loading = false;
-      } catch (error) {
-        console.error(error);
-      }
-    },
+        const unreadIds = this.messages.filter(m => m.receiver==ownUserId && !m.seen).map(m => m._id);
+        if (unreadIds.length) {
+          await messageStore.markMessagesAsRead(unreadIds);
+        }
 
-    async getMessagesPeriodically() {
-      try {
-        const response = await messagesApi.messagesControllerGetMessages(this.user.user._id);
-        this.messages = response.data.messages;
-        this.scrollToEnd();
+        this.loading = false;
       } catch (error) {
         console.error(error);
       }
@@ -107,7 +113,9 @@ export default {
       if (text === '')
         return;
 
-      this.messages.push({ text, isOwn: true });
+      this.messages.push({
+        _id: "", text, sender: ownUserId, receiver: this.user.user._id,seen: true, createdAt: new Date().toDateString()
+      });
       this.newMessage = '';
       this.scrollToEnd();
 
@@ -121,6 +129,10 @@ export default {
       }
     },
 
+    isOwn(message: any) {
+      return message.sender == ownUserId;
+    },
+
     scrollToEnd() {
       this.$nextTick(() => {
         const container = this.$refs.messages as any;
@@ -129,6 +141,21 @@ export default {
         }
       });
     },
+  },
+
+  watch: {
+    newMessages(newMessages: Message[]) {
+      // console.log("Changes in new messages detected", newMessages)
+
+      const pertinentMessages = newMessages.filter(m => m.sender == this.user.user._id)
+      // console.log("Pertinent messages", pertinentMessages)
+
+      if (pertinentMessages.length) {
+        this.messages.push(...pertinentMessages);
+        this.scrollToEnd();
+        messageStore.markMessagesAsRead(pertinentMessages.map(m => m._id));
+      }
+    }
   },
 
   created() {
@@ -148,15 +175,7 @@ export default {
 
       this.newMessage = this.prefilledMessage ?? '';
 
-      this.getMessagesInitially();
-  },
-
-  mounted() {
-    this.interval = setInterval(this.getMessagesPeriodically, import.meta.env.VITE_MESSAGE_POLLING_INTERVAL);
-  },
-
-  unmounted() {
-    clearInterval(this.interval);
+      this.getAllMessages();
   },
 };
 </script>
@@ -204,4 +223,3 @@ export default {
   width: 30%;
 }
 </style>
-  user-api-sdk

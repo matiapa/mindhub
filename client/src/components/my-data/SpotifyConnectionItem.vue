@@ -120,8 +120,7 @@ export default {
       // Get the Spotify login URL
       const res = await providersApi.authControllerLogin('spotify');
 
-      console.log('Opening Spotify login page')
-      console.log(res.data)
+      // console.log('Opening Spotify login page')
 
       // Open Spotify login page on a new tab
       window.open(res.data, '_blank')!.focus();
@@ -192,10 +191,10 @@ export default {
 
             this.$emit('new-connection');
 
-            console.log('Connection finished')
+            // console.log('Connection finished')
           } else {
             this.state = ConnectionState.Failed;
-            console.log('Connection failed')
+            console.error('Connection failed')
           }
 
           if(interval)

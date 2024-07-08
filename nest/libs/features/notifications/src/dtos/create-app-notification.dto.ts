@@ -1,8 +1,7 @@
-import { IsString, IsNotEmpty, IsEnum, IsDate, IsBoolean, ValidateNested } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 import { NotificationPayload, NotificationType } from '../entities/notification.entity';
-import { Type } from 'class-transformer';
 
-export class CreateNotificationDto {
+export class CreateAppNotificationDto {
   @IsString()
   @IsNotEmpty()
   targetUserId: string;
@@ -14,5 +13,4 @@ export class CreateNotificationDto {
   // @Type(() => NotificationPayload)
   // @ValidateNested()
   payload: NotificationPayload;
-
 }

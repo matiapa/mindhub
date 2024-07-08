@@ -1,29 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { Notification } from './entities/notification.entity';
+import { Notification } from '../entities/notification.entity';
 import {
   BaseMongooseRepository,
   DeleteResult,
   UpdateResult,
 } from '@Provider/mongodb';
 import { InjectModel } from '@nestjs/mongoose';
-import { NotificationsConfig } from './notifications.config';
-import { ConfigService } from '@nestjs/config';
 import { FilterQuery, UpdateQuery, QueryOptions, Model } from 'mongoose';
 
 @Injectable()
 export class NotificationsRepository extends BaseMongooseRepository<Notification> {
-  private config: NotificationsConfig;
-
   constructor(
     @InjectModel(Notification.name) protected model: Model<Notification>,
-    configService: ConfigService,
   ) {
     super(model);
-    this.config = configService.get<NotificationsConfig>('notifications');
   }
 
-  public async createOne(notification: Notification): Promise<void> {
-    await super.createOne(notification);
+  public async createOneAndGetId(notification: Notification): Promise<string> {
+    return super.createOneAndGetId(notification);
   }
 
   public updateMany(

@@ -16,7 +16,7 @@
       </v-col>
 
       <v-col cols="12" md="3">
-        <PersonalityCard v-if="ownPersonality" title="Tu Personalidad" :personality="ownPersonality"/>
+        <PersonalityCard v-if="ownPersonality" title="Tu Personalidad" :personality="ownPersonality" :showGenerationDate="true"/>
 
         <v-card v-else class="pa-3">
           <v-card-title>Tu personalidad</v-card-title>
@@ -55,7 +55,7 @@
     methods: {
       async loadPersonality() {
         try {
-          console.log('Loading personality')
+          // console.log('Loading personality')
           const uuid = localStorage.getItem('uuid')!;
           const res = await usersApi.usersControllerGetById(uuid, ['personality']);
           this.ownPersonality = res.data.personality;

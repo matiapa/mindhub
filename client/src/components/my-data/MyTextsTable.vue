@@ -211,7 +211,7 @@
       },
 
       async loadTexts() {
-        console.log('Loading texts')
+        // console.log('Loading texts')
         await this.getTexts({ page: 1, itemsPerPage: this.textsPerPage });
       },
 
@@ -233,7 +233,7 @@
             language: this.newText.language,
           });
 
-          console.log("Created text", res);
+          // console.log("Created text", res);
 
           this.newText.saving = false;
           this.texts.unshift({

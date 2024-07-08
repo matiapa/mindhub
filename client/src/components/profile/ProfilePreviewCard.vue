@@ -162,6 +162,30 @@ export default {
             }
         }
     },
+
+    created() {
+        if (this.$route.path.includes('profile') && this.$route.params.userId == this.user.user._id) {
+            this.showDialog = true;
+        }
+    },
+
+    watch: {
+        $route(to, from) {
+            if (to.path.includes('profile') && to.params.userId == this.user.user._id) {
+                this.showDialog = true;
+            } else {
+                this.showDialog = false;
+            }
+        },
+        showDialog(val) {
+            const currBasePath = this.$route.path.split('/')[1];
+            if (val) {
+                this.$router.push(`/${currBasePath}/${this.user.user._id}/profile`)
+            } else {
+                this.$router.push(`/${currBasePath}`);
+            }
+        },
+    }
 }
 </script>
 

@@ -69,6 +69,14 @@ export abstract class BaseMongooseRepository<T extends object> {
       .lean();
   }
 
+  protected async createOneAndGetId(
+    entity: T,
+    options?: InsertManyOptions,
+  ): Promise<string> {
+    const doc = await this.model.create(entity, options);
+    return (doc as any)._id.toString();
+  }
+
   protected async createOne(
     entity: T,
     options?: InsertManyOptions,

@@ -3,27 +3,28 @@ import { BaseMongooseEntity } from 'libs/utils/entities/base-mongoose-entity';
 // import { Types } from 'mongoose';
 
 export class NotificationFriendshipProposalPayload {
+  counterpartyId: string;
   counterpartyName: string;
 }
 
 export class NotificationFriendshipRequestPayload {
+  counterpartyId: string;
   counterpartyName: string;
 }
 
-export class NotificationNewMessagePayload {
-  senderName: string;
-  message: string;
+export class NotificationRateFriendInvitationPayload {
+  userId: string;
+  userName: string;
 }
 
 export type NotificationPayload =
-  | NotificationNewMessagePayload
   | NotificationFriendshipRequestPayload
   | NotificationFriendshipProposalPayload;
 
 export enum NotificationType {
-  NEW_MESSAGE = 'new_message',
   NEW_FRIENDSHIP_REQUEST = 'new_friendship_request',
   ACCEPTED_FRIENDSHIP_PROPOSAL = 'accepted_friendship_proposal',
+  RATE_FRIEND_INVITATION = 'rate_friend_invitation',
   OTHER = 'other',
 }
 

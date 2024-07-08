@@ -560,10 +560,15 @@ paths:
         - bearer: []
     get:
       operationId: MessagesController_getMessages
-      summary: Get messages with a specific user
+      summary: Get all or new messages with all or a specific user
       parameters:
         - name: counterpartyId
-          required: true
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: onlyNew
+          required: false
           in: query
           schema:
             type: string
@@ -576,10 +581,62 @@ paths:
                 $ref: '#/components/schemas/GetMessagesResDto'
       tags: *ref_15
       security: *ref_16
+  /messages/seen:
+    put:
+      operationId: MessagesController_markMessagesSeen
+      summary: Mark many messages as seen
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkMessagesSeenDto'
+      responses:
+        '200':
+          description: ''
+      tags: *ref_15
+      security: *ref_16
+  /notifications/webpush/subscription:
+    post:
+      operationId: NotificationsController_saveWebPushSubscription
+      summary: Save a webpush subscription
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveWebPushSubscriptionDto'
+      responses:
+        '201':
+          description: ''
+      tags: &ref_17
+        - Notifications
+      security: &ref_18
+        - bearer: []
   /notifications:
+    get:
+      operationId: NotificationsController_getAppNotifications
+      summary: Get app notifications
+      parameters:
+        - name: onlyNew
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotificationsResDto'
+      tags: *ref_17
+      security: *ref_18
     put:
       operationId: NotificationsController_markSeen
-      summary: Mak notifications as seen
+      summary: Mark app notifications as seen
       parameters: []
       requestBody:
         required: true
@@ -590,21 +647,6 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_17
-        - Notifications
-      security: &ref_18
-        - bearer: []
-    get:
-      operationId: NotificationsController_getNotifications
-      summary: Get notifications
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetNotificationsResDto'
       tags: *ref_17
       security: *ref_18
   /health:
@@ -1296,17 +1338,26 @@ components:
     MessageDto:
       type: object
       properties:
-        isOwn:
+        _id:
+          type: string
+        sender:
+          type: string
+        receiver:
+          type: string
+        text:
+          type: string
+        seen:
           type: boolean
         createdAt:
           format: date-time
           type: string
-        text:
-          type: string
       required:
-        - isOwn
-        - createdAt
+        - _id
+        - sender
+        - receiver
         - text
+        - seen
+        - createdAt
     GetMessagesResDto:
       type: object
       properties:
@@ -1316,15 +1367,42 @@ components:
             $ref: '#/components/schemas/MessageDto'
       required:
         - messages
-    MarkNotificationsSeen:
+    MarkMessagesSeenDto:
       type: object
       properties:
-        ids:
+        messageIds:
           type: array
           items:
             type: string
       required:
-        - ids
+        - messageIds
+    WebPushSubscriptionKeys:
+      type: object
+      properties:
+        p256dh:
+          type: string
+        auth:
+          type: string
+      required:
+        - p256dh
+        - auth
+    WebPushSubscription:
+      type: object
+      properties:
+        endpoint:
+          type: string
+        keys:
+          $ref: '#/components/schemas/WebPushSubscriptionKeys'
+      required:
+        - endpoint
+        - keys
+    SaveWebPushSubscriptionDto:
+      type: object
+      properties:
+        webPushSubscription:
+          $ref: '#/components/schemas/WebPushSubscription'
+      required:
+        - webPushSubscription
     NotificationDto:
       type: object
       properties:
@@ -1335,21 +1413,24 @@ components:
         type:
           type: string
           enum:
-            - new_message
             - new_friendship_request
             - accepted_friendship_proposal
+            - rate_friend_invitation
             - other
         payload:
           type: object
         date:
           format: date-time
           type: string
+        seen:
+          type: boolean
       required:
         - _id
         - targetUserId
         - type
         - payload
         - date
+        - seen
     GetNotificationsResDto:
       type: object
       properties:
@@ -1359,3 +1440,12 @@ components:
             $ref: '#/components/schemas/NotificationDto'
       required:
         - notifications
+    MarkNotificationsSeen:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+      required:
+        - ids

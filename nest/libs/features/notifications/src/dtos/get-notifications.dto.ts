@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsBooleanString,
   IsDate,
   IsEnum,
   IsNotEmpty,
@@ -10,10 +11,6 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { NotificationPayload, NotificationType } from '../entities/notification.entity';
-import {
-  PaginatedReqDto,
-  PaginatedResDto,
-} from 'libs/utils/dtos/paginated.dto';
 
 export class NotificationDto {
   @IsString()
@@ -34,7 +31,18 @@ export class NotificationDto {
   @IsDate()
   @IsNotEmpty()
   date: Date;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  seen: boolean;
 }
+
+export class GetNotificationsReqDto {
+  @IsBooleanString()
+  @IsOptional()
+  onlyNew?: string;
+}
+
 
 export class GetNotificationsResDto {
   @IsArray()

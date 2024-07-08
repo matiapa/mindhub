@@ -1,6 +1,15 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class NotificationsConfig {
+  @IsString()
   @IsNotEmpty()
-  uuidNamespace: string = 'DEPRECATED_FIELD';
+  vapidSubject: string = process.env.NOTIFICATIONS_VAPID_SUBJECT;
+
+  @IsString()
+  @IsNotEmpty()
+  vapidPublicKey: string = process.env.NOTIFICATIONS_VAPID_PUBLIC_KEY;
+
+  @IsString()
+  @IsNotEmpty()
+  vapidPrivateKey: string = process.env.NOTIFICATIONS_VAPID_PRIVATE_KEY;
 }

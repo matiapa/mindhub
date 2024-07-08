@@ -29,7 +29,7 @@
       </v-list-item>
     </v-list>
 
-    <v-card-text>
+    <v-card-text v-if="showGenerationDate">
       Actualizada el {{ new Date(personality.generatedAt).toLocaleString("es-ES", {hour12: false}) }}
     </v-card-text>
   </v-card>
@@ -40,6 +40,10 @@
     props: {
       title: String,
       flat: {
+        type: Boolean,
+        default: false,
+      },
+      showGenerationDate: {
         type: Boolean,
         default: false,
       },
