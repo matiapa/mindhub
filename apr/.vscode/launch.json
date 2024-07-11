@@ -8,10 +8,36 @@
             "name": "Start APR",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/main.py",
             "console": "integratedTerminal",
             "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
-          },
-      
+            "program": "${workspaceFolder}/src/main.py",
+        },
+        {
+            "name": "BERT-MLP: Extract BERT embeddings",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
+            "program": "${workspaceFolder}/src/models/bert_mlp/training/embedding_extractor.py",
+        },
+        {
+            "name": "BERT-MLP: Train MLP network",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
+            "program": "${workspaceFolder}/src/models/bert_mlp/training/mlp_finetune_model.py",
+        },
+        {
+            "name": "BERT-MLP: Predict",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
+            "program": "${workspaceFolder}/src/models/bert_mlp/prediction/prediction.py",
+            "args": [
+                "-text", "likes the sound",
+            ]
+        },
     ]
 }

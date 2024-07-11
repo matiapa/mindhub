@@ -1,92 +1,107 @@
 import os
-import sys
-
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-import tensorflow as tf
-from sklearn.model_selection import StratifiedKFold
-import numpy as np
-import re
-import pickle
-import time
-import pandas as pd
-from pathlib import Path
 
-# add parent directory to the path as well, if running from the finetune folder
-parent_dir = os.path.dirname(os.getcwd())
-sys.path.insert(0, parent_dir)
-
+import sys
 sys.path.insert(0, os.getcwd())
 
-import models.bert_mlp.training.utils as utils
+import numpy as np
+import tensorflow as tf
+from sklearn.model_selection import StratifiedKFold
+
+import pickle
+from pathlib import Path
+
+from config import config
 
 
-def get_inputs(inp_dir, dataset, embed, embed_mode, mode, layer):
-    """Read data from pkl file and prepare for training."""
-    file = open(
-        inp_dir + dataset + "-" + embed + "-" + embed_mode + "-" + mode + ".pkl", "rb"
-    )
+def get_inputs():
+    file = open(f"{pkl_dir}/{dataset_name}-{embedding_model_name}.pkl", "rb")
     data = pickle.load(file)
-    author_ids, data_x, data_y = list(zip(*data))
+    data_x, data_y = list(zip(*data))
     file.close()
 
-    # alphaW is responsible for which BERT layer embedding we will be using
-    if layer == "all":
-        alphaW = np.full([n_hl], 1 / n_hl)
+    # print("Inputs shape pre-transformation", np.array(data_x).shape)
+    # print("Targets shape pre-transformation", np.array(data_y).shape)
 
+    # Transform the input and output
+    # The input is a matrix in the form (n_batches, n_layers, n_samples, hidden_dim), we need to transform it to (n_samples, hidden_dim).
+    # For doing so batches will be concatenated and layers will be ponderated using the weights specified by the alphaW vector.
+    # The output will only be concatenated, going from (n_batches, n_samples, out_dim) to (n_samples, out_dim).
+
+    if embedding_hl == "all":
+        alphaW = np.full([hidden_layers], 1 / hidden_layers)
     else:
-        alphaW = np.zeros([n_hl])
-        alphaW[int(layer) - 1] = 1
+        alphaW = np.zeros([hidden_layers])
+        alphaW[int(embedding_hl) - 1] = 1
 
-    # just changing the way data is stored (tuples of minibatches) and
-    # getting the output for the required layer of BERT using alphaW
     inputs = []
     targets = []
     n_batches = len(data_y)
-    for ii in range(n_batches):
-        inputs.extend(np.einsum("k,kij->ij", alphaW, data_x[ii]))
-        targets.extend(data_y[ii])
+    for i in range(n_batches):
+        inputs.extend(np.einsum("k,kij->ij", alphaW, data_x[i]))
+        targets.extend(data_y[i])
 
     inputs = np.array(inputs)
-    full_targets = np.array(targets)
+    targets = np.array(targets)
 
-    return inputs, full_targets
+    # print("Inputs shape post-transformation", inputs .shape)
+    # print("Targets shape post-transformation", targets.shape)
+
+    return inputs, targets
 
 
-def training(dataset, inputs, full_targets, inp_dir, save_model):
+def training(inputs, targets):
     # Train MLP model for each trait on 10-fold cross-validation
 
-    trait_labels = ["EXT", "NEU", "AGR", "CON", "OPN"]
+    trait_labels = ["O", "C", "E", "A", "N"]
         
-    n_splits = 10
+    n_splits = min(10, len(inputs)-1)
+
+    n_classes = 2
 
     best_models, best_model, best_accuracy = {}, None, 0.0
 
-    for trait_idx in range(full_targets.shape[1]):
-        # convert targets to one-hot encoding
-        targets = full_targets[:, trait_idx]
+    for trait_idx in range(targets.shape[1]):
+        print(f"\nTraining trait {trait_labels[trait_idx]}...")
 
+        # Get the targets for the current trait
+        trait_targets = targets[:, trait_idx]
+
+        # Create a k-fold cross-validation object
         skf = StratifiedKFold(n_splits=n_splits, shuffle=False)
-        k = -1
-        for train_index, test_index in skf.split(inputs, targets):
+
+        i = 0
+        for train_index, test_index in skf.split(inputs, trait_targets):
+            # Split the dataset into training and testing sets
+
             x_train, x_test = inputs[train_index], inputs[test_index]
-            y_train, y_test = targets[train_index], targets[test_index]
-            # converting to one-hot embedding
+            y_train, y_test = trait_targets[train_index], trait_targets[test_index]
+
+            print(f"Fold {i + 1}/{n_splits}: Using {len(x_train)} samples for training and {len(x_test)} for testing.")
+
+            # Convert targets to one-hot encoding
+
             y_train = tf.keras.utils.to_categorical(y_train, num_classes=n_classes)
             y_test = tf.keras.utils.to_categorical(y_test, num_classes=n_classes)
+            
+            # Define the neural network architecture
+
             model = tf.keras.models.Sequential()
 
-            # define the neural network architecture
             model.add(
                 tf.keras.layers.Dense(50, input_dim=hidden_dim, activation="relu")
             )
-            model.add(tf.keras.layers.Dense(n_classes))
+            model.add(
+                tf.keras.layers.Dense(n_classes, activation="softmax")
+            )
 
-            k += 1
             model.compile(
-                optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                 loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
                 metrics=["mse", "accuracy"],
             )
+
+            # Train the neural network
 
             history = model.fit(
                 x_train,
@@ -97,60 +112,50 @@ def training(dataset, inputs, full_targets, inp_dir, save_model):
                 verbose=0,
             )
 
+            # Check if the current model is the best so far
+
             max_val_accuracy = max(history.history["val_accuracy"])
 
-            # check if the current model is the best so far
             if max_val_accuracy > best_accuracy:
                 best_accuracy = max_val_accuracy
                 best_model = model
 
-        # store the best model for this trait
+            i += 1
+
+        # Store the best model for this trait
+
         best_models[trait_labels[trait_idx]] = best_model
 
-    # save the best models to separate files
-    if str(save_model).lower() == "yes":
-        path = inp_dir + "finetune_mlp_lm"
-        Path(path).mkdir(parents=True, exist_ok=True)
+    # Save the best models to separate files
 
-        for trait_label, best_model in best_models.items():
-            best_model.save(f"{path}/MLP_LM_{trait_label}.h5")
+    path = f"{pkl_dir}/finetune_mlp_lm/"
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+    for trait_label, best_model in best_models.items():
+        best_model.save(f"{path}/MLP_LM_{trait_label}.h5")
 
 
 if __name__ == "__main__":
-    (
-        inp_dir,
-        dataset,
-        lr,
-        batch_size,
-        epochs,
-        log_expdata,
-        embed,
-        layer,
-        mode,
-        embed_mode,
-        jobid,
-        save_model,
-    ) = utils.parse_args()
+    pkl_dir = config["pkl_dir"]
 
-    network = "MLP"
-    MODEL_INPUT = "LM_features"
-    print("{} : {} : {} : {} : {}".format(dataset, embed, layer, mode, embed_mode))
+    dataset_name = config["training"]["dataset_name"]
+    batch_size = config["training"]["batch_size"]
+    epochs = config["training"]["mlp"]["epochs"]
+    learning_rate = config["training"]["mlp"]["learning_rate"]
+    seed = config["training"]["seed"]
 
-    n_classes = 2
-    seed = jobid
+    embedding_model_name = config["embedding"]["model"]
+    embedding_hl = config["embedding"]["embedding_layer"]
+    hidden_layers = config["embedding"]["hidden_layers"]
+    hidden_dim = config["embedding"]["hidden_layer_dim"]
+
+    if seed == None:
+        seed = np.random.randint(0,1000)
+    print("Seed", seed)
+
     np.random.seed(seed)
     tf.random.set_seed(seed)
 
-    start = time.time()
-    path = "explogs/"
-
-    if re.search(r"base", embed):
-        n_hl = 12
-        hidden_dim = 768
-
-    elif re.search(r"large", embed):
-        n_hl = 24
-        hidden_dim = 1024
-
-    inputs, full_targets = get_inputs(inp_dir, dataset, embed, embed_mode, mode, layer)
-    training(dataset, inputs, full_targets, inp_dir, save_model)
+    inputs, targets = get_inputs()
+    
+    training(inputs, targets)
