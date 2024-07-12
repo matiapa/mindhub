@@ -3,8 +3,8 @@
     <v-card-title>Tus cuentas</v-card-title>
 
     <v-list>
-      <TwitterConnectionItem @new-connection="$emit('new-connection')" @removed-connection="$emit('removed-connection')"/>
-      <SpotifyConnectionItem @new-connection="$emit('new-connection')" @removed-connection="$emit('removed-connection')"/>
+      <TwitterConnectionItem @new-connection="twitterConnected" @removed-connection="$emit('removed-connection')"/>
+      <SpotifyConnectionItem @new-connection="$emit('new-connection')" @removed-connection="$emit('removed-connection')" ref="spotify"/>
     </v-list>
   </v-card>
 </template>
@@ -20,5 +20,12 @@ export default {
     TwitterConnectionItem,
     SpotifyConnectionItem
   },
+
+  methods: {
+    twitterConnected() {
+      this.$emit('new-connection');
+      (this.$refs.spotify as InstanceType<typeof SpotifyConnectionItem>).loadData();
+    }
+  }
 }
 </script>

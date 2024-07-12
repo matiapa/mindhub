@@ -1,10 +1,9 @@
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+# os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import sys
 parent_dir = os.path.dirname(os.getcwd())
-sys.path.insert(0, parent_dir)
-sys.path.insert(0, os.getcwd())
+sys.path.insert(0, f"{os.getcwd()}/src/models/bert_mlp")
 
 import numpy as np
 import torch
@@ -191,15 +190,11 @@ def predict(text):
     return scores
 
 
-def parse_args():
+if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("-text", type=str)
     args = ap.parse_args()
-    return ( args.text )
-
-
-if __name__ == "__main__":
-    text = parse_args().text
+    text = args.text
 
     pkl_dir = config["pkl_dir"]
 

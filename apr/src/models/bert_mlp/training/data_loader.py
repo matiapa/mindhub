@@ -10,12 +10,14 @@ from torch.utils.data import Dataset
 from preprocess.preprocess import preprocess_text
 
 
-def load_dataset(datafile, tokenizer, token_length):
+def load_dataset(datafiles, tokenizer, token_length):
     targets = []
     input_ids = []
 
-    # Read the data file
-    df = pd.read_csv(datafile)
+    # Load the data files
+    dfs = map(lambda x: pd.read_csv(x), datafiles)
+    df = pd.concat(dfs, ignore_index=True)
+    df.drop_duplicates(inplace=True)
 
     # Tokenize each text and make the (inputs, target) tuples
     for i in range(len(df)):
@@ -42,8 +44,8 @@ def load_dataset(datafile, tokenizer, token_length):
 
 
 class TorchDatasetMap(Dataset):
-    def __init__(self, datafile, tokenizer, token_length, DEVICE):
-        input_ids, targets = load_dataset(datafile, tokenizer, token_length)
+    def __init__(self, datafiles, tokenizer, token_length, DEVICE):
+        input_ids, targets = load_dataset(datafiles, tokenizer, token_length)
 
         input_ids = torch.from_numpy(np.array(input_ids)).long().to(DEVICE)
         targets = torch.from_numpy(np.array(targets)).long().to(DEVICE)

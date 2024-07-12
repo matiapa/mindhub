@@ -31,6 +31,7 @@ import { signInWithCode } from '@/libs/cognito';
 import _image from "@/assets/person-light.png"
 import { useMessageStore } from '@/stores/messages';
 import { useNotificationsStore } from '@/stores/notifications';
+import { useUserStore } from '@/stores/user';
 import { NotificationsApiFactory } from 'user-api-sdk';
 
 const urlB64ToUint8Array = (base64String: string) => {
@@ -82,6 +83,7 @@ export default {
 
             useMessageStore().setup(useWebPush);
             useNotificationsStore().setup(useWebPush);
+            useUserStore().setup();
 
             this.$router.push('/explore');
         },

@@ -45,7 +45,7 @@ export const useMessageStore = defineStore('messageStore', {
         // We cant use push because it will not trigger the reactivity
         this.newMessages = [...this.newMessages, newMessage];
 
-        console.log("Pushed new message", newMessage)
+        // console.log("Pushed new message", newMessage)
       });
     },
 

@@ -201,7 +201,7 @@
           
           this.interests.splice(index, 0, interest);
 
-          console.log(e);
+          console.error(e);
           this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
           this.snackbar.enabled = true
         }
@@ -238,7 +238,7 @@
             saving: false,
           };
         } catch (e) {
-          console.log(e);
+          console.error(e);
           this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
           this.snackbar.enabled = true
           this.newInterest.saving = false;

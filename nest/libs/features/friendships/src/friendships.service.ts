@@ -185,6 +185,7 @@ export class FriendshipsService {
           await this.recommendationService.getRecommendation(
             ofUserId,
             friendUserId,
+            true,
           ),
       ),
     );

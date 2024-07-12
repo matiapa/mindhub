@@ -114,6 +114,7 @@ import { useTheme } from 'vuetify'
 import _image from "@/assets/person-light.png"
 import { useMessageStore } from '@/stores/messages';
 import { useNotificationsStore } from '@/stores/notifications';
+import { useUserStore } from '@/stores/user';
 import '@/styles/styles.css';
 import AppNotificationsList from '@/components/notifications/AppNotificationsList.vue';
 import BrowserNotificationManager from '@/components/notifications/BrowserNotificationManager.vue';
@@ -132,6 +133,7 @@ export default {
     const useWebPush = localStorage.getItem("useWebPush") === "true";
     useMessageStore().setup(useWebPush);
     useNotificationsStore().setup(useWebPush);
+    useUserStore().setup();
 
     return {
       theme,

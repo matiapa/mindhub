@@ -240,7 +240,7 @@ export default {
             // if (!this.userData.user.rating) missingFields.push('rating');
 
             if (!missingFields.length) return;
-            console.log('Completing the following fields', missingFields)
+            // console.log('Completing the following fields', missingFields)
 
             try {
                 const res = await usersApi.usersControllerGetById(this.userData.user._id, missingFields);

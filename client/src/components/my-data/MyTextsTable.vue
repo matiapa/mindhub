@@ -192,7 +192,7 @@
           
           this.texts.splice(index, 0, text);
 
-          console.log(e);
+          console.error(e);
           this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
           this.snackbar.enabled = true
         }
@@ -247,7 +247,7 @@
           this.newText.saving = false;
           this.newText.showDialog = false;
         } catch (e) {
-          console.log(e);
+          console.error(e);
           this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
           this.snackbar.enabled = true
           this.newText.saving = false;

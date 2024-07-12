@@ -1,41 +1,7 @@
 <template>
     <v-container>
-        <v-card v-if="state == 'loading'" class="mx-auto" max-width="600">
-            <v-card-title class="headline">Cargando</v-card-title>
-
-            <v-card-text>
-                <v-progress-linear indeterminate></v-progress-linear>
-            </v-card-text>
-        </v-card>
-
-        <v-card v-else-if="state == 'create'" class="mx-auto" max-width="600">
-            <v-card-title class="headline">Creá tu perfil</v-card-title>
-
-            <v-card-subtitle>Por favor, completá tus datos para finalizar la creación de tu cuenta</v-card-subtitle>
-
-            <v-card-text>
-                <v-form ref="form">
-                    <v-select label="Género" v-model="gender" :items="presentation.genders" item-title="title"
-                        item-value="value"></v-select>
-
-                    <v-menu v-model="showDatePicker" :close-on-content-click="false">
-                        <template v-slot:activator="{ props }">
-                            <v-text-field v-model="formattedBirthday" label="Fecha de nacimiento" readonly
-                                v-bind="props"></v-text-field>
-                        </template>
-                        <v-date-picker v-model="birthday" no-title @input="showDatePicker = false"></v-date-picker>
-                    </v-menu>
-
-                    <v-textarea label="Biografía" v-model="biography"></v-textarea>
-
-                    <v-btn v-if="!saving" @click="save">Continuar</v-btn>
-                    <v-progress-circular v-else indeterminate color="white"></v-progress-circular>
-                </v-form>
-            </v-card-text>
-        </v-card>
-
-        <v-card v-else-if="state == 'edit'" class="mx-auto" max-width="600">
-            <v-card-title v-if="firstCompletion" class="headline">Completá tu perfil</v-card-title>
+        <v-card class="mx-auto" max-width="600">
+            <v-card-title v-if="mode == 'create'" class="headline">Completá tu perfil</v-card-title>
             <v-card-title v-else class="headline">Editá tu perfil</v-card-title>
 
             <v-card-text>
@@ -69,17 +35,9 @@
 
                     <v-textarea label="Biografía" v-model="biography"></v-textarea>
 
-                    <v-btn v-if="!saving" @click="save">Guardar</v-btn>
+                    <v-btn v-if="!saving" @click="save" :disabled="!name || !gender || !birthday">Guardar</v-btn>
                     <v-progress-circular v-else indeterminate color="white"></v-progress-circular>
                 </v-form>
-            </v-card-text>
-        </v-card>
-
-        <v-card v-else class="mx-auto" max-width="600">
-            <v-card-title class="headline">Lo sentimos</v-card-title>
-
-            <v-card-text>
-                Ha ocurrido un error
             </v-card-text>
         </v-card>
     </v-container>
@@ -90,22 +48,20 @@
 </template>
 
 <script lang="ts">
-import { UsersApiFactory } from 'user-api-sdk/api';
-import axios from 'axios';
 import { useUserStore } from '@/stores/user';
 import _avatar from "@/assets/avatar.png"
-import { jwtDecode } from 'jwt-decode';
+import { UsersApiFactory, type GetOwnUserResDto } from 'user-api-sdk'
 
-let usersApi: ReturnType<typeof UsersApiFactory>;
+let userStore = useUserStore();
 
 export default {
     data: () => ({
-        state: 'loading',
+        mode: 'edit' as 'create' | 'edit',
         saving: false,
         showDatePicker: false,
 
         name: '',
-        gender: 'man' as 'man' | 'woman' | 'other',
+        gender: '' as 'man' | 'woman' | 'other',
         birthday: null as Date | null,
         biography: '',
         avatar: _avatar,
@@ -120,8 +76,6 @@ export default {
             ]
         },
 
-        firstCompletion: false,
-
         snackbar: {
             enabled: false,
             text: ''
@@ -131,63 +85,41 @@ export default {
     computed: {
         formattedBirthday() {
             return this.birthday ? new Date(this.birthday).toLocaleDateString('en-GB') : null;
+        },
+        ownUser() {
+            return userStore.ownUser;
         }
     },
 
     methods: {
-        async loadData() {
-            this.state = 'loading';
-
-            try {
-                const ownUser = await useUserStore().fetchOwnUser();
-
+        preloadFields(ownUser: GetOwnUserResDto) {
+            if (ownUser.profile.completed) {
+                this.mode = 'edit';
                 this.name = ownUser.profile.name;
                 this.gender = ownUser.profile.gender;
                 this.birthday = ownUser.profile.birthday ? new Date(ownUser.profile.birthday) : null;
                 this.biography = ownUser.profile.biography ?? "";
-
-                const idToken = localStorage.getItem('id_token')!;
-                const ownUserId = jwtDecode(idToken).sub;
-                this.pictureUrl = `${import.meta.env.VITE_USER_PICTURES_BUCKET_URL}/${ownUserId}`
-
-                this.state = 'edit';
-            } catch (error) {
-                if (axios.isAxiosError(error) && error.response?.status === 404) {
-                    this.state = 'create';
-                } else {
-                    console.error(error);
-                    this.snackbar.text = 'Ha ocurrido un error.'
-                    this.snackbar.enabled = true
-                    this.state = 'error';
-                }
+            } else {
+                this.mode = 'create';
+                this.name = ownUser.profile.name;
             }
         },
 
         async save() {
             this.saving = true;
+            const isFirstCompletion = !(this.ownUser!.profile.completed);
 
-            if(!this.name) {
-                this.snackbar.text = 'Por favor, selecciona tu nombre';
-                this.snackbar.enabled = true;
-                this.saving = false;
-                return;
-            }
-
-            if(!this.birthday) {
-                this.snackbar.text = 'Por favor, selecciona tu fecha de nacimiento';
-                this.snackbar.enabled = true;
-                this.saving = false;
-                return;
-            }
-
-            await usersApi.usersControllerUpdateProfile({
-                gender: this.gender,
-                birthday: this.birthday.toISOString(),
-                biography: this.biography
-            });
+            await userStore.updateProfile(this.gender, this.birthday!, this.biography);
 
             if (this.selectedFile) {
                 // Upload the profile picture
+
+                const idToken = localStorage.getItem('id_token')!;
+                const usersApi = UsersApiFactory({
+                    basePath: import.meta.env.VITE_API_URL,
+                    accessToken: () => idToken,
+                    isJsonMime: () => true,
+                });
 
                 const res = await usersApi.usersControllerGetPictureUploadUrl(this.selectedFile.type);
                 const uploadUrl = res.data;
@@ -203,22 +135,25 @@ export default {
                     throw new Error('Failed to upload file');
                 }
 
-                console.log('File uploaded succesfully')
+                const pictureVersion = Math.random().toString(36).substring(7);
+                localStorage.setItem('pictureVersion', pictureVersion);
             }
             
-            localStorage.setItem('profile_completed', "true");
-
             this.saving = false;
             this.snackbar.text = 'Perfil actualizado';
             this.snackbar.enabled = true;
 
-            if (this.firstCompletion) {
+            if (isFirstCompletion) {
                 this.$router.push('/explore');
             }
         }
     },
 
     watch: {
+        ownUser(ownUser: GetOwnUserResDto) {
+            this.preloadFields(ownUser);
+        },
+
         selectedFile () {
             if (this.selectedFile) {
                 const reader = new FileReader();
@@ -233,17 +168,17 @@ export default {
     },
 
     async created() {
-        const idToken = localStorage.getItem('id_token')!;
+        this.preloadFields(this.ownUser!);
 
-        usersApi = UsersApiFactory({
-            basePath: import.meta.env.VITE_API_URL,
-            accessToken: () => idToken,
-            isJsonMime: () => true,
-        });
-
-        this.firstCompletion = this.$route.query.firstCompletion === 'true';
-
-        this.loadData();
+        const ownUserId = localStorage.getItem('uuid')!;
+        let pictureVersion = localStorage.getItem('pictureVersion');
+        if (!pictureVersion) {
+            // We use picture version to invalidate cache when the image is updated
+            pictureVersion = Math.random().toString(36).substring(7);
+            localStorage.setItem('pictureVersion', pictureVersion);
+        }
+        Math.random().toString(36).substring(7);
+        this.pictureUrl = `${import.meta.env.VITE_USER_PICTURES_BUCKET_URL}/${ownUserId}?v=${pictureVersion}`
     },
 }
 </script>

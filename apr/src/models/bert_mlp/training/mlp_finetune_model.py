@@ -1,8 +1,9 @@
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+# os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import sys
-sys.path.insert(0, os.getcwd())
+parent_dir = os.path.dirname(os.getcwd())
+sys.path.insert(0, f"{os.getcwd()}/src/models/bert_mlp")
 
 import numpy as np
 import tensorflow as tf
@@ -15,7 +16,7 @@ from config import config
 
 
 def get_inputs():
-    file = open(f"{pkl_dir}/{dataset_name}-{embedding_model_name}.pkl", "rb")
+    file = open(f"{pkl_dir}/embeddings/{dataset_name}-{embedding_model_name}.pkl", "rb")
     data = pickle.load(file)
     data_x, data_y = list(zip(*data))
     file.close()
@@ -97,7 +98,7 @@ def training(inputs, targets):
 
             model.compile(
                 optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-                loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
                 metrics=["mse", "accuracy"],
             )
 

@@ -107,6 +107,7 @@ export default {
   data: () => ({
     sortBy: 'compatibility' as SortBy,
     loading: true,
+    error: false,
     recommendations: [] as User[],
     generationDate: null as Date | null,
     page: 0,
@@ -124,19 +125,25 @@ export default {
 
       // console.log('Getting recommendations', this.page * recommendationsPerScroll, recommendationsPerScroll)
 
-      const res = await recommApi.recommendationsControllerGetRecommendations(
-        ['distance'],
-        sortMap[this.sortBy],
-        this.page * recommendationsPerScroll,
-        recommendationsPerScroll
-      );
+      try {
+        const res = await recommApi.recommendationsControllerGetRecommendations(
+          ['distance'],
+          sortMap[this.sortBy],
+          this.page * recommendationsPerScroll,
+          recommendationsPerScroll
+        );
 
-      if (res.data.recommendations.length > 0) {
-        this.recommendations.push(...res.data.recommendations as any as User[]);
-        this.generationDate = new Date(res.data.recommendations[0].generatedAt);
+        if (res.data.recommendations.length > 0) {
+          this.recommendations.push(...res.data.recommendations as any as User[]);
+          this.generationDate = new Date(res.data.recommendations[0].generatedAt);
+        }
+
+        this.page += 1;
+      } catch (e) {
+        console.error(e);
+        this.snackbar.text = 'Ups! Ocurrio un error, por favor intentalo nuevamente'
+        this.snackbar.enabled = true
       }
-
-      this.page += 1;
 
       this.loading = false
     },
@@ -218,7 +225,7 @@ export default {
 
         navigator.geolocation.getCurrentPosition(this.handleLocationSuccess, this.handleLocationError);
       } else {
-        console.log('Geolocation is not supported by this browser.');
+        console.warn('Geolocation is not supported by this browser.');
         this.snackbar.text = "No pudimos obtener tu ubicación, no se mostrarán usuarios cercanos.";
         this.snackbar.enabled = true;
 
@@ -236,7 +243,7 @@ export default {
     },
 
     async handleLocationError(error: GeolocationPositionError) {
-      console.log('Error getting location', error.code, error.message)
+      console.error('Error getting location', error.code, error.message)
 
       switch(error.code) {
         case error.PERMISSION_DENIED:

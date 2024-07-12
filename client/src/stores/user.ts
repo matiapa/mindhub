@@ -1,27 +1,50 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { UsersApiFactory, type GetOwnUserResDto } from 'user-api-sdk'
+import { UpdateProfileReqDtoGenderEnum, UsersApiFactory, type GetOwnUserResDto } from 'user-api-sdk'
 
-export const useUserStore = defineStore('data', () => {
-  const ownUser = ref<GetOwnUserResDto | null>(null)
+let usersApi: ReturnType<typeof UsersApiFactory>;
 
-  async function fetchOwnUser() {
-    if (ownUser.value !== null)
-      return ownUser.value;
+export const useUserStore = defineStore('userStore', {
+  state: () => ({
+    ownUser: null as GetOwnUserResDto | null,
+  }),
 
-    const idToken = localStorage.getItem('id_token')!;
+  actions: {
+    async setup() {
+      const idToken = localStorage.getItem('id_token');
+      if (!idToken) {
+        return;
+      }
+  
+      usersApi = UsersApiFactory({
+          basePath: import.meta.env.VITE_API_URL,
+          accessToken: () => idToken,
+          isJsonMime: () => true,
+      });
+  
+      await this.fetchOwnUser();
+    },
+  
+    async fetchOwnUser() {
+      if (this.ownUser !== null)
+        return this.ownUser;
+  
+      const res = await usersApi.usersControllerGetOwnUser();
+      this.ownUser = res.data;
+  
+      return this.ownUser;
+    },
+  
+    async updateProfile(gender: UpdateProfileReqDtoGenderEnum, birthday: Date, biography: string) {
+      await usersApi.usersControllerUpdateProfile({
+        gender,
+        birthday: birthday.toISOString(),
+        biography
+      });
 
-    const usersApi = UsersApiFactory({
-        basePath: import.meta.env.VITE_API_URL,
-        accessToken: () => idToken,
-        isJsonMime: () => true,
-    });
-
-    const res = await usersApi.usersControllerGetOwnUser();
-    ownUser.value = res.data;
-
-    return ownUser.value;
-  }
-
-  return { fetchOwnUser }
-})
+      this.ownUser!.profile.gender = gender;
+      this.ownUser!.profile.birthday = birthday.toISOString();
+      this.ownUser!.profile.biography = biography;
+      this.ownUser!.profile.completed = true;
+    }
+  },
+});

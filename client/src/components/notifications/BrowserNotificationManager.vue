@@ -33,13 +33,13 @@ export default {
           // console.log('Notification permission granted.');
           return true;
         } else {
-          console.log('Notification permission denied.');
+          console.warn('Notification permission denied.');
           this.snackbar.text = 'No se mostrarán notificaciones si no se concede el permiso';
           this.snackbar.enabled = true;
           return false;
         }
       } else {
-        console.log('Browser does not support notifications.');
+        console.warn('Browser does not support notifications.');
         this.snackbar.text = 'No se mostrarán notificaciones dado que tu navegador no las soporta';
         this.snackbar.enabled = true;
         return false;

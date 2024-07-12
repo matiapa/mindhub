@@ -74,8 +74,13 @@ export class RecommendationsService {
   public async getRecommendation(
     targetUserId: string,
     recommendedUserId: string,
+    invertedFallback: boolean = false,
   ) {
-    return this.recommendationRepo.getOne({ targetUserId, recommendedUserId });
+    let recomm = await this.recommendationRepo.getOne({ targetUserId, recommendedUserId });
+    if (!recomm && invertedFallback) {
+      recomm = await this.recommendationRepo.getOne({ targetUserId: recommendedUserId, recommendedUserId: targetUserId });
+    }
+    return recomm;
   }
 
   public async reviewRecommendation(

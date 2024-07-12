@@ -1,8 +1,9 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import sys
-sys.path.insert(0, os.getcwd())
+parent_dir = os.path.dirname(os.getcwd())
+sys.path.insert(0, f"{os.getcwd()}/src/models/bert_mlp")
 
 import numpy as np
 import torch
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     pkl_dir = config["pkl_dir"]
 
     dataset_name = config["training"]["dataset_name"]
-    dataset_path = config["training"]["dataset_path"]
+    datasets_paths = config["training"]["datasets_paths"]
     batch_size = config["training"]["batch_size"]
 
     embedding_model = config["embedding"]["model"]
@@ -90,7 +91,7 @@ if __name__ == "__main__":
 
     print("Loading dataset...")
 
-    map_dataset = TorchDatasetMap(dataset_path, tokenizer, token_length, DEVICE)
+    map_dataset = TorchDatasetMap(datasets_paths.split(","), tokenizer, token_length, DEVICE)
     data_loader = DataLoader(dataset=map_dataset, batch_size=batch_size, shuffle=False)
 
     # Extract the embeddings from the dataset
@@ -104,13 +105,13 @@ if __name__ == "__main__":
         with torch.no_grad():
             all_targets.append(targets.cpu().numpy())
             extract_bert_features(input_ids, hidden_features)
-            
-    print("Hidden features shape", np.array(hidden_features).shape)
 
     # Store the embeddings in a pickle file
 
+    print("Saving embeddings...")
+
     Path(pkl_dir).mkdir(parents=True, exist_ok=True)
-    file = open(f"{pkl_dir}/{dataset_name}-{embedding_model}.pkl", "wb")
+    file = open(f"{pkl_dir}/embeddings/{dataset_name}-{embedding_model}.pkl", "wb")
     pickle.dump(zip(hidden_features, all_targets), file)
     file.close()
 

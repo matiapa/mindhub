@@ -5,6 +5,7 @@ description = "Automatic Personality Recognition service"
 authors = ["Matías Apablaza <mapablaza@itba.edu.ar>", "Yash Mehta <yashsmehta95@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.9, <3.12"
@@ -23,6 +24,7 @@ tweet-preprocessor = "^0.6.0"
 [[tool.poetry.source]]
 name = "pytorch-gpu-src"
 url = "https://download.pytorch.org/whl/cu118"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]

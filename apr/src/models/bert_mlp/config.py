@@ -1,4 +1,12 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv('.env')
+environment = os.environ.get('ENVIRONMENT', 'local')
+
+print(f"Loading config with environment = {environment}...")
+load_dotenv(f'envs/.env.{environment}')
+load_dotenv('envs/.env.default')
 
 config = {
     'pkl_dir': os.getenv("BERT_MLP_PKL_DIR", "src/models/bert_mlp/pkl"),
@@ -11,13 +19,13 @@ config = {
         'segment_overlap': os.getenv("BERT_MLP_EMBEDDING_SEGMENT_OVERLAP", 256)
     },
     'finetune': {
-        'model': os.getenv("BERT_MLP_FINETUNE_MODEL", "mlp")
+        'model': os.getenv("BERT_MLP_FINETUNE_MODEL", "mlp_lm")
     },
     'training': {
-        'dataset_name': os.getenv("BERT_MLP_TRAINING_DATASET_NAME", "test"),
-        'dataset_path': os.getenv("BERT_MLP_TRAINING_DATASET_PATH", "datasets/discrete/test.csv"),
+        'dataset_name': os.getenv("BERT_MLP_TRAINING_DATASET_NAME"),
+        'datasets_paths': os.getenv("BERT_MLP_TRAINING_DATASETS_PATHS"),
         'batch_size': os.getenv("BERT_MLP_TRAINING_BATCH_SIZE", 32),
-        'seed': os.getenv("BERT_MLP_TRAINING_SEED", 390),
+        'seed': os.getenv("BERT_MLP_TRAINING_SEED"),
         'mlp': {
             'epochs': os.getenv("BERT_MLP_TRAINING_MLP_EPOCHS", 10),
             'learning_rate': os.getenv("BERT_MLP_TRAINING_MLP_LEARNING_RATE", 0.0005)
