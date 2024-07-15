@@ -1,3 +1,4 @@
 **/__pycache__/
 
-# src/models/bert_mlp/*
+src/models/bert_mlp/pkl/embeddings/*
+# src/models/bert_mlp/pkl/finetune_mlp_lm/*

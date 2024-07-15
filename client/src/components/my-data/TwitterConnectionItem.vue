@@ -18,8 +18,14 @@
       <v-card-title>Conexión a Twitter</v-card-title>
 
       <v-card-text>  
-        <template v-if="state == 'initial'">
-          Por el momento no es posible conectar tu cuenta de Twitter mediante login, pero puedes subir un archivo con tus datos.
+        <!-- state == 'initial' -->
+        <template v-if="true">
+          <p>
+            Por el momento no es posible conectar tu cuenta de Twitter mediante login, pero podés subir un archivo con tus datos.
+            Para obtenerlo visitá este <a href="https://x.com/settings/download_your_data" target="_blank">link</a> y
+            seleccioná "Solicitar archivo", en unas horas Twitter te enviará el archivo a tu mail y podrás subirlo acá.
+          </p>
+          
           <v-file-input class="my-6" v-model="selectedFile" label="Archivo de datos" accept="application/zip"/>
           <v-btn @click="uploadFile" :disabled="!selectedFile">Subir</v-btn>
         </template >

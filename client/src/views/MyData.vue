@@ -16,8 +16,7 @@
       </v-col>
 
       <v-col cols="12" md="3">
-        <PersonalityCard v-if="ownPersonality" title="Tu Personalidad" :personality="ownPersonality" :showGenerationDate="true"/>
-
+        <PersonalityCard v-if="ownPersonality" title="Tu Personalidad" :personality="ownPersonality" :showGenerationDate="true" />
         <v-card v-else class="pa-3">
           <v-card-title>Tu personalidad</v-card-title>
           <v-card-text class="mt-3">

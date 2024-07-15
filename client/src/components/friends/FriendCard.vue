@@ -1,5 +1,5 @@
 <template>
-    <ProfilePreviewCard :user="user">
+    <ProfilePreviewCard :user="user" :isFriend="true" @open-chat="(interest) => openChatWithSuggestion(interest)">
         <v-badge color="error" dot offset-x="10" offset-y="10" :model-value="messageStore.newMessages.some(m => m.sender == user.user._id)">
             <v-btn icon="mdi-chat" @click="showChatDialog = true"/>
         </v-badge>
@@ -29,7 +29,7 @@
     </v-dialog>
 
     <v-dialog v-model="showChatDialog" class="dialog-responsive">
-        <ChatCard :user="user"/>
+        <ChatCard :user="user" :suggestedTopic="suggestedChatTopic"/>
     </v-dialog>
 
     <v-snackbar :timeout="2000" v-model="snackbar.enabled">
@@ -44,6 +44,7 @@ import { RatesApiFactory } from 'user-api-sdk';
 import type User from '@/types/user.interface';
 import type { PropType } from 'vue';
 import { useMessageStore } from '@/stores/messages';
+import { type SharedInterestDto } from 'user-api-sdk';
 
 let ratesApi: ReturnType<typeof RatesApiFactory>;
 
@@ -64,6 +65,7 @@ export default {
         return {
             showRateDialog: false,
             showChatDialog: false,
+            suggestedChatTopic: "",
             saving: false,
             rating: this.user.user.rating,
             snackbar: {
@@ -105,6 +107,12 @@ export default {
             this.rating = this.user.user.rating;
             this.showRateDialog = false;
         },
+
+        async openChatWithSuggestion(interest: SharedInterestDto) {
+            this.suggestedChatTopic = interest.resource.name;
+            console.log("Opening chat with", this.user.user._id, interest);
+            this.showChatDialog = true;
+        },
     },
 
     created() {
@@ -117,11 +125,16 @@ export default {
         });
 
         if (this.$route.path.includes('chat') && this.$route.params.userId == this.user.user._id) {
+            // console.log('showing chat dialog');
             this.showChatDialog = true;
+        } else {
+            this.showChatDialog = false;
         }
 
         if (this.$route.path.includes('rate') && this.$route.params.userId == this.user.user._id) {
             this.showRateDialog = true;
+        } else {
+            this.showRateDialog = false;
         }
     },
 
@@ -144,6 +157,7 @@ export default {
                 this.$router.push(`/friends/${this.user.user._id}/chat`)
             } else {
                 this.$router.push('/friends');
+                this.suggestedChatTopic = "";
             }
         },
         showRateDialog(val) {

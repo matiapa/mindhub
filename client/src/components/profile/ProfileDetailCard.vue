@@ -17,35 +17,35 @@
                 <v-card-title>{{ userData.user.profile.name }}</v-card-title>
 
                 <div class="mt-2">
-                    <v-tooltip bottom>
+                    <v-tooltip location="end">
                         <template v-slot:activator="{ props }">
                             <v-chip v-bind="props">{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
                         </template>
                         <span>Género</span>
                     </v-tooltip>
 
-                    <v-tooltip bottom>
+                    <v-tooltip location="end">
                         <template v-slot:activator="{ props }">
                             <v-chip v-bind="props" class="ml-2">{{ user.user.profile.age }} años</v-chip>
                         </template>
                         <span>Edad</span>
                     </v-tooltip>
 
-                    <v-tooltip bottom>
+                    <v-tooltip location="end">
                         <template v-slot:activator="{ props }">
                             <v-chip v-bind="props" class="ml-2" v-if="user.user.distance">{{ user.user.distance }} km</v-chip>
                         </template>
                         <span>Distancia</span>
                     </v-tooltip>
                     
-                    <v-tooltip bottom>
+                    <v-tooltip location="end">
                         <template v-slot:activator="{ props }">
                             <v-chip v-bind="props" class="ml-2">{{ inactiveHoursText(user.user.inactiveHours) }}</v-chip>
                         </template>
                         <span>Activo hace</span>
                     </v-tooltip>
 
-                    <v-tooltip bottom>
+                    <v-tooltip location="end">
                         <template v-slot:activator="{ props }">
                             <v-chip v-bind="props" v-if="user.user.isFake" class="ml-2">🤖</v-chip>
                         </template>
@@ -70,7 +70,7 @@
                 <v-list>
                     <v-list-item>
                         <template v-slot:prepend>
-                            <v-tooltip bottom>
+                            <v-tooltip location="end">
                                 <template v-slot:activator="{ props }">
                                     <v-icon v-bind="props">mdi-star</v-icon>
                                 </template>
@@ -78,10 +78,15 @@
                             </v-tooltip>
                         </template>
 
-                        <v-progress-linear :model-value="userData.score.global * 100" height="6"></v-progress-linear>
+                        <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-progress-linear :model-value="userData.score.global * 100" v-bind="props"></v-progress-linear>
+                            </template>
+                            <span>{{Math.round(userData.score.global * 10000) / 100 }}%</span>
+                        </v-tooltip>
 
                         <template v-slot:append>
-                            <v-tooltip bottom>
+                            <v-tooltip location="end">
                                 <template v-slot:activator="{ props }">
                                 <v-icon v-bind="props">mdi-information</v-icon>
                                 </template>
@@ -90,9 +95,10 @@
                             </v-tooltip>
                         </template>
                     </v-list-item>
+
                     <v-list-item>
                         <template v-slot:prepend>
-                            <v-tooltip bottom>
+                            <v-tooltip location="end">
                                 <template v-slot:activator="{ props }">
                                     <v-icon v-bind="props">mdi-account-multiple</v-icon>
                                 </template>
@@ -100,10 +106,15 @@
                             </v-tooltip>
                         </template>
 
-                        <v-progress-linear :model-value="userData.score.friendship.score * 100" height="6"></v-progress-linear>
+                        <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-progress-linear :model-value="userData.score.friendship.score * 100" v-bind="props"></v-progress-linear>
+                            </template>
+                            <span>{{Math.round(userData.score.friendship.score * 10000) / 100 }}%</span>
+                        </v-tooltip>
 
                         <template v-slot:append>
-                            <v-tooltip bottom>
+                            <v-tooltip location="end">
                                 <template v-slot:activator="{ props }">
                                     <v-icon v-bind="props">mdi-information</v-icon>
                                 </template>
@@ -111,24 +122,30 @@
                             </v-tooltip>
                         </template>
                     </v-list-item>
+
                     <v-list-item>
                         <template v-slot:prepend>
-                            <v-tooltip bottom>
+                            <v-tooltip location="end">
                                 <template v-slot:activator="{ props }">
                                     <v-icon v-bind="props">mdi-music</v-icon>
                                 </template>
-                                <span>Indica el grado de afinidad que tienen en cuanto a intereses en común</span>
+                                <span>Afinidad de intereses</span>
                             </v-tooltip>
                         </template>
 
-                        <v-progress-linear :model-value="userData.score.interests.score * 100" height="6"></v-progress-linear>
+                        <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-progress-linear :model-value="userData.score.interests.score * 100" v-bind="props"></v-progress-linear>
+                            </template>
+                            <span>{{Math.round(userData.score.interests.score * 10000) / 100 }}%</span>
+                        </v-tooltip>
 
                         <template v-slot:append>
-                            <v-tooltip bottom>
+                            <v-tooltip location="end">
                                 <template v-slot:activator="{ props }">
                                     <v-icon v-bind="props">mdi-information</v-icon>
                                 </template>
-                                <span>Nivel de afinidad de intereses con {{ userData.user.profile.name }}</span>
+                                <span>Indica el grado de afinidad que tienen en cuanto a intereses en común</span>
                             </v-tooltip>
                         </template>
                     </v-list-item>
@@ -177,6 +194,7 @@
                                         {{ interest.resource.name }}
                                     </template>
                                     <template v-slot:append>
+                                        <v-btn flat icon="mdi-chat" @click="$emit('open-chat', interest)"/>
                                         <v-btn flat icon="mdi-open-in-new" :href="getResourceUrl(interest.resource.id, category.key)" target="_blank"/>
                                     </template>
                                 </v-list-item>
@@ -211,7 +229,14 @@ export default {
             type: Object as PropType<User>,
             required: true
         },
+        isFriend: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
     },
+
+    emits: ["open-chat"],
 
     data() {
         return {
@@ -279,7 +304,7 @@ export default {
                 const days = Math.floor(inactiveHours / 24);
                 return `${days} ${days > 1 ? "días" : "día"}`;
             }
-        }
+        },
     },
 
     created() {

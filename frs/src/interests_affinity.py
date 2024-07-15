@@ -1,7 +1,7 @@
 import numpy as np
 from db import interests, preferences
 
-INTEREST_AFFINITY_GROWTH_RATE = 1
+INTEREST_AFFINITY_GROWTH_RATE = 0.046
 
 INTEREST_RELEVANCE_WEIGHTS = {
     'normal': 1,

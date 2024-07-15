@@ -99,7 +99,10 @@ def extract_text_embedding(text, tokenizer, model):
     with torch.no_grad():
         for segment in segments:
             inputs = tokenizer(
-                " ".join(segment), return_tensors="pt", padding=True, truncation=True
+                " ".join(segment),
+                return_tensors="pt",
+                padding=True,
+                truncation=True
             )
             inputs = inputs.to(DEVICE)
             # print("Inputs shape", inputs["input_ids"].shape)

@@ -12,8 +12,9 @@ from transformers import BertTokenizer, BertModel
 
 import pickle
 from pathlib import Path
-
 from data_loader import TorchDatasetMap
+from tqdm import tqdm
+
 from config import config
 
 
@@ -37,23 +38,25 @@ def get_embedding_model(embedding_model):
     return model, tokenizer
 
 
-def extract_bert_features(input_ids, hidden_features):
-    tmp = []
-    bert_output = model(input_ids)
-
-    print("Inputs shape", input_ids.shape)
-    print("Inputs", input_ids)
+def extract_bert_features(input_ids, attention_masks, hidden_features): 
+    # print("> Inputs shape", input_ids.shape)
+    
+    bert_output = model(input_ids, attention_mask=attention_masks)
 
     hidden_layers = bert_output[2]
 
-    for i in range(n_hl):
-        token_embeddings = hidden_layers[i].cpu().numpy()
+    # For each hidden layer, get a text embedding by averaging all token embeddings
+
+    layer_text_embeddings = []
+    for i in tqdm(range(n_hl), desc=">>>"):
+        layer_token_embeddings = hidden_layers[i].cpu().numpy()
         # print("Token embeddings shape", token_embeddings.shape)
 
-        # For each text take the mean of all its token embeddings
-        tmp.append(token_embeddings.mean(axis=1))
+        layer_text_embedding = layer_token_embeddings.mean(axis=1)
 
-    hidden_features.append(np.array(tmp))
+        layer_text_embeddings.append(layer_text_embedding)
+
+    hidden_features.append(np.array(layer_text_embeddings))
 
 
 if __name__ == "__main__":    
@@ -80,7 +83,7 @@ if __name__ == "__main__":
 
     # Load the embedding model
 
-    print("Loading embedding model...")
+    print("\n> Loading embedding model...")
 
     model, tokenizer = get_embedding_model(embedding_model)
     if DEVICE == torch.device("cuda"):
@@ -89,30 +92,37 @@ if __name__ == "__main__":
 
     # Load the preprocessed dataset
 
-    print("Loading dataset...")
+    print("\n> Loading dataset...")
 
     map_dataset = TorchDatasetMap(datasets_paths.split(","), tokenizer, token_length, DEVICE)
     data_loader = DataLoader(dataset=map_dataset, batch_size=batch_size, shuffle=False)
 
+    print(f">> Finished loading dataset, loaded {len(map_dataset)} samples")
+
     # Extract the embeddings from the dataset
 
-    print("Extracting embeddings...")
+    print("\n> Extracting embeddings...")
 
     hidden_features = []
     all_targets = []
 
-    for input_ids, targets in data_loader:
+    batch = 0
+    for input_ids, attention_masks, targets in data_loader:
+        print(f">> Batch {batch}/{len(data_loader)}")
         with torch.no_grad():
             all_targets.append(targets.cpu().numpy())
-            extract_bert_features(input_ids, hidden_features)
+            
+            extract_bert_features(input_ids, attention_masks, hidden_features)
+            
+            batch += 1
 
     # Store the embeddings in a pickle file
 
-    print("Saving embeddings...")
+    print("\n> Saving embeddings...")
 
     Path(pkl_dir).mkdir(parents=True, exist_ok=True)
     file = open(f"{pkl_dir}/embeddings/{dataset_name}-{embedding_model}.pkl", "wb")
     pickle.dump(zip(hidden_features, all_targets), file)
     file.close()
 
-    print(f"Finished extracting embeddings for {dataset_name} dataset")
+    print(f"\n> Finished extracting embeddings for {dataset_name} dataset")

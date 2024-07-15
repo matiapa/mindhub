@@ -3,7 +3,7 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 
-    // ~/.local/bin/poetry install
+    // ~/.local/bin/poetry shell
 
     "version": "0.2.0",
     "configurations": [
@@ -14,6 +14,14 @@
             "console": "integratedTerminal",
             "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
             "program": "${workspaceFolder}/src/main.py",
+        },
+        {
+            "name": "BERT-MLP: Preprocess dataset",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "python": "/home/matiapa/.cache/pypoetry/virtualenvs/apr-EEJPfQjh-py3.10/bin/python",
+            "program": "${workspaceFolder}/src/models/bert_mlp/preprocess/preprocess.py",
         },
         {
             "name": "BERT-MLP: Extract BERT embeddings",

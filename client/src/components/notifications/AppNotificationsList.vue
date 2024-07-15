@@ -1,14 +1,22 @@
 <template>
-  <v-list>
+  <v-list item-pro>
     <div v-if="notifications.length">
-      <v-list-item v-for="notification in notifications" :key="notification._id" 
-          @click="openRoute(notification.route)" density="compact">
-        <template v-slot:prepend>
-          <v-icon icon="mdi-circle-medium" color="error" v-if="!notification.seen"></v-icon>
-        </template>
-        <v-list-item-title>{{ notification.title }}</v-list-item-title>
-        <v-list-item-subtitle>{{ notification.subtitle }}</v-list-item-subtitle>
-      </v-list-item>
+      <div v-for="notification in notifications" :key="notification._id">
+        <v-list-item @click="openRoute(notification.route)">
+          <template v-slot:prepend>
+            <!-- <v-icon icon="mdi-circle-medium" color="error" v-if="notification.seen"></v-icon> -->
+            <v-badge color="error" dot offset-x="0" offset-y="0" :model-value="!notification.seen">
+              <v-icon v-if="notification.type == 'new_friendship_request'">mdi-account-arrow-left</v-icon>
+              <v-icon v-if="notification.type == 'accepted_friendship_proposal'">mdi-account-check</v-icon>
+              <v-icon v-if="notification.type == 'rate_friend_invitation'">mdi-account-star</v-icon>
+              <v-icon v-if="notification.type == 'other'">mdi-information</v-icon>
+            </v-badge>
+          </template>
+          <v-list-item-title>{{ notification.title }}</v-list-item-title>
+          <v-list-item-subtitle>{{ notification.subtitle }}</v-list-item-subtitle>
+        </v-list-item>
+        <v-divider></v-divider>
+      </div>
     </div>
     <div v-else>
       <v-list-item>
@@ -29,6 +37,7 @@ interface Notification {
   subtitle: string;
   route: string;
   seen: boolean;
+  type: NotificationDtoTypeEnum;
 }
 
 export default {
@@ -54,6 +63,7 @@ export default {
             subtitle: "",
             route: `/#friends/${payload.counterpartyId}/profile`,
             seen: dto.seen,
+            type: dto.type,
           };
 
         case NotificationDtoTypeEnum.AcceptedFriendshipProposal:
@@ -63,6 +73,7 @@ export default {
             subtitle: "",
             route: `/#friends/${payload.counterpartyId}/profile`,
             seen: dto.seen,
+            type: dto.type,
           };
 
         case NotificationDtoTypeEnum.RateFriendInvitation:
@@ -72,6 +83,7 @@ export default {
             subtitle: "",
             route: `/#friends/${payload.userId}/rate`,
             seen: dto.seen,
+            type: dto.type,
           };
 
         default:

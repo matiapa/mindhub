@@ -61,14 +61,6 @@
                       </template>
                       <v-list-item-title>Mi perfil</v-list-item-title>
                     </v-list-item>
-
-                    <!-- <v-list-item link to="/data">
-                      <template v-slot:prepend>
-                        <v-icon>mdi-web</v-icon>
-                      </template>
-                      <v-list-item-title>Mis datos</v-list-item-title>
-                    </v-list-item> -->
-
                     <v-list-item link @click="logout">
                       <template v-slot:prepend>
                         <v-icon>mdi-logout</v-icon>
@@ -84,10 +76,6 @@
 
       <v-navigation-drawer v-model="drawer" temporary>
         <v-list>
-          <!-- <v-list-item v-for="item in navitems" :key="item.title" link :to="item.route">
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item> -->
           <v-list-item v-for="item in navitems" :key="item.title" :to="item.route" link>
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item>

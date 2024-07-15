@@ -53,7 +53,10 @@ export default {
         type: Object as PropType<User>,
         required: true
     },
-    prefilledMessage: String,
+    suggestedTopic: {
+        type: String,
+        required: false
+    },
   },
 
   data() {
@@ -174,7 +177,9 @@ export default {
           isJsonMime: () => true,
       })
 
-      this.newMessage = this.prefilledMessage ?? '';
+      if (this.suggestedTopic) {
+        this.newMessage = `A ambos nos interesa "${this.suggestedTopic}", ¿Qué te parece si hablamos de eso?`;
+      }
 
       this.getAllMessages();
   },

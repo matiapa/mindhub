@@ -1,106 +1,123 @@
 <template>
     <v-card class="mx-auto">
-        <div class="media" @click="showDialog = true">
-            <v-avatar class="mt-8 mb-8" size="150">
-                <v-img :src="getPictureUrl(user.user._id)" contain>
-                    <template #error>
-                        <v-img :src="avatar" contain />
-                    </template>
-                </v-img>
-            </v-avatar>
+        <div @click="showDialog = true">
+            <div class="media" @click="showDialog = true">
+                <v-avatar class="mt-8 mb-8" size="150">
+                    <v-img :src="getPictureUrl(user.user._id)" contain>
+                        <template #error>
+                            <v-img :src="avatar" contain />
+                        </template>
+                    </v-img>
+                </v-avatar>
+            </div>
+
+            <v-card-item @click="showDialog = true">
+                <v-card-title>{{ user.user.profile.name }}</v-card-title>
+
+                <div class="mt-2">          
+                    <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props">{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
+                        </template>
+                        <span>Género</span>
+                    </v-tooltip>
+
+                    <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" class="ml-2">{{ user.user.profile.age }} años</v-chip>
+                        </template>
+                        <span>Edad</span>
+                    </v-tooltip>
+
+                    <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" class="ml-2" v-if="user.user.distance">{{ user.user.distance }} km</v-chip>
+                        </template>
+                        <span>Distancia</span>
+                    </v-tooltip>
+                    
+                    <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" class="ml-2">{{ inactiveHoursText(user.user.inactiveHours) }}</v-chip>
+                        </template>
+                        <span>Activo hace</span>
+                    </v-tooltip>
+
+                    <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
+                            <v-chip v-bind="props" v-if="user.user.isFake" class="ml-2">🤖</v-chip>
+                        </template>
+                        <span>El usuario es un bot</span>
+                    </v-tooltip>                
+                </div>
+            </v-card-item>
+
+            <v-card-text @click="showDialog = true">
+                <div>{{ user.user.profile.biography }}</div>
+            </v-card-text>
+
+            <v-divider class="mx-4 mb-1" @click="showDialog = true"></v-divider>
+
+            <template v-if="user.score">
+                <v-card-title>Afinidad</v-card-title>
+
+                <div class="px-4">
+                    <v-list>
+                        <v-list-item>
+                            <template v-slot:prepend>
+                                <v-tooltip location="end">
+                                    <template v-slot:activator="{ props }">
+                                        <v-icon v-bind="props">mdi-star</v-icon>
+                                    </template>
+                                    <span>Afinidad general</span>
+                                </v-tooltip>
+                            </template>
+
+                            <v-tooltip location="top">
+                                <template v-slot:activator="{ props }">
+                                    <v-progress-linear :model-value="user.score.global * 100" height="6" v-bind="props"></v-progress-linear>
+                                </template>
+                                <span>{{Math.round(user.score.global * 10000) / 100 }}%</span>
+                            </v-tooltip>
+                        </v-list-item>
+                        <v-list-item>
+                            <template v-slot:prepend>
+                                <v-tooltip location="end">
+                                    <template v-slot:activator="{ props }">
+                                        <v-icon v-bind="props">mdi-account-multiple</v-icon>
+                                    </template>
+                                    <span>Afinidad de amistad</span>
+                                </v-tooltip>
+                            </template>
+
+                            <v-tooltip location="top">
+                                <template v-slot:activator="{ props }">
+                                    <v-progress-linear :model-value="user.score.friendship.score * 100" height="6" v-bind="props"></v-progress-linear>
+                                </template>
+                                <span>{{Math.round(user.score.friendship.score * 10000) / 100 }}%</span>
+                            </v-tooltip>
+                        </v-list-item>
+                        <v-list-item>
+                            <template v-slot:prepend>
+                                <v-tooltip location="end">
+                                    <template v-slot:activator="{ props }">
+                                        <v-icon v-bind="props">mdi-music</v-icon>
+                                    </template>
+                                    <span>Afinidad de intereses</span>
+                                </v-tooltip>
+                            </template>
+                            
+                            <v-tooltip location="top">
+                                <template v-slot:activator="{ props }">
+                                    <v-progress-linear :model-value="user.score.interests.score * 100" height="6" v-bind="props"></v-progress-linear>
+                                </template>
+                                <span>{{Math.round(user.score.interests.score * 10000) / 100 }}%</span>
+                            </v-tooltip>
+                        </v-list-item>
+                    </v-list>
+                </div>
+            </template>
         </div>
-
-        <v-card-item>
-            <v-card-title>{{ user.user.profile.name }}</v-card-title>
-
-            <div class="mt-2">          
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ props }">
-                        <v-chip v-bind="props">{{ presentation.genderIcons[ user.user.profile.gender as "man" | "woman" | "other"]}}</v-chip>
-                    </template>
-                    <span>Género</span>
-                </v-tooltip>
-
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ props }">
-                        <v-chip v-bind="props" class="ml-2">{{ user.user.profile.age }} años</v-chip>
-                    </template>
-                    <span>Edad</span>
-                </v-tooltip>
-
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ props }">
-                        <v-chip v-bind="props" class="ml-2" v-if="user.user.distance">{{ user.user.distance }} km</v-chip>
-                    </template>
-                    <span>Distancia</span>
-                </v-tooltip>
-                
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ props }">
-                        <v-chip v-bind="props" class="ml-2">{{ inactiveHoursText(user.user.inactiveHours) }}</v-chip>
-                    </template>
-                    <span>Activo hace</span>
-                </v-tooltip>
-
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ props }">
-                        <v-chip v-bind="props" v-if="user.user.isFake" class="ml-2">🤖</v-chip>
-                    </template>
-                    <span>El usuario es un bot</span>
-                </v-tooltip>                
-            </div>
-        </v-card-item>
-
-        <v-card-text>
-            <div>{{ user.user.profile.biography }}</div>
-        </v-card-text>
-
-        <v-divider class="mx-4 mb-1"></v-divider>
-
-        <template v-if="user.score">
-            <v-card-title>Afinidad</v-card-title>
-
-            <div class="px-4">
-                <v-list>
-                    <v-list-item>
-                        <template v-slot:prepend>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-star</v-icon>
-                                </template>
-                                <span>Afinidad general</span>
-                            </v-tooltip>
-                        </template>
-
-                        <v-progress-linear :model-value="user.score.global * 100" height="6"></v-progress-linear>
-                    </v-list-item>
-                    <v-list-item>
-                        <template v-slot:prepend>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-account-multiple</v-icon>
-                                </template>
-                                <span>Afinidad de amistad</span>
-                            </v-tooltip>
-                        </template>
-
-                        <v-progress-linear :model-value="user.score.friendship.score * 100" height="6"></v-progress-linear>
-                    </v-list-item>
-                    <v-list-item>
-                        <template v-slot:prepend>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ props }">
-                                    <v-icon v-bind="props">mdi-music</v-icon>
-                                </template>
-                                <span>Afinidad de intereses</span>
-                            </v-tooltip>
-                        </template>
-                        
-                        <v-progress-linear :model-value="user.score.interests.score * 100" height="6"></v-progress-linear>
-                    </v-list-item>
-                </v-list>
-            </div>
-        </template>
 
         <v-card-actions>
             <slot></slot>
@@ -108,7 +125,7 @@
     </v-card>
 
     <v-dialog v-model="showDialog" class="dialog-responsive">
-        <ProfileDetailCard :user="user" />
+        <ProfileDetailCard :user="user" :isFriend="isFriend"  @open-chat="openChatWithSuggestion"/>
     </v-dialog>
 </template>
 
@@ -129,14 +146,21 @@ export default {
             type: Object as PropType<User>,
             required: true
         },
+        isFriend: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
     },
+
+    emits: ['open-chat'],
 
     data() {
         return {
             presentation: {
                 genderIcons: {
-                    'man': '♂',
-                    'woman': '♀',
+                    'man': '👨🏻',
+                    'woman': '👩🏻',
                     'other': '⚲',
                 }
             },
@@ -160,6 +184,14 @@ export default {
                 const days = Math.floor(inactiveHours / 24);
                 return `${days} ${days != 1 ? "días" : "día"}`;
             }
+        },
+
+        async openChatWithSuggestion(interest: any) {
+            this.showDialog=false;
+            // TODO: This is a workaround to avoid the chat dialog to be opened before the profile dialog is closed,
+            // otherwise it will fail, but this solution should be improved.
+            await new Promise(resolve => setTimeout(resolve, 500));
+            this.$emit('open-chat', interest)
         }
     },
 

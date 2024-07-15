@@ -102,7 +102,7 @@ def affinity_by_user_personality(user, potentials):
             # People tend to get better with friends with similar openness
             # There is no evidence that more open people form better relationships
 
-            dim_scores['o'] = 1 - abs(user_pv['o'] - potential_pv['o'])
+            dim_scores['o'] = 1 - abs(user_pv['o'] - potential_pv['o']) / MAX_DIM_VALUE
 
             # Consciesciousness:
             # Friends with high consciousness tend to get more acceptance
